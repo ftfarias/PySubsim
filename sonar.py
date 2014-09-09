@@ -13,7 +13,6 @@ class SonarContact:
     def __init__(self, sonar_idx, bearing):
         self.sonar_idx = sonar_idx
         self.tracking_status = self.NEW
-        self.name = ""
         self.time_tracking = 0
         self.last_seen = None
         self.name = None  # like "i688"
@@ -44,9 +43,9 @@ class SonarContact:
 
 class Sonar(SubModule):
     def __init__(self, sub):
+        SubModule.__init__(self, sub)
         self.module_name = "SONAR"
         self.contacts = {}
-        self.sub = sub
         self.sea = sub.sea
         self.counter = 0  # counter for Sierra Contacts
         self.time_for_next_scan = 0
@@ -56,7 +55,7 @@ class Sonar(SubModule):
 
     def get_new_contact_id(self):
         self.counter += 1
-        return "S{0:3d}".format(self.counter)
+        return "S{0:d}".format(self.counter)
 
     def guess_obj_type(self, bands):
         probs = []
@@ -93,10 +92,9 @@ class Sonar(SubModule):
 
     def add_contact(self, scan_result):
         sc = SonarContact(scan_result.sonar_idx, scan_result.bearing)
-        sc.bearing = scan_result.bearing
         sc.ident = self.get_new_contact_id()
         self.contacts[scan_result.sonar_idx] = sc
-        self.add_message("New contact bearing {0}, designated {1}".format(sc.bearing, sc.name),True)
+        self.add_message("New contact bearing {0:.0f}, designated {1}".format(math.degrees(util.abs_angle_to_bearing(sc.bearing)), sc.ident),True)
 
 
     def update_contact(self, sc, scan_result, time_elapsed):

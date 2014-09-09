@@ -34,12 +34,12 @@ class Navigation(SubModule):
         self.ship.get_pos()
 
     def status(self):
-        course = math.degrees(self.course)
+        course = math.degrees(abs_angle_to_bearing(self.course))
         if self.destination:
             return "Moving from {f} to {to}, course {c:d}, speed {s}".format(
-                f=self.get_pos(), to=self.destination, s=self.speed, c=self.course)
+                f=self.get_pos(), to=self.destination, s=self.speed, c=course)
         else:
-            return "Stopped at {0}, course {1}".format(self.get_pos(), self.course)
+            return "Stopped at {0}, course {1}".format(self.get_pos(), course)
 
     def turn(self, time_elapsed):
         if self.destination:

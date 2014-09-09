@@ -48,12 +48,10 @@ class ScanResult:
         return "({id}) {pos} |{band}| transp:{t}".format(id=self.universe_idx, pos=self.pos,
                                                          band=str(self.bands), t=self.transponder)
 
-
-
 class SeaObject():
     def __init__(self, kind):
         self.details = None
-        self.kind = '<generic>'
+        self.kind = kind
         self.sonar_bands = KNOWN_TYPES[kind]
 
     def get_pos(self):
@@ -62,14 +60,14 @@ class SeaObject():
     def turn(self, time_elapsed):
         pass
 
-    def get_bands(self):
-        return self.ref_bands
+    def get_sonar_bands(self):
+        return self.sonar_bands
 
     def get_deep(self):
         return 0;
 
     def __str__(self):
-        return "{pos}:{t} {det}".format(pos=self.get_pos(), t=self.kind, det=self.details)
+        return "SeaObj: pos:{pos} ({t}) {det}".format(pos=self.get_pos(), t=self.kind, det=self.details)
 
 class SimpleSeaObject(SeaObject, MovableNewtonObject):
     def __init__(self, kind, pos):
@@ -104,12 +102,14 @@ class SeaSurfaceShip(SeaObject):  # adapter para class SHIP
 
 class SeaSubmarine(SeaObject):
     def __init__(self, sub, kind='Submarine'):
-        SeaObject.__init__(self)
+        SeaObject.__init__(self, kind)
+        assert isinstance(sub, Submarine)
         self.sub = sub
-        self.kind = kind
-        self.sonar_bands = KNOWN_TYPES[kind]
 
     def get_pos(self):
+        print("SeaSubmarine.getPos()")
+        p = self.sub.get_pos()
+        assert isinstance(p,Point)
         return self.sub.get_pos()
 
     def get_deep(self):
@@ -147,8 +147,7 @@ class Sea:
         self.objects.append(ship)
 
     def add_submarine(self, sub):
-        obj = SeaSubmarine(sub)
-        self.objects.append(obj)
+        self.objects.append(SeaSubmarine(sub))
 
     def turn(self, time_elapsed):
         self.time = self.time + datetime.timedelta(seconds=time_elapsed)
@@ -157,14 +156,22 @@ class Sea:
 
     def passive_scan(self, sub, time_elapsed):
         sub_pos = sub.get_pos()
+        assert isinstance(sub_pos, Point)
         result = []
         for i, obj in enumerate(self.objects):
-            dist = obj.get_pos().distance_to(sub_pos)
+            assert isinstance(obj.get_pos(), Point)
+            obj_pos = obj.get_pos()
+            dist = obj_pos.distance_to(sub_pos)
             if dist < 15:  # hard limit for object detection.
-                bands = (obj.get_bands()) # add_noise
-                pos = obj.get_pos() #.add_noise(0.1*dist)
-                range = sub_pos.distance_to(pos)
-                bearing = math.degrees(abs_angle_to_bearing(sub_pos.angle_to(pos)))
+                bands = (obj.get_sonar_bands()) # add_noise
+                 #.add_noise(0.1*dist)
+                range = sub_pos.distance_to(obj_pos)
+                print("***")
+                print(sub_pos)
+                print(obj_pos)
+                print(sub_pos.angle_to(obj_pos))
+                print("---")
+                bearing = sub_pos.angle_to(obj_pos)
                 # Scan Result
                 r = ScanResult(i)
                 r.range = range

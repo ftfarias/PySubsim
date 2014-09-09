@@ -68,14 +68,14 @@ class Submarine(MovableNewtonObject):
         self.nav.set_destination(dest)
 
     def set_speed(self, new_speed):
-        self.nav.set_speed(new_speed)
+        self.nav.speed = new_speed
 
     def set_sub_rudder(self, angle):
         angle = limits(angle, -self.MAX_TURN_RATE_SECOND, self.MAX_TURN_RATE_SECOND)
         self.rudder = angle
 
     def turn(self, time_elapsed):
-        self.turn(time_elapsed)
+        MovableNewtonObject.turn(self, time_elapsed)
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
         self.sonar.turn(time_elapsed)
@@ -83,7 +83,12 @@ class Submarine(MovableNewtonObject):
         self.weapon.turn(time_elapsed)
 
     def get_pos(self):
+        print("Submarine get_pos")
+        assert isinstance(self.pos, Point)
         return self.pos
+
+    def __str__(self):
+        return "Submarine: {pos}".format(pos=self.pos)
 
 
 class TMA(SubModule):

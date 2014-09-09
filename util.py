@@ -134,9 +134,9 @@ class Point():
         return Point(x, y)
 
     def angle_to(self, other):
-        if self.get_length_sqrd() == 0:
-            return 0
         p = self - other
+        if p.get_length_sqrd() == 0:
+            return 0
         return math.atan2(p.y, p.x)
 
     def get_angle(self):
@@ -193,9 +193,6 @@ class MovableNewtonObject:
     def rotate(self, angle):
         self.course = normalize_angle(self.course + angle)
         self.vel.rotate(self.course)
-
-    def get_pos(self):
-        return self.pos
 
     def __str__(self):
         return "pos:{0}  vel:{1}  accel:{2}  course:{3}".format(self.pos,

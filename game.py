@@ -311,8 +311,8 @@ MAIN_MENU = [
 
 
 def start():
-    dummy_ship = ShipFactory.create_simple_sub(sea, Point(30, 30))
-    sea.create_smallboat(dummy_ship)
+    #dummy_ship = ShipFactory.create_simple_sub(sea, Point(30, 30))
+    #sea.create_smallboat(dummy_ship)
 
     """
     dummy_ship = ShipFactory.create_simple_ship(universe, Point(0, 1))
