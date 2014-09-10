@@ -8,23 +8,21 @@ class LinearScale():
         self.left_span = 0.0
         self.right_span = 0.0
         self.scale_factor = 1.0
-        self.reverse_input = False
-        self.reverse_output = False
 
-    def domain(self,r):
-        self._range = r
+    def domain(self, d):
+        self._domain = d
         self.__calc()
         return self
 
-    def range(self,d):
-        self._domain = d
+    def range(self, r):
+        self._range = r
         self.__calc()
         return self
 
     def __calc(self):
         domain_span = self._domain[1] - self._domain[0]
         range_span = self._range[1] - self._range[0]
-        self.scale_factor = float(domain_span) / float(range_span)
+        self.scale_factor = float(range_span) / float(domain_span)
 
     def map(self, value):
         return self._range[0] + (value-self._domain[0])*self.scale_factor
@@ -39,8 +37,17 @@ class LinearScale2D():
         self.ls_x = LinearScale()
         self.ls_y = LinearScale()
 
-    def map(self, x,y):
+    def map(self, x, y):
         return self.ls_x.map(x), self.ls_y.map(y)
+
+
+
+def linear_scaler2d(domain_x, range_x, domain_y, range_y):
+    def fn(x,y):
+        return (LinearScale().domain(domain_x).range(range_x).map(x),
+                LinearScale().domain(domain_y).range(range_y).map(y))
+    return fn
+
 
 class TestLinear(unittest.TestCase):
 
@@ -87,6 +94,13 @@ class TestLinear(unittest.TestCase):
         self.assertEqual(a(5), 15)
         self.assertEqual(a(9), 19)
         self.assertEqual(a(8), 18)
+
+    def test_linearscaler2d_1(self):
+        a = linear_scaler2d([10, 5], [20, 15], [10,0], [0,10])
+        self.assertEqual(a(10,10), (20,0))
+        self.assertEqual(a(5,9), (15,1))
+        self.assertEqual(a(9,5), (19,5))
+        self.assertEqual(a(8,0), (18,10))
 
 
 if __name__ == '__main__':
