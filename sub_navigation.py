@@ -1,13 +1,13 @@
 from sub_module import SubModule
-from util import abs_angle_to_bearing
+from util import abs_angle_to_bearing, normalize_angle
 import math
 
 class Navigation(SubModule):
     MAX_SPEED = 30
 
-    def __init__(self, ship):
+    def __init__(self, sub):
         self.module_name = "NAV"
-        self.ship = ship
+        self.sub = sub
         self.destination = None
         self._speed = 0
         self._course = 0
@@ -27,19 +27,34 @@ class Navigation(SubModule):
 
     speed = property(get_speed, __set_speed, None, "gets or sets the desired speed")
 
+    def get_course(self):
+        return self._course
+
+    def __set_course(self, new_course):
+        self._course = normalize_angle(new_course)
+
+    course = property(get_course, __set_course, None, "gets or sets the desired course")
+
+    def get_actual_speed(self):
+        return self.sub.vel.lenght
+
+    def get_actual_course(self):
+        return self.sub.get_course()
+
     def add_waypoint(self, dest):
         self.waypoints.append(dest)
 
     def get_pos(self):
-        self.ship.get_pos()
+        return self.sub.get_pos()
 
     def status(self):
-        course = math.degrees(abs_angle_to_bearing(self.course))
+        set_course = abs_angle_to_bearing(self.course)
+        actual_course = abs_angle_to_bearing(self.get_actual_course())
         if self.destination:
-            return "Moving from {f} to {to}, course {c:d}, speed {s}".format(
-                f=self.get_pos(), to=self.destination, s=self.speed, c=course)
+            return "Moving from {f} to {to}, course {c_a}(set:{c_s:.0f}), speed {s}".format(
+                f=self.get_pos().format(), to=self.destination.format(), s=self.speed, c_a=actual_course, c_s=set_course)
         else:
-            return "Stopped at {0}, course {1}".format(self.get_pos(), course)
+            return "Stopped at {p}, course {c_a}(set:{c_s:.0f})".format(p=self.get_pos().format(), c_a=actual_course, c_s=set_course)
 
     def turn(self, time_elapsed):
         if self.destination:

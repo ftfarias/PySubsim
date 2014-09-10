@@ -30,8 +30,8 @@ def print_near_objects():
     if not objs:
         print("<no contacts>")
     else:
-        for i, ob in enumerate(objs):
-            print "{0:3o}: {1}".format(i, ob)
+        for k,v in objs.items():
+            print "{0:3o}: {1}".format(k, v)
 
 
 def print_status():
@@ -64,38 +64,40 @@ def parse_coordinates(text):
         return None
 
 def print_map():
-    x_size = 12
-    y_size = 12
+    x_size = 12  # from 0 to 11
+    y_size = 12  # from 0 to 11
     player_pos = player_sub.get_pos()
     topleft = player_pos - Point(x_size/2, -y_size/2)
     bottomright = player_pos + Point(x_size/2, -y_size/2)
     print(topleft)
-    print(bottomright)
 
-    y_range = range(int(topleft.y),int(bottomright.y),-1)
-    x_range = range(int(topleft.x), int(bottomright.x))
+    def to_map(x,y):
+        return int(x - topleft.x),int(y - topleft.y)
+    #print(topleft)
+    #print(bottomright)
+    symbols = [['.']*x_size for x in xrange(y_size)]
+
+    for k, sc in player_sub.sonar.contacts.items():
+        pos = sc.estimate_pos()
+        print(pos)
+        if pos is not None:
+            x_map, y_map = to_map(pos.x, pos.y)
+            print(x_map)
+            print(y_map)
+            if 0 <=x_map<x_size and 0<=y_map<y_size:
+                symbols[x_map][y_map] = str(sc.ident)
+
+    #y_range = range(int(topleft.y),int(bottomright.y),-1)
+    #x_range = range(int(topleft.x), int(bottomright.x))
+
+    y_range = range(x_size)
+    x_range = range(y_size)
     grid = []
     for y in y_range:
         line = []
         #print(y)
         for x in x_range:
-            xy = Point(x,y)
-            dist = player_pos.distance_to(xy)
-            #line.append(str(int(dist)))
-            for obj in player_sub.sonar.objects:
-                if round(obj.pos.x) == round(xy.x) and \
-                   round(obj.pos.y) == round(xy.y):
-                    if obj.obj_type is None:
-                        s = '?'
-                    else:
-                        s = obj.obj_type[0]
-                    break
-                else:
-                    if dist <= 5.5:
-                        s = '.'
-                    else:
-                        s = ' '
-            line.append(s)
+            line.append(symbols[x][y])
         grid.append(line)
 
     #line = "." * x_size
@@ -211,6 +213,7 @@ def move_to():
     if x is None or y is None:
         return
     player_sub.set_destination(Point(x, y))
+    print("Aye, sir! {0}".format(player_sub.nav.status()))
 
 
 def set_speed():
@@ -228,7 +231,7 @@ MAIN_NAVIGATION = [
 
 def menu_navigation():
     print("* Navigation *")
-    print(player_sub.navigation.status())
+    print(player_sub.nav.status())
     opt = show_menu(MAIN_NAVIGATION)
     if opt:
         opt()

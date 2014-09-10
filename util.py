@@ -23,7 +23,10 @@ class Point():
         self.z = float(z)
 
     def __str__(self):
-            return "({0: .3f}, {1: .3f}, {1: .3f})".format(self.x, self.y, self.z)
+            return "({0:.1f}, {1:.1f}, {1:.1f})".format(self.x, self.y, self.z)
+
+    def format(self, format_string="({x:.1f}, {y:.1f})"):
+            return format_string.format(x=self.x, y=self.y, z=self.z)
 
     def __add__(a, b):
         if isinstance(b, Point):
@@ -176,10 +179,15 @@ class MovableNewtonObject:
         self.pos += self.vel * time_elapsed
         self.course = self.vel.angle
 
-    def speed(self):
+    def get_speed(self):
         return self.vel.length
 
-    def course(self):
+    def __set_speed(self, speed):
+        self.vel.length = speed
+
+    speed = property(get_speed, __set_speed, None, "Speed")
+
+    def get_course(self):
         return self.course
 
     def new_course(self, angle):
@@ -200,7 +208,7 @@ class MovableNewtonObject:
                                                                 self.accel,
                                                                 math.degrees(self.course))
 def abs_angle_to_bearing(angle):
-    return normalize_angle(angle - (math.pi/2))
+    return round(math.degrees(normalize_angle(angle - (math.pi/2))))
 
 
 def limits(value, min, max):
@@ -287,9 +295,10 @@ def calc_bands(ref_bands, factor, noise):
 
 
 class OnLineMean():
-    n = 0
-    mean = 0
-    M2 = 0
+    def __init__(self):
+        self.n = 0
+        self.mean = 0
+        self.M2 = 0
 
     def add_variable(self, x):
         self.n += 1
@@ -312,7 +321,6 @@ class OnLineMean():
 
     def get_variance(self):
         return self.M2/(self.n-1)
-
 
 
 class TestUtil(unittest.TestCase):
@@ -410,20 +418,31 @@ class TestUtil(unittest.TestCase):
     def test_mov_vel_contant2(self):
         m1 = MovableNewtonObject()
         m1.vel = Point(1, 2, -3)
+        print(m1)
         m1.turn(10)
+        print(m1)
         self.assertEqual(m1.pos, Point(10, 20, -30))
+        print(m1)
         m1.turn(5)
+        print(m1)
         m1.turn(5)
+        print(m1)
         self.assertEqual(m1.pos, Point(20, 40, -60))
 
     def test_mov_speed(self):
         m1 = MovableNewtonObject()
         m1.vel = Point(4, 3, 0)
-        self.assertEqual(m1.speed(), 5)
-        m1.vel = Point(0, 3, 4)
-        self.assertEqual(m1.speed(), 5)
-        m1.vel = Point(6, 0, 8)
-        self.assertEqual(m1.speed(), 10)
+        self.assertEqual(m1.speed, 5)
+
+    def test_mov_speed2(self):
+        m1 = MovableNewtonObject()
+        m1.vel = Point(3, 4, 5)
+        self.assertEqual(m1.speed, 5)
+
+    def test_mov_speed3(self):
+        m1 = MovableNewtonObject()
+        m1.vel = Point(6, 8, 0)
+        self.assertEqual(m1.speed, 10)
 
 if __name__ == '__main__':
     unittest.main()

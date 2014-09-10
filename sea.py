@@ -166,11 +166,11 @@ class Sea:
                 bands = (obj.get_sonar_bands()) # add_noise
                  #.add_noise(0.1*dist)
                 range = sub_pos.distance_to(obj_pos)
-                print("***")
-                print(sub_pos)
-                print(obj_pos)
-                print(sub_pos.angle_to(obj_pos))
-                print("---")
+                #print("***")
+                #print(sub_pos)
+                #print(obj_pos)
+                #print(sub_pos.angle_to(obj_pos))
+                #print("---")
                 bearing = sub_pos.angle_to(obj_pos)
                 # Scan Result
                 r = ScanResult(i)

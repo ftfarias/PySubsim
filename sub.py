@@ -11,6 +11,7 @@ class ShipFactory():
     def create_player_sub(sea):
         print("Creating Player Submarine")
         sub = Submarine(sea)
+        sub.pos = Point(10, 10, 0)
         sub.name = "Mautilus"
         return sub
 
@@ -83,7 +84,6 @@ class Submarine(MovableNewtonObject):
         self.weapon.turn(time_elapsed)
 
     def get_pos(self):
-        print("Submarine get_pos")
         assert isinstance(self.pos, Point)
         return self.pos
 
