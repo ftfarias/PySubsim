@@ -52,16 +52,18 @@ class Navigation(SubModule):
         actual_course = abs_angle_to_bearing(self.get_actual_course())
         set_speed = self.speed
         actual_speed = self.get_actual_speed()
+        rudder_str = math.degrees(self.sub.rudder/60)
         if self.destination:
-            return "NAV: {f}, moving to {to}, course {c_a}˚(set:{c_s:.0f}˚), speed {s_a:.1f}(set:{s_s:.1f})".format(
+            return "NAV: {f}, moving to {to}, course {c_a}˚(set:{c_s:.0f}˚), speed {s_a:.1f}(set:{s_s:.1f}) rudder:{rud:.0f}˚".format(
                 f=self.get_pos().format(), to=self.destination.format(),
                 c_a=actual_course, c_s=set_course,
-                s_a=actual_speed, s_s=set_speed)
+                s_a=actual_speed, s_s=set_speed,
+                rud=rudder_str)
         else:
-            return "NAV: {f}, course {c_a}˚(set:{c_s:.0f}˚), speed {s_a:.1f}(set:{s_s:.1f})".format(
+            return "NAV: {f}, course {c_a}˚(set:{c_s:.0f}˚), speed {s_a:.1f}(set:{s_s:.1f}) rudder:{rud:.0f}˚".format(
                 f=self.get_pos().format(),
                 c_a=actual_course, c_s=set_course,
-                s_a=actual_speed, s_s=set_speed)
+                s_a=actual_speed, s_s=set_speed, rud=rudder_str)
         #return "Stopped at {p}, course {c_a}(set:{c_s:.0f})".format(p=self.get_pos().format(), c_a=actual_course, c_s=set_course)
 
     def __str__(self):
@@ -73,9 +75,9 @@ class Navigation(SubModule):
         if abs(self.get_actual_speed() - self.speed) < 0.01:
             sub.acceleration = 0
         elif self.get_actual_speed() > self.speed:
-            sub.acceleration = -3 * 60
+            sub.acceleration = -1 * 60
         else:
-            sub.acceleration = 5 * 60
+            sub.acceleration = 2 * 60
 
 
         if self.destination:
@@ -92,12 +94,14 @@ class Navigation(SubModule):
             if angle_difference > math.pi:
                 angle_difference -= 2*math.pi
 
-            if abs(angle_difference) < 0.1:
-                sub.rudder_center()
-            elif angle_difference > 0:
-                sub.rudder_right()
-            else:
-                sub.rudder_left()
+            sub.set_sub_rudder(angle_difference*60 * 2)
+
+            #if abs(angle_difference) < 0.1:
+            #    sub.set_sub_rudder(angle_difference)
+            #elif angle_difference > 0:
+            #    sub.rudder_right()
+            #else:
+            #    sub.rudder_left()
 
             #dist = min(dist_to_move,dist_to_destination)
             #self.pos = self.pos + (current_pos.movement_to(self.destination) * dist)

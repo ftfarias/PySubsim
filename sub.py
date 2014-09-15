@@ -28,7 +28,7 @@ class ShipFactory():
 
 
 class Submarine(MovableNewtonObject):
-    MAX_TURN_RATE_SECOND = math.radians(45)*60  # max 45 degrees per minute
+    MAX_TURN_RATE_SECOND = math.radians(15)*60  # max 45 degrees per minute
 
     def __init__(self, sea):
         MovableNewtonObject.__init__(self)

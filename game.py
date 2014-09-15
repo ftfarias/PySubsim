@@ -44,13 +44,13 @@ def print_status():
 
 
 def menu_object(n):
-    obj = player_sub.sensors.return_near_objects()[n]
+    obj = player_sub.sonar.contacts[n]
     print (obj)
     bands = obj.bands
     print("".join(["{0:5}".format(i)  for i in range(1,11)]))
     print("".join(["{0:5.1f}".format(b) for b in bands]))
-    for prob in obj.obj_type_probs:
-        print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
+    #for prob in obj.obj_type_probs:
+    #    print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
 
 
 def parse_coordinates(text):
@@ -123,18 +123,20 @@ def show_menu(menu):
             return None
         opt = option.split(" ")
 
-        if opt[0] == ']':  # 1 second
+        if opt[0] == ']':
             n = None
+            time_per_turn=0.1
             if len(opt) > 1:
-                n = int(opt[1])
-            game_loop(n, time_per_turn=0.1, wait=0.1) # real time
+                n = int(opt[1]/ time_per_turn)
+            game_loop(n, time_per_turn=time_per_turn, wait=0.1) # real time
             print_status()
             continue
 
         if opt[0] == '[':
             n = None
+            time_per_turn=0.1
             if len(opt) > 1:
-                n = int(opt[1])
+                n = int(opt[1] / time_per_turn)
             game_loop(n, time_per_turn=0.1, wait=0.01) # 10 times real
             print_status()
             continue
@@ -183,10 +185,17 @@ def show_menu(menu):
             print("Please choose a valid option:")
             print("<number>: choose a option")
             print("<empty>: return to previous menu")
-            print("]: run game for 1 second")
-            print("] <n>: run game for n seconds")
-            print("[: run game for 1 minute")
-            print("[ <n>: run game for n minutes\n")
+            print("]      : run game in real time")
+            print("] <n>  : run game in real time for n seconds")
+            print("[      : run game 10 times faster")
+            print("[ <n>  : run game 10 times faster for n seconds")
+            print("s      : Show status")
+            print("o      : Show objects in sonar")
+            print("o <n>  : Show detail information about object")
+            print("m      : Show map")
+            print("mov x,y: set destination x,y")
+            print("spd x  : set speed for x")
+            print("q      : quit")
 
 
 def input_integer(min=0, max=100):
