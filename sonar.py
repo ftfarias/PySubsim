@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from sub_module import SubModule
-from util import Point
+from util import abs_angle_to_bearing, Bands
+from physic import Point, MovableNewtonObject
 import util
 import math
 import random
@@ -20,7 +21,7 @@ class SonarContact:
         self.ident = ""  # like S1
         self.obj_type = None
         self.details = None
-        self.range = 5
+        self.range = 2
         self.last_bearing = bearing
         self.bearings = [bearing]
         self.course = None
@@ -113,7 +114,7 @@ class Sonar(SubModule):
 
     def update_contact(self, sc, scan_result, time_elapsed):
         #sc.total_time_elapsed += time_elapsed
-        if (sc.total_time_elapsed < 1):
+        if (sc.time_tracking < 10):
             sc.tracking_status = sc.NEW
         else:
             sc.tracking_status = sc.TRACKING
@@ -128,4 +129,4 @@ class Sonar(SubModule):
         pass
 
     def status(self):
-        return "Sonar tracking {objs} objects".format(objs=len(self.contacts))
+        return "SONAR: tracking {objs} objects".format(objs=len(self.contacts))

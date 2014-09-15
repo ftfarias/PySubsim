@@ -1,4 +1,5 @@
-from util import Point, MovableNewtonObject
+from util import abs_angle_to_bearing, Bands
+from physic import Point, MovableNewtonObject
 from sub_navigation import Navigation
 
 class SurfaceShip(MovableNewtonObject):

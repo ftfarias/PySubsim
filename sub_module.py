@@ -1,6 +1,6 @@
 #from sub import Submarine
 
-class SubModule:
+class SubModule(object):
     def __init__(self, sub):
         #assert isinstance(sub, Submarine)
         self.module_name = "<None>"

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from util import Point, abs_angle_to_bearing, Bands, MovableNewtonObject
+from util import abs_angle_to_bearing, Bands
+from physic import Point, MovableNewtonObject
 from sub import Submarine
 import random
 import math
@@ -55,7 +56,7 @@ class SeaObject():
         self.sonar_bands = KNOWN_TYPES[kind]
 
     def get_pos(self):
-        return Point(0, 0, 0)
+        return Point(0, 0)
 
     def turn(self, time_elapsed):
         pass
@@ -74,9 +75,13 @@ class SimpleSeaObject(SeaObject, MovableNewtonObject):
         SeaObject.__init__(self, kind)
         MovableNewtonObject.__init__(self)
         self.pos = pos
+        self.deep = 0
 
     def get_pos(self):
         return self.pos
+
+    def get_deep(self):
+        return self.deep
 
     def set_destination(self, dest, speed):
         assert isinstance(dest, Point)
@@ -107,7 +112,6 @@ class SeaSubmarine(SeaObject):
         self.sub = sub
 
     def get_pos(self):
-        print("SeaSubmarine.getPos()")
         p = self.sub.get_pos()
         assert isinstance(p,Point)
         return self.sub.get_pos()
@@ -136,13 +140,14 @@ class Sea:
 
     def create_biologic(self, pos=None):
         if pos is None:
-            pos = Point(random.randint(0, 10), random.randint(0, 10), random.randint(0, 10))
+            pos = Point(random.randint(0, 10), random.randint(0, 10))
         bio = SimpleSeaObject("Biologic", pos)
+        bio.deep = random.randint(30, 100)
         self.objects.append(bio)
 
     def create_smallboat(self, pos=None):
         if pos is None:
-            pos = Point(random.randint(0, 10), random.randint(0, 10), 0)
+            pos = Point(random.randint(0, 10), random.randint(0, 10))
         ship = SimpleSeaObject('Small Boat', pos)
         self.objects.append(ship)
 

@@ -1,5 +1,6 @@
 import math
-from util import Point, limits, abs_angle_to_bearing, MovableNewtonObject
+from util import abs_angle_to_bearing, Bands, limits
+from physic import Point, MovableNewtonObject
 from sub_module import SubModule
 from sonar import Sonar
 import random
@@ -11,8 +12,9 @@ class ShipFactory():
     def create_player_sub(sea):
         print("Creating Player Submarine")
         sub = Submarine(sea)
-        sub.pos = Point(10, 10, 0)
+        sub.pos = Point(10, 10)
         sub.name = "Mautilus"
+        sea.add_submarine(sub)
         return sub
 
     @staticmethod
@@ -26,7 +28,7 @@ class ShipFactory():
 
 
 class Submarine(MovableNewtonObject):
-    MAX_TURN_RATE_SECOND = math.radians(15)/60  # max 15 degrees per minute
+    MAX_TURN_RATE_SECOND = math.radians(45)*60  # max 45 degrees per minute
 
     def __init__(self, sea):
         MovableNewtonObject.__init__(self)
@@ -75,8 +77,17 @@ class Submarine(MovableNewtonObject):
         angle = limits(angle, -self.MAX_TURN_RATE_SECOND, self.MAX_TURN_RATE_SECOND)
         self.rudder = angle
 
+    def rudder_right(self):
+        self.rudder = self.MAX_TURN_RATE_SECOND
+
+    def rudder_left(self):
+        self.rudder = -self.MAX_TURN_RATE_SECOND
+
+    def rudder_center(self):
+        self.rudder = 0
+
     def turn(self, time_elapsed):
-        MovableNewtonObject.turn(self, time_elapsed)
+        MovableNewtonObject.turn(self, time_elapsed/3600)
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
         self.sonar.turn(time_elapsed)
@@ -88,7 +99,7 @@ class Submarine(MovableNewtonObject):
         return self.pos
 
     def __str__(self):
-        return "Submarine: {pos}".format(pos=self.pos)
+        return "Submarine: {status}".format(status=MovableNewtonObject.__str__(self))
 
 
 class TMA(SubModule):

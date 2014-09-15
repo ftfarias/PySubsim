@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sub import ShipFactory
 from sea import Sea,SeaObject
-from util import Point
+from physic import Point
 import time
 import sys
 import math
@@ -36,10 +36,11 @@ def print_near_objects():
 
 def print_status():
     print('* Status *')
-    print(player_sub.status())
-    print(player_sub.navigation.status())
+    #print(player_sub.status())
+    print(player_sub.nav.status())
     print(player_sub.sonar.status())
-    print(player_sub.weapons.status())
+    print(player_sub)
+    #print(player_sub.weapons.status())
 
 
 def menu_object(n):
@@ -110,7 +111,6 @@ def print_map():
         print ("{idx:5}|{linha}|".format(idx=y, linha="  ".join(grid[i])))
 
 
-
 def show_menu(menu):
     while 1:
         #for i, opt in enumerate(menu):
@@ -124,18 +124,18 @@ def show_menu(menu):
         opt = option.split(" ")
 
         if opt[0] == ']':  # 1 second
-            n = 10
+            n = None
             if len(opt) > 1:
                 n = int(opt[1])
-            game_loop(n, wait=0.1)
+            game_loop(n, time_per_turn=0.1, wait=0.1) # real time
             print_status()
             continue
 
-        if opt[0] == '[': # 1 minute
-            n = 60 * 10
+        if opt[0] == '[':
+            n = None
             if len(opt) > 1:
                 n = int(opt[1])
-            game_loop(n, wait=0.01)
+            game_loop(n, time_per_turn=0.1, wait=0.01) # 10 times real
             print_status()
             continue
 
@@ -151,17 +151,27 @@ def show_menu(menu):
                 menu_object(n)
             continue
 
+        if opt[0] == 'spd':
+            if len(opt) == 2:
+                n = int(opt[1])
+                player_sub.nav.speed = n
+            continue
+
         if opt[0] == 'mov':
             dest = parse_coordinates(opt[1])
             if dest:
-                player_sub.set_destination(dest)
-                print("Destination set to {0}".format(player_sub.navigation.destination))
+                player_sub.nav.set_destination(dest)
+                print("Destination set to {0}".format(player_sub.nav.destination))
             else:
                 print("Invalid input")
             continue
 
         if opt[0] == 'm':
             print_map()
+            continue
+
+        if opt[0] == 'q':
+            sys.exit(0)
             continue
 
         try:
@@ -217,14 +227,18 @@ def move_to():
 
 
 def set_speed():
-    new_speed = input_integer()
+    new_speed = input_integer(0, 30)
     if new_speed:
         player_sub.set_speed(new_speed)
 
 MAIN_NAVIGATION = [
-    ('Move to', move_to),
+    ('Move to (MOV x,y)', move_to),
     ('Stop', player_sub.stop_moving),
-    ('Set speed', set_speed)
+    ('Set speed (SPD s)', set_speed),
+    ('Rudder left', player_sub.rudder_left),
+    ('Rudder center', player_sub.rudder_center),
+    ('Rudder right', player_sub.rudder_right)
+
    # ('Land', None),
    # ('Take Off', None),
 ]
@@ -329,43 +343,56 @@ def start():
     dummy_ship = ShipFactory.create_simple_ship(universe, Point(2, 8))
     universe.add_ship(dummy_ship)
     """
-    for i in xrange(5):
+    for i in xrange(2):
         sea.create_biologic()
 
-    for i in xrange(5):
+    for i in xrange(3):
         sea.create_smallboat()
 
     game_loop(1, 0.1)
 
 
 def game_loop(turns, time_per_turn=0.1, wait=0.01):
-    for i in xrange(turns):
-        sea.turn(time_per_turn)
-        #print(universe)
-        sys.stdout.write("\rPos:{pos:10} ({sd}) ".format(pos=player_sub.get_pos(), sd=sea))
-        sys.stdout.flush()
-        time.sleep(wait)
-        messages, stop = player_sub.get_messages()
-        if messages:
-            print("\n@{0}".format(sea.time))
-            for m in messages:
-                print("\t{0}".format(m))
-            time.sleep(1)
-            player_sub.clear_messages()
-            if stop:
-                break
+    try:
+        if turns is None:
+            while 1:
+                run_turn(time_per_turn)
+                time.sleep(wait)
+        else:
+            for i in xrange(turns):
+                time.sleep(wait)
+                run_turn(time_per_turn)
+    except KeyboardInterrupt:
+        pass
+
+
+def run_turn(time_per_turn):
+    sea.turn(time_per_turn)
+    #print(universe)
+    sys.stdout.write("\r ({sd}) {nav} ".format(sd=sea, nav=player_sub.nav))
+    sys.stdout.flush()
+    messages, stop = player_sub.get_messages()
+    if messages:
+        print("\n@{0}".format(sea.time))
+        for m in messages:
+            print("\t{0}".format(m))
+        time.sleep(1)
+        player_sub.clear_messages()
 
 
 def main():
     while 1:
-        print("Main (Time: {0})".format(sea.time))
-        messages, stop = player_sub.get_messages()
-        if messages:
-            for m in messages:
-                print("\t{0}".format(m))
-        opt = show_menu(MAIN_MENU)
-        if opt:
-            opt()
+        try:
+            print("Main (Time: {0})".format(sea.time))
+            messages, stop = player_sub.get_messages()
+            if messages:
+                for m in messages:
+                    print("\t{0}".format(m))
+            opt = show_menu(MAIN_MENU)
+            if opt:
+                opt()
+        except KeyboardInterrupt:
+            pass
 
 if __name__ == "__main__":
     start()
