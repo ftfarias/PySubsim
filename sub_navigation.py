@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from sub_module import SubModule
 from util import abs_angle_to_bearing, normalize_angle360, limits
 import math

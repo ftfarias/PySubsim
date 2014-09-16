@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import math
 from util import abs_angle_to_bearing, Bands, limits
 from physic import Point, MovableNewtonObject
@@ -28,7 +29,7 @@ class ShipFactory():
 
 
 class Submarine(MovableNewtonObject):
-    MAX_TURN_RATE_SECOND = math.radians(15)*60  # max 45 degrees per minute
+    MAX_TURN_RATE_SECOND = math.radians(35)*60  # max 15 degrees per minute
 
     def __init__(self, sea):
         MovableNewtonObject.__init__(self)
@@ -65,6 +66,31 @@ class Submarine(MovableNewtonObject):
 
     def stop_moving(self):
         self.nav.stop_all()
+
+    def get_noise(self):  # Decibels
+        # Assumes the noise is proportional to speed
+        # todo: Cavitation
+        """
+        Cavitation occurs when the propeller is spinning so fast water bubbles at
+the blades' edges. If you want to go faster, go deeper first. Water
+pressure at deeper depth reduces/eliminates cavitation.
+
+If you have the improved propeller upgrade, you can go about 25% faster
+without causing cavitation.
+
+Rule of thumb: number of feet down, divide by 10, subtract 1, is the
+fastest speed you can go without cavitation.
+
+For example, at 150 feet, you can go 14 knots without causing cavitation.
+150/10 = 15, 15-1 = 14.
+
+You can get the exact chart at the Marauders' website. (url's at the end of
+  the document)
+        :return:
+        """
+        INTERNAL_NOISE = 5
+        SPEED_NOISE_FACTOR = 1
+        return INTERNAL_NOISE + self.get_speed()*SPEED_NOISE_FACTOR
 
     # Navigation
     def set_destination(self, dest):

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from sub import ShipFactory
-from sea import Sea,SeaObject
+from sea import Sea, symbol_for_type
 from physic import Point
+from linear_scale import linear_scaler,linear_scaler2d
 import time
 import sys
 import math
+
 
 sea = Sea()
 sea.initialize()
@@ -23,6 +25,7 @@ B - 180
 C - 270
 D - 0
 """
+
 
 
 def print_near_objects():
@@ -44,8 +47,14 @@ def print_status():
 
 
 def menu_object(n):
+    def f(value, str_format="{0}"):
+        if value is None:
+            return "?"
+        return str_format.format(value)
     obj = player_sub.sonar.contacts[n]
     print (obj)
+    print ("Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number), f=f(obj.blade_frequence),
+        kpt=obj.knots_per_turn, s=f(obj.propeller_speed())))
     bands = obj.bands
     print("".join(["{0:5}".format(i)  for i in range(1,11)]))
     print("".join(["{0:5.1f}".format(b) for b in bands]))
@@ -65,50 +74,58 @@ def parse_coordinates(text):
         return None
 
 def print_map():
-    x_size = 12  # from 0 to 11
-    y_size = 12  # from 0 to 11
+    def double_round(x):
+        return int(round(x[0])),int(round(x[1]))
+    # all variables with map coordinates begins with "mc_"
+    # all variables with game coordinates begins with "gc_"
+    mc_x_size = 12  # from 0 to 11
+    mc_y_size = 12  # from 0 to 11
+    x_range = range(mc_x_size)
+    y_range = range(mc_y_size)
+
     player_pos = player_sub.get_pos()
-    topleft = player_pos - Point(x_size/2, -y_size/2)
-    bottomright = player_pos + Point(x_size/2, -y_size/2)
+    topleft = player_pos - Point(mc_x_size/2, mc_y_size/2)
+    bottomright = player_pos + Point(mc_x_size/2 - 1, mc_y_size/2 - 1)
+    print(x_range)
+    print(y_range)
     print(topleft)
+    print(bottomright)
 
-    def to_map(x,y):
-        return int(x - topleft.x),int(y - topleft.y)
-    #print(topleft)
-    #print(bottomright)
-    symbols = [['.']*x_size for x in xrange(y_size)]
+    pos2map = linear_scaler2d([topleft.x, bottomright.x], [min(x_range), max(x_range)],
+                              [topleft.y, bottomright.y], [min(y_range), max(y_range)])
 
+    map2pos_x = linear_scaler([min(x_range), max(x_range)],[topleft.x, bottomright.x])
+    map2pos_y = linear_scaler([min(y_range), max(y_range)],[topleft.y, bottomright.y])
+
+    print(pos2map(4,5))
+
+    # empty grid
+    symbols = [['.']*mc_x_size for x in xrange(mc_y_size)]
+
+    # put symbols in grid
     for k, sc in player_sub.sonar.contacts.items():
-        pos = sc.estimate_pos()
-        print(pos)
+        pos = sc.estimate_pos(player_pos)
         if pos is not None:
-            x_map, y_map = to_map(pos.x, pos.y)
-            print(x_map)
-            print(y_map)
-            if 0 <=x_map<x_size and 0<=y_map<y_size:
-                symbols[x_map][y_map] = str(sc.ident)
+            x_map, y_map = double_round(pos2map(pos.x, pos.y))
+            s = symbol_for_type(sc.obj_type)
+            if 0 <=x_map<mc_x_size and 0<=y_map<mc_y_size:
+                symbols[x_map][y_map] = s
+
+    # player pos:
+    x_map, y_map = double_round(pos2map(player_pos.x, player_pos.y))
+    symbols[x_map][y_map] = "P"
 
     #y_range = range(int(topleft.y),int(bottomright.y),-1)
     #x_range = range(int(topleft.x), int(bottomright.x))
-
-    y_range = range(x_size)
-    x_range = range(y_size)
-    grid = []
-    for y in y_range:
-        line = []
-        #print(y)
-        for x in x_range:
-            line.append(symbols[x][y])
-        grid.append(line)
 
     #line = "." * x_size
     #grid = [line for _ in xrange(y_size)]
 
     #
     # print ("     +"+("-"*(x_size*2-1))+"+")
-    print ("     "+"".join(["{0:+3}".format(x) for x in x_range]))
+    print ("     "+"".join(["{0:+3}".format(int(round(map2pos_x(x)))) for x in x_range]))
     for i, y in enumerate(y_range):
-        print ("{idx:5}|{linha}|".format(idx=y, linha="  ".join(grid[i])))
+        print ("{idx:5}|{linha}|".format(idx=int(round(map2pos_y(y))), linha="  ".join(symbols[i])))
 
 
 def show_menu(menu):
