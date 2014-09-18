@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-from util import abs_angle_to_bearing, Bands
+from util import Bands
 from physic import Point, MovableNewtonObject
 from sub import Submarine
 import random
 import math
 import unittest
 import datetime
-from ship import SurfaceShip
-
+from sound import Decibel, db, sound_absortion_by_sea
+import logging
+logger = logging.getLogger()
 """
 A novice asked the Master: “Here is a programmer that never designs,
 documents or tests his programs. Yet all who know him consider him
@@ -22,29 +23,100 @@ are perfect within themselves, serene and elegant, their purpose self-evident.
 Truly, he has entered the mystery of Tao.”
 """
 
-
 KNOWN_TYPES = {
     # Symbol for map display
     # Number of blades. ex: [4,5] four or five blades.
     # Sonar Bands
+    # bands:  50, 100, 300, 500, 1000, 2000, 15000, 20000
 
-    'Biologic'    : ('B', [1,1], Bands([0,0,0,0,0])),
+    'Whale': {'symbol': 'B',
+                 'blades': [0, 0],
+                 'bands': Bands([0]),
+                 'noise': [20, 30],
+                 'deep': [0, 100]},
+
+    'Snapping Shrimp': {'symbol': 'B',
+                 'blades': [0, 0],
+                 'bands': Bands([0]),
+                 'noise': [10, 15],
+                 'deep': [10, 15]},
+
+
     # Merchant Vessels/Tankers: Typically three or four blades; noisy;
     # often maintains predictable course.
-    'Large Merchant Vessel': ('M', [3,4], Bands([0,0,0,0,0])),
-    'Small Merchant Vessel': ('M', [3,4], Bands([0,0,0,0,0])),
+    'Large Merchant Vessel':
+        {'symbol': 'M',
+         'blades': [3, 4],
+         'bands': Bands([0]),
+         'noise': [70, 80],
+         'deep': [0, 0]},
+
+    'Small Merchant Vessel':
+        {'symbol': 'M',
+         'blades': [3, 4],
+         'bands': Bands([0]),
+         'noise': [50, 70],
+         'deep': [0, 0]},
+
     # Warships: Typically four or five-bladed propellers; quieter, smoother
     # sound than merchant ships; possibly unpredictable course changes.
-    'Destroyer': ('^', [4,5], Bands([0,0,0,0,0])),
-    'Warship'  : ('^', [4,5], Bands([0,0,0,0,0])),
+
+    'Destroyer':
+        {'symbol': '^',
+         'blades': [4, 5],
+         'bands': Bands([0]),
+         'noise': [20, 30],
+         'deep': [0, 0]},
+
+    'Warship':
+        {'symbol': '^',
+         'blades': [4, 5],
+         'bands': Bands([0]),
+         'noise': [20, 45],
+         'deep': [0, 0]},
+
     # Submarines: Five, six or seven-bladed propellers;
     # very quiet when submerged and at low speed; unpredictable course changes.
-    'Submarine'   : ('S', [5,7], Bands([0,0,0,0,0])),
+    'Akula':
+        {'symbol': 'S',
+         'blades': [7, 7],
+         'bands': Bands([0]),
+         'noise': [5, 15],
+         'deep': [68, 300]},
+
+    '688':
+        {'symbol': 'S',
+         'blades': [6, 6],
+         'bands': Bands([0]),
+         'noise': [5, 15],
+         'deep': [68, 300]},
+
     # Fishing Vessels/Trawlers/Pleasure Craft: Three- or four-bladed propellers;
     # noisy; erratic courses and speeds, frequently stopping and starting.
-    'Fishing Boat': ('^', [3,4], Bands([0,0,0,0,0])),
-    'Fishing Ship': ('^', [3,4], Bands([0,0,0,0,0])),
+
+    'Fishing Boat':
+        {'symbol': 'F',
+         'blades': [3, 4],
+         'bands': Bands([0]),
+         'noise': [50, 65],
+         'deep': [0, 0]},
+
+    'Fishing Ship':
+        {'symbol': 'F',
+         'blades': [3, 4],
+         'bands': Bands([0]),
+         'noise': [65, 85],
+         'deep': [0, 0]},
+
+    'Torpedo':
+        {'symbol': 'T',
+         'blades': [5, 5],
+         'bands': Bands([20000]),
+         'noise': [65, 85],
+         'deep': [0, 0]},
+
 }
+
 
 def symbol_for_type(kind):
     if kind is None:
@@ -52,29 +124,39 @@ def symbol_for_type(kind):
     elif kind not in KNOWN_TYPES:
         return '<UNKNOW TYPE>'
     else:
-        return KNOWN_TYPES[kind][0]
+        return KNOWN_TYPES[kind]['symbol']
+
 
 class ScanResult:
     def __init__(self, sonar_idx):
         self.sonar_idx = sonar_idx
-        self.bearing = 0
+        self.signal_to_noise = 0
 
-        self.range = 0
-        self.course = 0
-        self.speed = 0
+        self.bearing = (0, 0)
+        self.range = (0, 0)
+        self.course = (0, 0)
+        self.deep = (0, 0)
+        self.blades = (0, 0)
 
-        self.deep = 0
         self.bands = [0.0] * 10
 
     def __str__(self):
-        return "({id}) {pos} |{band}| transp:{t}".format(id=self.universe_idx, pos=self.pos,
-                                                         band=str(self.bands), t=self.transponder)
+        return "ScanResult idx={id} snt={snt} bearing={b} range={r} course={c} deep={deep} blades={bl} band={band}".\
+            format(id=self.sonar_idx, snt=self.signal_to_noise, b=self.bearing, r=self.range, c=self.course,
+                   deep=self.deep, bl=self.blades, band=self.bands)
+
 
 class SeaObject():
     def __init__(self, kind):
         self.details = None
         self.kind = kind
-        self.sonar_bands = KNOWN_TYPES[kind][3]
+        self.sonar_bands = KNOWN_TYPES[kind]['bands']
+        blades_range = KNOWN_TYPES[kind]['blades']
+        self.blades = random.randint(blades_range[0], blades_range[1])
+        deep_range = KNOWN_TYPES[kind]['deep']
+        self.deep = random.randint(deep_range[0], deep_range[1])
+        noise_range = KNOWN_TYPES[kind]['noise']
+        self.noise = random.randint(noise_range[0], noise_range[1])
 
     def get_pos(self):
         return Point(0, 0)
@@ -86,34 +168,28 @@ class SeaObject():
         return self.sonar_bands
 
     def get_deep(self):
-        return 0;
+        return self.deep;
 
-    def get_noise(self):
-        return 0
+    def self_noise(self):
+        return self.noise
 
     def __str__(self):
-        return "SeaObj: pos:{pos} ({t}) {det}".format(pos=self.get_pos(), t=self.kind, det=self.details)
+        return "{k}: pos:{pos} deep={deep} noise={noise}  blades={bl} {det}".format(k=self.kind,
+            deep=self.get_deep(), noise=self.self_noise(), pos=self.get_pos(), bl=self.blades, det=self.details)
+
 
 class SimpleSeaObject(SeaObject, MovableNewtonObject):
     def __init__(self, kind, pos):
         SeaObject.__init__(self, kind)
         MovableNewtonObject.__init__(self)
-        self.pos = pos
-        self.deep = 0
-        self.noise = 0
 
     def get_pos(self):
         return self.pos
 
-    def get_deep(self):
-        return self.deep
+    def set_destination(self, course, speed):
+        self.speed = speed
+        self.course = course
 
-    def get_noise(self):
-        return self.noise
-
-    def set_destination(self, dest, speed):
-        assert isinstance(dest, Point)
-        self.vel = self.pos.movement_to(dest) * speed
 
 class SeaSurfaceShip(SeaObject):  # adapter para class SHIP
     def __init__(self, ship, kind='Surface Ship'):
@@ -134,24 +210,27 @@ class SeaSurfaceShip(SeaObject):  # adapter para class SHIP
 
 
 class SeaSubmarine(SeaObject):
-    def __init__(self, sub, kind='Submarine'):
-        SeaObject.__init__(self, kind)
+    def __init__(self, sub):
+        SeaObject.__init__(self, sub.kind)
         assert isinstance(sub, Submarine)
         self.sub = sub
 
     def get_pos(self):
         p = self.sub.get_pos()
-        assert isinstance(p,Point)
+        assert isinstance(p, Point)
         return self.sub.get_pos()
 
     def get_deep(self):
         return self.sub.get_deep()
 
-    def get_noise(self):
-        return self.sub.get_noise()
+    def self_noise(self):
+        return self.sub.self_noise()
 
     def turn(self, time_elapsed):
         self.sub.turn(time_elapsed)
+
+        # def get_sonar_bands(self):
+        #    return self.sonar_bands
 
 
 class Sea:
@@ -160,14 +239,11 @@ class Sea:
         self.counter = 0
         self.objects = []
         self.ids_collection = range(1000, 9999)
+        self.temp = 10  # Celsius
         random.shuffle(self.ids_collection)
-
 
     def initialize(self):
         pass
-
-    def get_background_noise(self):
-        return random.gauss(20,5)
 
     def get_unique_id(self):
         return self.ids_collection.pop()
@@ -175,16 +251,26 @@ class Sea:
     def create_biologic(self, pos=None):
         if pos is None:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
-        bio = SimpleSeaObject("Biologic", pos)
+        bio = SimpleSeaObject("Whale", pos)
         bio.deep = random.randint(30, 100)
-        print(bio)
         self.objects.append(bio)
 
-    def create_smallboat(self, pos=None):
+    def create_warship(self, pos=None, ship_type=None):
+        t = ['Destroyer', 'Warship']
         if pos is None:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
-        ship = SimpleSeaObject('Small Boat', pos)
-        print(ship)
+        if ship_type is None:
+            ship_type = t[random.randint(0, len(t) - 1)]
+        ship = SimpleSeaObject(ship_type, pos)
+        self.objects.append(ship)
+
+    def create_fishing(self, pos=None, ship_type=None):
+        t = ['Fishing Boat', 'Fishing Ship']
+        if pos is None:
+            pos = Point(random.randint(0, 10), random.randint(0, 10))
+        if ship_type is None:
+            ship_type = t[random.randint(0, len(t) - 1)]
+        ship = SimpleSeaObject(ship_type, pos)
         self.objects.append(ship)
 
     def add_submarine(self, sub):
@@ -195,36 +281,51 @@ class Sea:
         for obj in self.objects:
             obj.turn(time_elapsed)
 
+    def get_background_noise(self):
+        return db(random.gauss(20, 2))
+
+    def sound_attenuation(self, freq, deep):
+        return db(sound_absortion_by_sea(freq, deep, self.temp))
+
     def passive_scan(self, sub, time_elapsed):
+        logger.debug("--- Passive scan ---")
         sub_pos = sub.get_pos()
         assert isinstance(sub_pos, Point)
         result = []
+        background_noise = self.get_background_noise() + sub.self_noise()
+        logger.debug("background_noise {0}".format(background_noise))
         for i, obj in enumerate(self.objects):
-            assert isinstance(obj.get_pos(), Point)
             obj_pos = obj.get_pos()
             dist = obj_pos.distance_to(sub_pos)
-            obj_noise = obj.get_noise()
-
-
-            if dist > 10:  # hard limit for object detection.
+            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}".format(i=i, dist=dist, obj=obj))
+            if dist > 15:  # hard limit for object detection.
                 continue
-            bands = (obj.get_sonar_bands()) # add_noise
-             #.add_noise(0.1*dist)
+            assert isinstance(obj.get_pos(), Point)
+            object_sound = obj.self_noise()
+            deep_in_km = sub.get_deep() / 3280  # 3280 feet = 1 km
+            attenuation = self.sound_attenuation(freq=100, deep=deep_in_km) * 1.8  # in db/km * 1.8 = db/knot
+            logger.debug("{i}: object_sound:{os}  deep_in_km:{deep}  attenuation:{at}".format(i=i, os=object_sound, deep=deep_in_km, at=attenuation))
+            #received_sound = object_sound - (attenuation * dist)
+            #if not isinstance(object_sound, Decibel):
+            #    received_sound = db(received_sound)
+            #signal_to_noise = received_sound / background_noise
+            signal_to_noise = 1
+            deep = obj.get_deep()
+
+            bands = (obj.get_sonar_bands())  # add_noise
+            # .add_noise(0.1*dist)
             range = sub_pos.distance_to(obj_pos)
-            #print("***")
-            #print(sub_pos)
-            #print(obj_pos)
-            #print(sub_pos.angle_to(obj_pos))
-            #print("---")
             bearing = sub_pos.angle_to(obj_pos)
             # Scan Result
             r = ScanResult(i)
-            r.range = range
-            r.bearing = bearing
-            r.course = 0
-            r.speed = 0
-            r.deep = obj.get_deep()
+            r.signal_to_noise = signal_to_noise
+            r.range = (range, 0)
+            r.bearing = (bearing, 0)
+            r.course = (0, 0)
+            r.deep = (deep, 0)
             r.bands = bands
+            logger.debug("scan_result: {0}".format(r))
+            logger.debug("")
             result.append(r)
         return result
 
@@ -240,10 +341,9 @@ class Sea:
 
 
 class TestUtil(unittest.TestCase):
-
     class FakeShip():
         def get_pos(self):
-            return Point(0,0)
+            return Point(0, 0)
 
 
     def setUp(self):
@@ -258,11 +358,12 @@ class TestUtil(unittest.TestCase):
     def test_scan_passive(self):
         print("test_scan_passive")
         u = self.universe
-#        u.create_asteroid(Point(2,1))
-#        u.create_asteroid(Point(1,2))
+        # u.create_asteroid(Point(2,1))
+        #        u.create_asteroid(Point(1,2))
         scan = u.passive_scan(self.FakeShip(), 0.1)
-        self.assertEquals(len(scan),2)
+        self.assertEquals(len(scan), 2)
         print ([str(sr) for sr in scan])
+
 
 if __name__ == '__main__':
     unittest.main()

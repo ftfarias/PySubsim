@@ -5,13 +5,21 @@ from physic import Point
 from linear_scale import linear_scaler,linear_scaler2d
 import time
 import sys
-import math
+import logging
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# create debug file handler and set level to debug
+handler = logging.FileHandler("sub.log","w")
+#handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 sea = Sea()
 sea.initialize()
 player_sub = ShipFactory.create_player_sub(sea)
-sea.add_submarine(player_sub)
 
 """
 -2 | -2  -1  0  +1  +2 |
@@ -27,14 +35,6 @@ D - 0
 """
 
 
-
-def print_near_objects():
-    objs = player_sub.sonar.return_near_objects()
-    if not objs:
-        print("<no contacts>")
-    else:
-        for k,v in objs.items():
-            print "{0:3o}: {1}".format(k, v)
 
 
 def print_status():
@@ -74,6 +74,11 @@ def parse_coordinates(text):
         return None
 
 def print_map():
+    h = ["P - Player Sub",
+         "^ - Warship",
+         "M - Merchant Ship",
+         ""]
+
     def double_round(x):
         return int(round(x[0])),int(round(x[1]))
     # all variables with map coordinates begins with "mc_"
@@ -277,17 +282,33 @@ def menu_navigation():
         opt()
     main()
 
+
+
+def print_near_objects():
+    objs = player_sub.sonar.return_near_objects()
+    if not objs:
+        print("<no contacts>")
+    else:
+        for k,v in objs.items():
+            print "{0:3o}: {1}".format(k, v)
+
+def print_noise_profile():
+    sea_noise = sea.get_background_noise()
+    sub_noise = player_sub.self_noise()
+    print("Sea background noise: {sea}   Sub noise:{sub}".format(sea=sea_noise, sub=sub_noise))
+
+
 # Sensors
-MAIN_SENSORS = [
+MAIN_SONAR = [
     ('Show near objects', print_near_objects),
    # ('Land', None),
-   # ('Take Off', None),
+    ('Noise Profile', print_noise_profile),
 ]
 
 
 def menu_sonar():
     print(player_sub.sonar.status())
-    opt = show_menu(MAIN_SENSORS)
+    opt = show_menu(MAIN_SONAR)
     if opt:
         opt()
     main()
@@ -373,7 +394,10 @@ def start():
         sea.create_biologic()
 
     for i in xrange(3):
-        sea.create_smallboat()
+        sea.create_fishing()
+
+    for i in xrange(2):
+        sea.create_warship()
 
     game_loop(1, 0.1)
 

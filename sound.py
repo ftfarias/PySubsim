@@ -1,14 +1,98 @@
+# -*- coding: utf-8 -*-
 import math
-import unittest
 import random
 from itertools import count
-
-def db(reference, level):
-    return math.log10(level / reference) * 10
+import unittest
 
 
-def attenuation(source_level, db):
-    return source_level / (10 ** (db / 10))
+class Decibel(object):
+    def __init__(self, db=0, ratio=1):
+        self.value = float(db) + (math.log10(ratio) * 10)
+
+    def __add__(self, other):
+        if isinstance(other, Decibel):
+            return Decibel(ratio=abs(self) + abs(other))
+        else:
+            return other * abs(self)
+
+    def __sub__(self, other):
+        if isinstance(other, Decibel):
+            return Decibel(ratio=abs(self) - abs(other))
+        else:
+            return other / abs(self)
+
+    # like: 100 - 3*db = 50  (3db ~= half)
+    def __rsub__(self, other):
+        return other / abs(self)
+
+
+    def __mul__(self, other):
+        if isinstance(other, Decibel):
+            return Decibel(db=self.value + other.value)
+        else:
+            return Decibel(db=self.value * other)
+
+    __rmul__ = __mul__
+
+    def __div__(self, other):
+        if isinstance(other, Decibel):
+            return Decibel(ratio=abs(self.value) / abs(other.value))
+        else:
+            return Decibel(ratio=abs(self) / other)
+
+    def __abs__(self):
+        return self.abs()
+
+    def abs(self):
+        return 10 ** (self.value / 10)
+
+    def __lt__(self, other):
+        if isinstance(other, Decibel):
+            return self.value < other.value
+        else:
+            return self.value < other
+
+    def __le__(self, other):
+        if isinstance(other, Decibel):
+            return self.value <= other.value
+        else:
+            return self.value <= other
+
+    def __eq__(self, other):
+        if isinstance(other, Decibel):
+            return self.value == other.value
+        else:
+            return self.value == other
+
+    def __ne__(self, other):
+        if isinstance(other, Decibel):
+            return self.value != other.value
+        else:
+            return self.value != other
+
+    def __ge__(self, other):
+        if isinstance(other, Decibel):
+            return self.value >= other.value
+        else:
+            return self.value >= other
+
+    def __gt__(self, other):
+        if isinstance(other, Decibel):
+            return self.value > other.value
+        else:
+            return self.value > other
+
+    def add_noise(self, noise_level_db):
+        return self + db(random.gauss(0, noise_level_db))
+
+    def __str__(self):
+        return "{0} db".format(self.value)
+
+    __repr__ = __str__
+
+
+def db(db=0, ratio=1):
+    return Decibel(db=db, ratio=ratio)
 
 
 def nextpow2(i):
@@ -88,10 +172,10 @@ def ifft(X):
         x[i] = x[i] / float(N)
     return x
 
+
 def spectrum(wave):
     f = fft(wave)
-    return [abs(x) for x in f[1:len(f)/2]]
-
+    return [abs(x) for x in f[1:len(f) / 2]]
 
 
 def sine_wave(frequency=440.0, framerate=44000, amplitude=1):
@@ -103,32 +187,86 @@ def sine_wave(frequency=440.0, framerate=44000, amplitude=1):
     return (amplitude * math.sin(2.0 * math.pi * frequency * (float(i) / framerate)) for i in
             count(0))
 
+
 def sine_wave_array(size, frequency=440.0, framerate=44000, amplitude=1):
     wave = sine_wave(frequency=frequency, framerate=framerate, amplitude=amplitude)
     return [wave.next() for _ in xrange(size)]
 
+
 def white_noise(amplitude=0.5):
     return (float(amplitude) * random.uniform(-1, 1) for _ in count(0))
 
+
+def sound_absortion_by_sea(freq, deep, temperature=10, salinity=35, pH=8):
+    """
+    http://resource.npl.co.uk/acoustics/techguides/seaabsorption/
+    calculation of absorption according to:
+	Ainslie & McColm, J. Acoust. Soc. Am., Vol. 103, No. 3, March 1998
+	// f frequency (kHz)
+	// T Temperature (degC)
+	// S Salinity (ppt)
+	// D Depth (km)
+	// pH Acidity
+
+	The Ainslie and McColm formula retains accuracy to within 10% of the
+	 Francois and Garrison model between 100 Hz and 1 MHz for the following range of oceanographic conditions:
+
+    -6 < T < 35 °C	(S = 35 ppt, pH=8, D = 0 km)
+    7.7 < pH < 8.3	(T = 10 °C, S = 35 ppt, D = 0 km)
+    5 < S < 50 ppt	(T = 10 °C, pH = 8, D = 0 km)
+    0 < D < 7 km	(T = 10 °C, S = 35 ppt, pH = 8)
+    :return Total absorption (dB/km)
+    """
+
+    kelvin = 273.1  # for converting to Kelvin (273.15)  # Measured ambient temp
+    t_kel = kelvin + temperature
+
+    # Boric acid contribution
+    a1 = 0.106 * math.exp((pH - 8) / 0.56);
+    p1 = 1;
+    f1 = 0.78 * math.sqrt(salinity / 35) * math.exp(temperature / 26);
+    boric = (a1 * p1 * f1 * freq * freq) / (freq * freq + f1 * f1);
+
+    # MgSO4 contribution
+    a2 = 0.52 * (salinity / 35) * (1 + temperature / 43);
+    p2 = math.exp(-deep / 6);
+    f2 = 42 * math.exp(temperature / 17);
+    mgso4 = (a2 * p2 * f2 * freq * freq) / (freq * freq + f2 * f2);
+
+    # Pure water contribution
+    a3 = 0.00049 * math.exp(-(temperature / 27 + deep / 17));
+    p3 = 1;
+    h2o = a3 * p3 * freq * freq;
+
+    # Total absorption (dB/km)
+    alpha = boric + mgso4 + h2o;
+
+    return alpha;
+
+
 class TestUtil(unittest.TestCase):
     def test_decibels(self):
-        self.assertEqual(db(1, 10), 10)
-        self.assertEqual(db(3, 30), 10)
-        self.assertEqual(db(1, 100), 20)
-        self.assertEqual(db(5, 500), 20)
-        self.assertEqual(db(1, 1000), 30)
-        self.assertAlmostEqual(db(1, 2), 3.0103)
-        self.assertAlmostEqual(db(1, 20), 13.0103)
-        self.assertAlmostEqual(db(1, 30), 14.771212547196624)
-        self.assertAlmostEqual(db(1, 50), 16.9897)
-        self.assertAlmostEqual(db(1, 90), 19.54242509439325)
+        self.assertAlmostEqual(abs(db(db=3.01029995664)), abs(db(ratio=2)))
+
+        self.assertAlmostEqual(abs(db(db=10)), abs(db(ratio=10)))
+        self.assertAlmostEqual(abs(db(db=20)), abs(db(ratio=100)))
+        self.assertAlmostEqual(abs(db(db=30)), abs(db(ratio=1000)))
+
+        self.assertAlmostEqual(abs(db(db=13.0103)), abs(db(ratio=20)), 3)
+        self.assertAlmostEqual(abs(db(db=14.771212547196624)), abs(db(ratio=30)), 3)
+        self.assertAlmostEqual(abs(db(db=16.9897)), abs(db(ratio=50)), 3)
+        self.assertAlmostEqual(abs(db(db=19.54242509439325)), abs(db(ratio=90)), 3)
+
+    def test_decibels_sum(self):
+        self.assertAlmostEqual(db(60) + db(60), db(63.01029995664), 5)
+
+    def test_decibels_abs(self):
+        self.assertAlmostEqual(abs(db(db=0)), 1)
+        self.assertAlmostEqual(abs(db(db=10)), 10)
+        self.assertAlmostEqual(abs(db(db=20)), 100)
 
     def test_attenuation(self):
-        self.assertEqual(attenuation(10, 10), 1)
-        self.assertEqual(attenuation(100, 20), 1)
-        self.assertEqual(attenuation(100, 10), 10)
-        self.assertEqual(attenuation(1000, 30), 1)
-        self.assertAlmostEqual(attenuation(2, 3.0103), 1)
+        self.assertAlmostEqual(100 - (3.0103 * db(1)), 50, 4)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ from util import abs_angle_to_bearing, Bands, limits
 from physic import Point, MovableNewtonObject
 from sub_module import SubModule
 from sonar import Sonar
+from sound import db
 import random
 from sub_navigation import Navigation
 
@@ -12,7 +13,7 @@ class ShipFactory():
     @staticmethod
     def create_player_sub(sea):
         print("Creating Player Submarine")
-        sub = Submarine(sea)
+        sub = Submarine(sea, kind='688')
         sub.pos = Point(10, 10)
         sub.name = "Mautilus"
         sea.add_submarine(sub)
@@ -31,8 +32,9 @@ class ShipFactory():
 class Submarine(MovableNewtonObject):
     MAX_TURN_RATE_SECOND = math.radians(35)*60  # max 15 degrees per minute
 
-    def __init__(self, sea):
+    def __init__(self, sea, kind):
         MovableNewtonObject.__init__(self)
+        self.kind = kind
         self.messages = []
         self.sea = sea
         self.max_hull_integrity = 100  # in "damage points"
@@ -40,6 +42,8 @@ class Submarine(MovableNewtonObject):
         self.damages = None
         self.deep = 0
         self.message_stop = False
+        self.cavitation = False
+
 
         # build ship
         self.nav = Navigation(self)
@@ -61,36 +65,59 @@ class Submarine(MovableNewtonObject):
         self.messages = []
         self.message_stop = False
 
-    def get_deep(self):
+    def get_deep(self):  # in feet
         return self.deep
 
     def stop_moving(self):
         self.nav.stop_all()
 
-    def get_noise(self):  # Decibels
-        # Assumes the noise is proportional to speed
-        # todo: Cavitation
+    def self_noise(self): # returns
+        #
         """
+        Assumes the noise is proportional to speed
+
+        Cavitation:
+
         Cavitation occurs when the propeller is spinning so fast water bubbles at
-the blades' edges. If you want to go faster, go deeper first. Water
-pressure at deeper depth reduces/eliminates cavitation.
+        the blades' edges. If you want to go faster, go deeper first. Water
+        pressure at deeper depth reduces/eliminates cavitation.
 
-If you have the improved propeller upgrade, you can go about 25% faster
-without causing cavitation.
+        If you have the improved propeller upgrade, you can go about 25% faster
+        without causing cavitation.
 
-Rule of thumb: number of feet down, divide by 10, subtract 1, is the
-fastest speed you can go without cavitation.
+        Rule of thumb: number of feet down, divide by 10, subtract 1, is the
+        fastest speed you can go without cavitation.
 
-For example, at 150 feet, you can go 14 knots without causing cavitation.
-150/10 = 15, 15-1 = 14.
+        For example, at 150 feet, you can go 14 knots without causing cavitation.
+        150/10 = 15, 15-1 = 14.
 
-You can get the exact chart at the Marauders' website. (url's at the end of
-  the document)
-        :return:
+        You can get the exact chart at the Marauders' website. (url's at the end of
+          the document)
+
+
+        :return: sound in in decibels
         """
-        INTERNAL_NOISE = 5
-        SPEED_NOISE_FACTOR = 1
-        return INTERNAL_NOISE + self.get_speed()*SPEED_NOISE_FACTOR
+
+        # non-liner noise:
+        # for 0 < speed < 15 :  linear from 50 to 60
+        # for speed > 15 : linear with factor of 2db for each knot
+        # ref: http://fas.org/man/dod-101/navy/docs/es310/uw_acous/uw_acous.htm
+
+        if self.speed <= 15:
+            noise = 50 + (0.667 * self.speed)
+        else:
+            noise = 60.0 + (2 * (self.speed-15))
+
+        # cavitation doesn't occur with spd < 7
+        max_speed_for_deep = max((self.get_deep() / 10) - 1, 7)
+        cavitating = max_speed_for_deep < self.speed
+
+        if cavitating and not self.cavitation:
+            self.add_message("SONAR","COMM, SONAR: CAVITATING !!!", True)
+
+        self.cavitation = cavitating
+
+        return db(noise + (100 if cavitating else 0)).add_noise(1)
 
     # Navigation
     def set_destination(self, dest):

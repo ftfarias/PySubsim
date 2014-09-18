@@ -24,6 +24,7 @@ class SonarContact:
         self.range = None
         self.last_bearing = None
         self.bearings = []
+        self.pos = []
         self.course = None
         self.speed = None
         self.blade_number = None   # Number of blades in the propeller
@@ -117,10 +118,11 @@ class Sonar(SubModule):
 
     def add_contact(self, scan_result):
         sc = SonarContact(scan_result.sonar_idx)
-        sc.new_bearing(self.sea.time, scan_result.bearing)
+        sc.new_bearing(self.sea.time, scan_result.bearing[0])
+        sc.range = scan_result.range[0]
         sc.ident = self.get_new_contact_id()
         self.contacts[scan_result.sonar_idx] = sc
-        self.add_message("New contact bearing {0:3.0f}, designated {1}".format(util.abs_angle_to_bearing(sc.last_bearing), sc.ident),True)
+        self.add_message("Conn, Sonar: New contact on sonar, bearing {0:3.0f}, designated {1}".format(util.abs_angle_to_bearing(sc.last_bearing), sc.ident),True)
 
 
     def update_contact(self, sc, scan_result, time_elapsed):
