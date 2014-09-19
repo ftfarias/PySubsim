@@ -3,6 +3,7 @@ from sub import ShipFactory
 from sea import Sea, symbol_for_type
 from physic import Point
 from linear_scale import linear_scaler,linear_scaler2d
+from util import abs_angle_to_bearing
 import time
 import sys
 import logging
@@ -53,8 +54,31 @@ def menu_object(n):
         return str_format.format(value)
     obj = player_sub.sonar.contacts[n]
     print (obj)
-    print ("Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number), f=f(obj.blade_frequence),
-        kpt=obj.knots_per_turn, s=f(obj.propeller_speed())))
+    print ("Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number),
+                                                                               f=f(obj.blade_frequence),
+                                                                               kpt=obj.knots_per_turn,
+                                                                               s=f(obj.propeller_speed())))
+
+
+    n = 10
+    start_time = sea.time
+    scan_times = []
+    for i in xrange(len(obj.time_history[-n:])):
+        t = (sea.time - obj.time_history[(-(i+1))])
+        scan_times.append(t.seconds)
+
+    times = " | ".join(["{0:5.0f}".format(b) for b in scan_times])
+    bearings = " | ".join(["{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.bearings_history[-n:]])
+    ranges = " | ".join(["{0:5.1f}".format(b) for b in obj.range_history[-n:]])
+    speeds = " | ".join(["{0:5.1f}".format(b) for b in obj.speed_history[-n:]])
+    courses = " | ".join(["{0:5.1f}".format(b) for b in obj.course_history[-n:]])
+    print ("         {0}".format(times))
+    print ("Bearing: {0}".format(bearings))
+    print ("Range  : {0}".format(ranges))
+    print ("Speed  : {0}".format(speeds))
+    print ("Course : {0}".format(courses))
+
+
     bands = obj.bands
     print("".join(["{0:5}".format(i)  for i in range(1,11)]))
     print("".join(["{0:5.1f}".format(b) for b in bands]))
@@ -282,8 +306,6 @@ def menu_navigation():
         opt()
     main()
 
-
-
 def print_near_objects():
     objs = player_sub.sonar.return_near_objects()
     if not objs:
@@ -398,6 +420,9 @@ def start():
 
     for i in xrange(2):
         sea.create_warship()
+
+    ship = sea.create_fishing(pos=Point(5,5))
+    ship.set_destination(0, 10/3600)
 
     game_loop(1, 0.1)
 

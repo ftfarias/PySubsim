@@ -3,7 +3,7 @@ import math
 import random
 from itertools import count
 import unittest
-
+from linear_scale import linear_scaler
 
 class Decibel(object):
     def __init__(self, db=0, ratio=1):
@@ -195,6 +195,27 @@ def sine_wave_array(size, frequency=440.0, framerate=44000, amplitude=1):
 
 def white_noise(amplitude=0.5):
     return (float(amplitude) * random.uniform(-1, 1) for _ in count(0))
+
+#sound_absortion_freq = [0, 500, 1000, 2000, 5000, 10000, 20000]
+#sound_absortion_att = [0, 0.03, 0.07, 0.14, 0.41, 1.3, 4.6]
+_simple_sound_absortion_1 = linear_scaler([0,2000],[0,0.14])
+_simple_sound_absortion_2 = linear_scaler([2000,5000],[0.14,0.41])
+_simple_sound_absortion_3 = linear_scaler([5000,10000],[0.41,1.3])
+_simple_sound_absortion_4 = linear_scaler([10000,20000],[1.3,4.6])
+_simple_sound_absortion_5 = linear_scaler([20000,100000],[4.6,1000])
+def simple_sound_absortion_by_sea(freq, deep):
+    if freq <= 2000:
+        return _simple_sound_absortion_1(freq)
+    elif freq <= 5000:
+        return _simple_sound_absortion_2(freq)
+    elif freq <= 10000:
+        return _simple_sound_absortion_3(freq)
+    elif freq <= 20000:
+        return _simple_sound_absortion_4(freq)
+    elif freq <= 100000:
+        return _simple_sound_absortion_5(freq)
+    else:
+        return 1000
 
 
 def sound_absortion_by_sea(freq, deep, temperature=10, salinity=35, pH=8):
