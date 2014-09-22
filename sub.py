@@ -30,7 +30,7 @@ class ShipFactory():
 
 
 class Submarine(MovableNewtonObject):
-    MAX_TURN_RATE_SECOND = math.radians(35)*60  # max 15 degrees per minute
+    MAX_TURN_RATE_HOUR = math.radians(35)*60  # max 35 degrees per minute
 
     def __init__(self, sea, kind):
         MovableNewtonObject.__init__(self)
@@ -127,20 +127,20 @@ class Submarine(MovableNewtonObject):
         self.nav.speed = new_speed
 
     def set_sub_rudder(self, angle):
-        angle = limits(angle, -self.MAX_TURN_RATE_SECOND, self.MAX_TURN_RATE_SECOND)
+        angle = limits(angle, -self.MAX_TURN_RATE_HOUR, self.MAX_TURN_RATE_HOUR)
         self.rudder = angle
 
     def rudder_right(self):
-        self.rudder = self.MAX_TURN_RATE_SECOND
+        self.rudder = self.MAX_TURN_RATE_HOUR
 
     def rudder_left(self):
-        self.rudder = -self.MAX_TURN_RATE_SECOND
+        self.rudder = -self.MAX_TURN_RATE_HOUR
 
     def rudder_center(self):
         self.rudder = 0
 
     def turn(self, time_elapsed):
-        MovableNewtonObject.turn(self, time_elapsed/3600)
+        MovableNewtonObject.turn(self, time_elapsed)
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
         self.sonar.turn(time_elapsed)

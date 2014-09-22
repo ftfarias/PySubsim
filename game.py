@@ -126,8 +126,6 @@ def print_map():
     map2pos_x = linear_scaler([min(x_range), max(x_range)],[topleft.x, bottomright.x])
     map2pos_y = linear_scaler([min(y_range), max(y_range)],[topleft.y, bottomright.y])
 
-    print(pos2map(4,5))
-
     # empty grid
     symbols = [['.']*mc_x_size for x in xrange(mc_y_size)]
 
@@ -442,7 +440,7 @@ def game_loop(turns, time_per_turn=0.1, wait=0.01):
 
 
 def run_turn(time_per_turn):
-    sea.turn(time_per_turn)
+    sea.turn(time_per_turn/3600)  # sea turn runs in hours, run_turn in seconds
     #print(universe)
     sys.stdout.write("\r ({sd}) {nav} ".format(sd=sea, nav=player_sub.nav))
     sys.stdout.flush()

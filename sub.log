@@ -1,342 +1,228 @@
 --- Passive scan ---
-background_noise 50.0073536726 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000415215 db  blades=6 None
-0: object_sound:50.0000400769 db  deep_in_km:0  attenuation:0.0126 db/nm
+background_noise 50.0026228056 db
+0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000389336 db  blades=6 None
+0: object_sound:50.0000535394 db  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
 
-1: dist: 3.61  obj:Whale: pos:(7.000, 8.000) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55359005004 range=3.60555127546 deep=75 blades=0 band=0.0
+1: dist:11.66  obj:Whale: pos:(0.000, 4.000) deep=31 noise=27  blades=0 None
+1: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=1 snt=1 bearing=-2.60117315332 range=11.6619037897 deep=31 blades=0 band=0.0
 
-2: dist: 4.12  obj:Whale: pos:(6.000, 9.000) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89661399046 range=4.12310562562 deep=73 blades=0 band=0.0
+2: dist:10.63  obj:Whale: pos:(2.000, 3.000) deep=51 noise=27  blades=0 None
+2: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=2 snt=1 bearing=-2.42276265397 range=10.6301458127 deep=51 blades=0 band=0.0
 
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
+3: dist: 9.85  obj:Fishing Ship: pos:(6.000, 1.000) deep=0 noise=65  blades=3 None
+3: object_sound:65  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=3 snt=1 bearing=-1.98902065637 range=9.8488578018 deep=0 blades=0 band=0.0
 
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
+4: dist: 9.49  obj:Fishing Boat: pos:(1.000, 7.000) deep=0 noise=56  blades=4 None
+4: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=4 snt=1 bearing=-2.81984209919 range=9.48683298051 deep=0 blades=0 band=0.0
 
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
+5: dist:10.05  obj:Fishing Ship: pos:(0.000, 9.000) deep=0 noise=66  blades=3 None
+5: object_sound:66  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=5 snt=1 bearing=-3.0419240011 range=10.0498756211 deep=0 blades=0 band=0.0
 
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
+6: dist: 5.83  obj:Warship: pos:(7.000, 5.000) deep=0 noise=29  blades=4 None
+6: object_sound:29  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=6 snt=1 bearing=-2.11121582707 range=5.83095189485 deep=0 blades=0 band=0.0
 
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
+7: dist: 8.94  obj:Warship: pos:(6.000, 2.000) deep=0 noise=40  blades=5 None
+7: object_sound:40  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=7 snt=1 bearing=-2.0344439358 range=8.94427191 deep=0 blades=0 band=0.0
 
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
+8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=84  blades=3 None
+8: object_sound:84  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
 
 --- Passive scan ---
-background_noise 50.0038704927 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000507873 db  blades=6 None
-0: object_sound:50.0000450079 db  deep_in_km:0  attenuation:0.0126 db/nm
+background_noise 50.2330834164 db
+0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.2245990903 db  blades=6 None
+0: object_sound:50.2245886255 db  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
 
-1: dist: 3.61  obj:Whale: pos:(7.000, 8.000) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55366108355 range=3.6054300933 deep=75 blades=0 band=0.0
+1: dist:11.67  obj:Whale: pos:(-0.002, 3.998) deep=31 noise=27  blades=0 None
+1: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=1 snt=1 bearing=-2.60116858435 range=11.6651303124 deep=31 blades=0 band=0.0
 
-2: dist: 4.12  obj:Whale: pos:(6.000, 9.000) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89667092022 range=4.12294693425 deep=73 blades=0 band=0.0
+2: dist:10.63  obj:Whale: pos:(2.003, 2.999) deep=51 noise=27  blades=0 None
+2: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=2 snt=1 bearing=-2.42255689877 range=10.6291736646 deep=51 blades=0 band=0.0
 
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
+3: dist: 9.85  obj:Fishing Ship: pos:(6.001, 0.994) deep=0 noise=65  blades=3 None
+3: object_sound:65  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=3 snt=1 bearing=-1.98871964957 range=9.85358391164 deep=0 blades=0 band=0.0
 
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
+4: dist: 9.48  obj:Fishing Boat: pos:(1.006, 6.990) deep=0 noise=56  blades=4 None
+4: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=4 snt=1 bearing=-2.81869256632 range=9.48479056549 deep=0 blades=0 band=0.0
 
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
+5: dist:10.05  obj:Fishing Ship: pos:(0.003, 9.005) deep=0 noise=66  blades=3 None
+5: object_sound:66  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=5 snt=1 bearing=-3.04235473864 range=10.0466372835 deep=0 blades=0 band=0.0
 
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
+6: dist: 5.81  obj:Warship: pos:(7.037, 5.001) deep=0 noise=29  blades=4 None
+6: object_sound:29  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=6 snt=1 bearing=-2.10596996299 range=5.81122049187 deep=0 blades=0 band=0.0
 
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
+7: dist: 8.94  obj:Warship: pos:(5.970, 2.015) deep=0 noise=40  blades=5 None
+7: object_sound:40  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=7 snt=1 bearing=-2.03829285884 range=8.94436930942 deep=0 blades=0 band=0.0
 
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
+8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=84  blades=3 None
+8: object_sound:84  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=8 snt=1 bearing=-2.35624218236 range=7.07140507056 deep=0 blades=0 band=0.0
 
 --- Passive scan ---
-background_noise 50.0037999648 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000479682 db  blades=6 None
-0: object_sound:50.0000517485 db  deep_in_km:0  attenuation:0.0126 db/nm
+background_noise 50.4544957636 db
+0: dist: 0.00  obj:688: pos:(10.002, 10.000) deep=0 noise=50.4513840008 db  blades=6 None
+0: object_sound:50.4513787112 db  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
 
-1: dist: 3.61  obj:Whale: pos:(7.000, 8.001) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55373212183 range=3.60530892932 deep=75 blades=0 band=0.0
+1: dist:11.67  obj:Whale: pos:(-0.005, 3.997) deep=31 noise=27  blades=0 None
+1: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=1 snt=1 bearing=-2.60120649205 range=11.6691828928 deep=31 blades=0 band=0.0
 
-2: dist: 4.12  obj:Whale: pos:(6.000, 9.001) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89672785435 range=4.12278825624 deep=73 blades=0 band=0.0
+2: dist:10.63  obj:Whale: pos:(2.005, 2.998) deep=51 noise=27  blades=0 None
+2: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=2 snt=1 bearing=-2.42241081637 range=10.6289267065 deep=51 blades=0 band=0.0
 
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
+3: dist: 9.86  obj:Fishing Ship: pos:(6.003, 0.989) deep=0 noise=65  blades=3 None
+3: object_sound:65  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=3 snt=1 bearing=-1.98850824747 range=9.85870166969 deep=0 blades=0 band=0.0
 
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
+4: dist: 9.48  obj:Fishing Boat: pos:(1.012, 6.981) deep=0 noise=56  blades=4 None
+4: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=4 snt=1 bearing=-2.81757488311 range=9.48367388959 deep=0 blades=0 band=0.0
 
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
+5: dist:10.04  obj:Fishing Ship: pos:(0.007, 9.009) deep=0 noise=66  blades=3 None
+5: object_sound:66  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=5 snt=1 bearing=-3.04279521481 range=10.0443594462 deep=0 blades=0 band=0.0
 
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
+6: dist: 5.79  obj:Warship: pos:(7.074, 5.003) deep=0 noise=29  blades=4 None
+6: object_sound:29  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=6 snt=1 bearing=-2.10083200937 range=5.79213706261 deep=0 blades=0 band=0.0
 
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
+7: dist: 8.95  obj:Warship: pos:(5.939, 2.031) deep=0 noise=40  blades=5 None
+7: object_sound:40  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=7 snt=1 bearing=-2.04223759255 range=8.94503668527 deep=0 blades=0 band=0.0
 
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
+8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=84  blades=3 None
+8: object_sound:84  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=8 snt=1 bearing=-2.35638617566 range=7.07242362263 deep=0 blades=0 band=0.0
 
 --- Passive scan ---
-background_noise 50.0078568502 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000457459 db  blades=6 None
-0: object_sound:50.000047372 db  deep_in_km:0  attenuation:0.0126 db/nm
+background_noise 50.666196524 db
+0: dist: 0.00  obj:688: pos:(10.004, 10.000) deep=0 noise=50.662585519 db  blades=6 None
+0: object_sound:50.6625930702 db  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
 
-1: dist: 3.61  obj:Whale: pos:(7.000, 8.001) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55380316488 range=3.60518778355 deep=75 blades=0 band=0.0
+1: dist:11.67  obj:Whale: pos:(-0.007, 3.995) deep=31 noise=27  blades=0 None
+1: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=1 snt=1 bearing=-2.60128670988 range=11.6740593641 deep=31 blades=0 band=0.0
 
-2: dist: 4.12  obj:Whale: pos:(6.000, 9.001) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89678479287 range=4.12262959159 deep=73 blades=0 band=0.0
+2: dist:10.63  obj:Whale: pos:(2.008, 2.997) deep=51 noise=27  blades=0 None
+2: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=2 snt=1 bearing=-2.42232428012 range=10.6294027101 deep=51 blades=0 band=0.0
 
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
+3: dist: 9.86  obj:Fishing Ship: pos:(6.004, 0.983) deep=0 noise=65  blades=3 None
+3: object_sound:65  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=3 snt=1 bearing=-1.98838609551 range=9.86420946536 deep=0 blades=0 band=0.0
 
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
+4: dist: 9.48  obj:Fishing Boat: pos:(1.018, 6.971) deep=0 noise=56  blades=4 None
+4: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=4 snt=1 bearing=-2.81648929923 range=9.4834794736 deep=0 blades=0 band=0.0
 
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
+5: dist:10.04  obj:Fishing Ship: pos:(0.010, 9.014) deep=0 noise=66  blades=3 None
+5: object_sound:66  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=5 snt=1 bearing=-3.0432452846 range=10.0430396564 deep=0 blades=0 band=0.0
 
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
+6: dist: 5.77  obj:Warship: pos:(7.110, 5.004) deep=0 noise=29  blades=4 None
+6: object_sound:29  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=6 snt=1 bearing=-2.09580422634 range=5.77368902842 deep=0 blades=0 band=0.0
 
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
+7: dist: 8.95  obj:Warship: pos:(5.909, 2.046) deep=0 noise=40  blades=5 None
+7: object_sound:40  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=7 snt=1 bearing=-2.04627715848 range=8.94628298578 deep=0 blades=0 band=0.0
 
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
+8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=84  blades=3 None
+8: object_sound:84  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=8 snt=1 bearing=-2.35662612785 range=7.07412192817 deep=0 blades=0 band=0.0
 
 --- Passive scan ---
-background_noise 50.0086860714 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000429088 db  blades=6 None
-0: object_sound:50.0000392275 db  deep_in_km:0  attenuation:0.0126 db/nm
+background_noise 50.6666337923 db
+0: dist: 0.00  obj:688: pos:(10.007, 10.000) deep=0 noise=50.6625882093 db  blades=6 None
+0: object_sound:50.6625969075 db  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
 
-1: dist: 3.61  obj:Whale: pos:(7.000, 8.001) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55387421271 range=3.60506665597 deep=75 blades=0 band=0.0
+1: dist:11.68  obj:Whale: pos:(-0.009, 3.993) deep=31 noise=27  blades=0 None
+1: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=1 snt=1 bearing=-2.60138506707 range=11.6792904634 deep=31 blades=0 band=0.0
 
-2: dist: 4.12  obj:Whale: pos:(6.000, 9.001) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89684173577 range=4.12247094032 deep=73 blades=0 band=0.0
+2: dist:10.63  obj:Whale: pos:(2.011, 2.996) deep=51 noise=27  blades=0 None
+2: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=2 snt=1 bearing=-2.42226337732 range=10.6301897886 deep=51 blades=0 band=0.0
 
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
+3: dist: 9.87  obj:Fishing Ship: pos:(6.005, 0.978) deep=0 noise=65  blades=3 None
+3: object_sound:65  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=3 snt=1 bearing=-1.98830237012 range=9.86988503759 deep=0 blades=0 band=0.0
 
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
+4: dist: 9.48  obj:Fishing Boat: pos:(1.023, 6.961) deep=0 noise=56  blades=4 None
+4: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=4 snt=1 bearing=-2.81541764097 range=9.48368786134 deep=0 blades=0 band=0.0
 
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
+5: dist:10.04  obj:Fishing Ship: pos:(0.013, 9.019) deep=0 noise=66  blades=3 None
+5: object_sound:66  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=5 snt=1 bearing=-3.04369949652 range=10.042133348 deep=0 blades=0 band=0.0
 
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
+6: dist: 5.76  obj:Warship: pos:(7.147, 5.005) deep=0 noise=29  blades=4 None
+6: object_sound:29  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=6 snt=1 bearing=-2.0908066773 range=5.75559329417 deep=0 blades=0 band=0.0
 
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
+7: dist: 8.95  obj:Warship: pos:(5.879, 2.061) deep=0 noise=40  blades=5 None
+7: object_sound:40  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=7 snt=1 bearing=-2.05035652603 range=8.94786597318 deep=0 blades=0 band=0.0
 
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
+8: dist: 7.08  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=84  blades=3 None
+8: object_sound:84  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=8 snt=1 bearing=-2.3569072502 range=7.07611317936 deep=0 blades=0 band=0.0
 
 --- Passive scan ---
-background_noise 50.0035098302 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000392124 db  blades=6 None
-0: object_sound:50.0000454231 db  deep_in_km:0  attenuation:0.0126 db/nm
+background_noise 50.6657929444 db
+0: dist: 0.00  obj:688: pos:(10.010, 10.000) deep=0 noise=50.6625849858 db  blades=6 None
+0: object_sound:50.6625992847 db  deep_in_km:0  attenuation:0.0126 db/nm
 scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
 
-1: dist: 3.60  obj:Whale: pos:(7.000, 8.001) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55394526531 range=3.60494554658 deep=75 blades=0 band=0.0
+1: dist:11.68  obj:Whale: pos:(-0.011, 3.991) deep=31 noise=27  blades=0 None
+1: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=1 snt=1 bearing=-2.60148333619 range=11.6845216755 deep=31 blades=0 band=0.0
 
-2: dist: 4.12  obj:Whale: pos:(6.000, 9.001) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89689868306 range=4.12231230241 deep=73 blades=0 band=0.0
+2: dist:10.63  obj:Whale: pos:(2.013, 2.995) deep=51 noise=27  blades=0 None
+2: object_sound:27  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=2 snt=1 bearing=-2.42220248355 range=10.6309769065 deep=51 blades=0 band=0.0
 
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
+3: dist: 9.88  obj:Fishing Ship: pos:(6.006, 0.972) deep=0 noise=65  blades=3 None
+3: object_sound:65  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=3 snt=1 bearing=-1.98821874098 range=9.87556067893 deep=0 blades=0 band=0.0
 
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
+4: dist: 9.48  obj:Fishing Boat: pos:(1.029, 6.952) deep=0 noise=56  blades=4 None
+4: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=4 snt=1 bearing=-2.81434603104 range=9.48390714016 deep=0 blades=0 band=0.0
 
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
+5: dist:10.04  obj:Fishing Ship: pos:(0.016, 9.023) deep=0 noise=66  blades=3 None
+5: object_sound:66  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=5 snt=1 bearing=-3.04415379033 range=10.0412291117 deep=0 blades=0 band=0.0
 
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
+6: dist: 5.74  obj:Warship: pos:(7.184, 5.007) deep=0 noise=29  blades=4 None
+6: object_sound:29  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=6 snt=1 bearing=-2.08577773082 range=5.73764221335 deep=0 blades=0 band=0.0
 
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
+7: dist: 8.95  obj:Warship: pos:(5.848, 2.077) deep=0 noise=40  blades=5 None
+7: object_sound:40  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=7 snt=1 bearing=-2.05443438262 range=8.94959781004 deep=0 blades=0 band=0.0
 
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
-
---- Passive scan ---
-background_noise 50.0065912578 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000440339 db  blades=6 None
-0: object_sound:50.0000467553 db  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
-
-1: dist: 3.60  obj:Whale: pos:(7.000, 8.002) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55401632269 range=3.6048244554 deep=75 blades=0 band=0.0
-
-2: dist: 4.12  obj:Whale: pos:(6.001, 9.002) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89695563473 range=4.12215367787 deep=73 blades=0 band=0.0
-
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
-
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
-
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
-
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
-
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
-
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
-
---- Passive scan ---
-background_noise 50.0095437691 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.0000743786 db  blades=6 None
-0: object_sound:50.0000391527 db  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
-
-1: dist: 3.60  obj:Whale: pos:(7.000, 8.002) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55408738484 range=3.60470338242 deep=75 blades=0 band=0.0
-
-2: dist: 4.12  obj:Whale: pos:(6.001, 9.002) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89701259078 range=4.1219950667 deep=73 blades=0 band=0.0
-
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
-
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
-
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
-
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
-
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
-
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
-
---- Passive scan ---
-background_noise 50.0022486674 db
-0: dist: 0.00  obj:688: pos:(10.000, 10.000) deep=0 noise=50.000055614 db  blades=6 None
-0: object_sound:50.0000562087 db  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=0 snt=1 bearing=0 range=0.0 deep=0 blades=0 band=0.0
-
-1: dist: 3.60  obj:Whale: pos:(7.000, 8.002) deep=75 noise=28  blades=0 None
-1: object_sound:28  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=1 snt=1 bearing=-2.55415845176 range=3.60458232765 deep=75 blades=0 band=0.0
-
-2: dist: 4.12  obj:Whale: pos:(6.001, 9.002) deep=73 noise=22  blades=0 None
-2: object_sound:22  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=2 snt=1 bearing=-2.89706955121 range=4.12183646891 deep=73 blades=0 band=0.0
-
-3: dist: 6.00  obj:Fishing Boat: pos:(10.000, 4.000) deep=0 noise=53  blades=3 None
-3: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=3 snt=1 bearing=-1.57079632679 range=6.0 deep=0 blades=0 band=0.0
-
-4: dist: 5.39  obj:Fishing Boat: pos:(5.000, 8.000) deep=0 noise=53  blades=4 None
-4: object_sound:53  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=4 snt=1 bearing=-2.76108627648 range=5.38516480713 deep=0 blades=0 band=0.0
-
-5: dist: 9.06  obj:Fishing Boat: pos:(9.000, 1.000) deep=0 noise=56  blades=3 None
-5: object_sound:56  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=5 snt=1 bearing=-1.68145354797 range=9.05538513814 deep=0 blades=0 band=0.0
-
-6: dist:11.40  obj:Warship: pos:(1.000, 3.000) deep=0 noise=42  blades=5 None
-6: object_sound:42  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=6 snt=1 bearing=-2.48054948474 range=11.401754251 deep=0 blades=0 band=0.0
-
-7: dist:10.00  obj:Destroyer: pos:(4.000, 2.000) deep=0 noise=23  blades=4 None
-7: object_sound:23  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=7 snt=1 bearing=-2.21429743559 range=10.0 deep=0 blades=0 band=0.0
-
-8: dist: 7.07  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=74  blades=4 None
-8: object_sound:74  deep_in_km:0  attenuation:0.0126 db/nm
-scan_result: ScanResult idx=8 snt=1 bearing=-2.35619449019 range=7.07106781187 deep=0 blades=0 band=0.0
+8: dist: 7.08  obj:Fishing Ship: pos:(5.000, 5.000) deep=0 noise=84  blades=3 None
+8: object_sound:84  deep_in_km:0  attenuation:0.0126 db/nm
+scan_result: ScanResult idx=8 snt=1 bearing=-2.35718821436 range=7.07810498945 deep=0 blades=0 band=0.0
 

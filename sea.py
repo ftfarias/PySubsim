@@ -262,7 +262,7 @@ class Sea:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
         bio = SimpleSeaObject("Whale", pos)
         bio.deep = random.randint(30, 100)
-        bio.set_destination(random.randint(0,359), 0.1/3600)
+        bio.set_destination(random.randint(0,359), 1)
         self.objects.append(bio)
 
     def create_warship(self, pos=None, ship_type=None):
@@ -272,7 +272,7 @@ class Sea:
         if ship_type is None:
             ship_type = t[random.randint(0, len(t) - 1)]
         ship = SimpleSeaObject(ship_type, pos)
-        ship.set_destination(random.randint(0,359), random.randint(5,15)/3600)
+        ship.set_destination(random.randint(0, 359), random.randint(5, 15))
         self.objects.append(ship)
 
     def create_fishing(self, pos=None, ship_type=None):
@@ -282,7 +282,7 @@ class Sea:
         if ship_type is None:
             ship_type = t[random.randint(0, len(t) - 1)]
         ship = SimpleSeaObject(ship_type, pos)
-        ship.set_destination(random.randint(0,359), random.randint(1,5)/3600)
+        ship.set_destination(random.randint(0, 359), random.randint(1, 5))
         self.objects.append(ship)
         return ship
 
@@ -290,7 +290,7 @@ class Sea:
         self.objects.append(SeaSubmarine(sub))
 
     def turn(self, time_elapsed):
-        self.time = self.time + datetime.timedelta(seconds=time_elapsed)
+        self.time = self.time + datetime.timedelta(seconds=time_elapsed*3600)
         for obj in self.objects:
             obj.turn(time_elapsed)
 

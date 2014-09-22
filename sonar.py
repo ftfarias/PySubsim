@@ -79,7 +79,7 @@ class SonarContact:
         self.pos_history.append(new_pos)
 
         if speed is None:
-            speed = last_pos.distance_to(new_pos) / time_elapsed_since_last
+            speed = 3600 * last_pos.distance_to(new_pos) / time_elapsed_since_last
         self.speed_history.append(speed)
 
         if course is None:
@@ -123,11 +123,11 @@ class Sonar(SubModule):
         print(probs)
         return probs
 
-    def turn(self, time_elapsed):
+    def turn(self, time_elapsed):  # time in hours
         if self.time_for_next_scan <= 0.0:
             # passive scan
             self.passive_scan(time_elapsed)
-            self.time_for_next_scan = 10.0
+            self.time_for_next_scan = 10.0 / 3600 # every 10 seconds
         else:
             self.time_for_next_scan -= time_elapsed
 
