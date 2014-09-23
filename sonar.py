@@ -2,6 +2,7 @@
 from sub_module import SubModule
 from util import abs_angle_to_bearing, Bands
 from physic import Point, MovableNewtonObject
+from sound import db
 import util
 import math
 import random
@@ -13,6 +14,7 @@ class SonarContact:
     LOST = 'Lost'
 
     def __init__(self, sonar, sonar_idx):
+        self.noise = db(db=random.randint(50,70))
         self.sonar_idx = sonar_idx
         self.sonar = sonar
         self.sub = sonar.sub
@@ -35,6 +37,8 @@ class SonarContact:
         self.knots_per_turn = 0
         self.deep = 0
         self.bands = [0.0] * 10
+
+
 
     def bearing(self):
         return self.bearings_history[-1]
@@ -168,6 +172,37 @@ class Sonar(SubModule):
         sc.deep = scan_result.deep
         #sc.bands = scan_result.bands
         pass
+
+    def noise_by_angle(self, from_angle, to_angle):
+        sea_noise = self.sea.get_background_noise()
+        sub_noise = self.sub.self_noise()
+        backgroung_noise = sea_noise + sub_noise
+        for k, obj in self.contacts:
+            angle = obj.bearing
+            #if from_angle <= angle <= to_angle:
+
+        return backgroung_noise
+
+
+    def sonar_array(self, num_angles):
+        sea_noise = self.sea.get_background_noise()
+        sub_noise = self.sub.self_noise()
+        backgroung_noise = sea_noise + sub_noise
+
+        step = 360/num_angles
+        angles = util.angles(num_angles)
+        noise = [backgroung_noise for _ in xrange(num_angles)]
+
+        for k, obj in self.contacts.items():
+            print(obj.bearing())
+            x = int(math.degrees(obj.bearing())/step)
+            print(x)
+            noise[x] += obj.noise
+
+        print(noise)
+
+        return noise
+
 
     def status(self):
         return "SONAR: tracking {objs} objects".format(objs=len(self.contacts))

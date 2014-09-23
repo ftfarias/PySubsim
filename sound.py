@@ -23,7 +23,10 @@ class Decibel(object):
 
     # like: 100 - 3*db = 50  (3db ~= half)
     def __rsub__(self, other):
-        return other / abs(self)
+        if isinstance(other, Decibel):
+            return Decibel(ratio=abs(self) - abs(other))
+        else:
+            return other / abs(self)
 
 
     def __mul__(self, other):
@@ -86,7 +89,7 @@ class Decibel(object):
         return self + db(random.gauss(0, noise_level_db))
 
     def __str__(self):
-        return "{0} db".format(self.value)
+        return "{0:.1f} db".format(self.value)
 
     __repr__ = __str__
 

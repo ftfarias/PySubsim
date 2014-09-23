@@ -5,6 +5,11 @@ import random
 import unittest
 
 
+def angles(num_angles):
+    step = 360 / num_angles
+    return [(a*step, (a+1)*step) for a in xrange(num_angles)]
+
+
 def normalize_angle360(angle):
     # return the angle between 0 and 360 (in radians)
     while angle < 0:
@@ -220,6 +225,7 @@ class TestUtil(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 
 

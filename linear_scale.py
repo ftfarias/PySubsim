@@ -28,6 +28,53 @@ class LinearScale():
         return self._range[0] + (value-self._domain[0])*self.scale_factor
 
 
+"""
+"Standard" character ramp for grey scale pictures, black -> white.
+
+   "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. "
+A more convincing but shorter sequence for representing 10 levels of grey is
+
+   " .:-=+*#%@"
+
+An obvious problem is the variation in apparant density between some typefaces.
+
+" .oO0#"
+
+Here are hex values of common grey-scale ASCII Characters in order from
+    darkest to lightest:
+
+    # = 23
+    @ = 40
+    8 = 38
+    % = 25
+    O = 4F
+    o = 6F
+    " = 22
+    ; = 3B
+    , = 2C
+    ' = 27
+    . = 2E
+      = 20
+
+"""
+
+class AsciiLinearScale():
+    def __init__(self, domain, ascii_scale=" .oO0#"):
+        self.ascii_scale = ascii_scale
+        l = len(ascii_scale)
+        self.scaler = linear_scaler(domain,[0,l])
+        self.domain = domain
+
+    def map(self, value):
+        if value <= self.domain[0]:
+            return self.ascii_scale[0]
+
+        if value >= self.domain[1]:
+            return self.ascii_scale[-1]
+
+        return self.ascii_scale[int(round(self.scaler(value)))]
+
+
 def linear_scaler(domain, range):
     return LinearScale().domain(domain).range(range).map
 
@@ -39,7 +86,6 @@ class LinearScale2D():
 
     def map(self, x, y):
         return self.ls_x.map(x), self.ls_y.map(y)
-
 
 
 def linear_scaler2d(domain_x, range_x, domain_y, range_y):

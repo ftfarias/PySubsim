@@ -68,6 +68,9 @@ class Submarine(MovableNewtonObject):
     def get_deep(self):  # in feet
         return self.deep
 
+    def set_target_deep(self, deep):  # in feet
+        self.target_deep = deep
+
     def stop_moving(self):
         self.nav.stop_all()
 
@@ -117,7 +120,7 @@ class Submarine(MovableNewtonObject):
 
         self.cavitation = cavitating
 
-        return db(noise + (100 if cavitating else 0)).add_noise(1)
+        return db(noise + (100 if cavitating else 0) + random.gauss(0,0.4))
 
     # Navigation
     def set_destination(self, dest):

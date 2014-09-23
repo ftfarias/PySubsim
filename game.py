@@ -2,7 +2,7 @@
 from sub import ShipFactory
 from sea import Sea, symbol_for_type
 from physic import Point
-from linear_scale import linear_scaler,linear_scaler2d
+from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale
 from util import abs_angle_to_bearing
 import time
 import sys
@@ -21,6 +21,8 @@ logger.addHandler(handler)
 sea = Sea()
 sea.initialize()
 player_sub = ShipFactory.create_player_sub(sea)
+
+asciiScaler = AsciiLinearScale([50,70], ascii_scale=" .:;oO0#").map
 
 """
 -2 | -2  -1  0  +1  +2 |
@@ -115,10 +117,6 @@ def print_map():
     player_pos = player_sub.get_pos()
     topleft = player_pos - Point(mc_x_size/2, mc_y_size/2)
     bottomright = player_pos + Point(mc_x_size/2 - 1, mc_y_size/2 - 1)
-    print(x_range)
-    print(y_range)
-    print(topleft)
-    print(bottomright)
 
     pos2map = linear_scaler2d([topleft.x, bottomright.x], [min(x_range), max(x_range)],
                               [topleft.y, bottomright.y], [min(y_range), max(y_range)])
@@ -167,7 +165,7 @@ def show_menu(menu):
             return None
         opt = option.split(" ")
 
-        if opt[0] == ']':
+        if opt[0] == '\\':
             n = None
             time_per_turn=0.1
             if len(opt) > 1:
@@ -176,12 +174,21 @@ def show_menu(menu):
             print_status()
             continue
 
-        if opt[0] == '[':
+        if opt[0] == ']':
             n = None
             time_per_turn=0.1
             if len(opt) > 1:
                 n = int(opt[1] / time_per_turn)
             game_loop(n, time_per_turn=0.1, wait=0.01) # 10 times real
+            print_status()
+            continue
+
+        if opt[0] == '[':
+            n = None
+            time_per_turn=0.1
+            if len(opt) > 1:
+                n = int(opt[1] / time_per_turn)
+            game_loop(n, time_per_turn=0.1, wait=0)  # fast as possible, no wait
             print_status()
             continue
 
@@ -315,7 +322,13 @@ def print_near_objects():
 def print_noise_profile():
     sea_noise = sea.get_background_noise()
     sub_noise = player_sub.self_noise()
-    print("Sea background noise: {sea}   Sub noise:{sub}".format(sea=sea_noise, sub=sub_noise))
+    print("Sea background noise: {sea}   Sub noise:{sub}   total:{t}".format(
+        sea=sea_noise, sub=sub_noise, t=sea_noise+sub_noise))
+
+
+def print_sonar():
+    s = [asciiScaler(x) for x in player_sub.sonar.sonar_array(72)]
+    return "["+"".join(s)+"]"
 
 
 # Sensors
@@ -328,6 +341,8 @@ MAIN_SONAR = [
 
 def menu_sonar():
     print(player_sub.sonar.status())
+    print_noise_profile()
+    print(print_sonar())
     opt = show_menu(MAIN_SONAR)
     if opt:
         opt()
