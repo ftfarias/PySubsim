@@ -89,7 +89,7 @@ class Decibel(object):
         return self + db(random.gauss(0, noise_level_db))
 
     def __str__(self):
-        return "{0:.1f} db".format(self.value)
+        return "{0:.1f}db".format(self.value)
 
     __repr__ = __str__
 

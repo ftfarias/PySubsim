@@ -22,7 +22,6 @@ sea = Sea()
 sea.initialize()
 player_sub = ShipFactory.create_player_sub(sea)
 
-asciiScaler = AsciiLinearScale([50,70], ascii_scale=" .:;oO0#").map
 
 """
 -2 | -2  -1  0  +1  +2 |
@@ -261,25 +260,27 @@ def input_integer(min=0, max=100):
             print ("Invalid entry! \n")
 
 
-def input_coordinates():
+def input_values(msg='(enter coordinates) > '):
     while 1:
         try:
-            option = raw_input('(enter coordinates) > ')
+            option = raw_input(msg)
+            if option == '':
+                return None, None
             if option == '\\':
                 return None, None
             coord = option.split(',')
             if len(coord) != 2:
-                print('Please enter as "x,y"')
+                print('Please enter values as "x,y"')
                 continue
             x = int(coord[0])
             y = int(coord[1])
             return x,y
         except ValueError:
-            print ("Invalid Coordinates! \n")
+            print ('Invalid! Please enter integer values \n')
 
 # Navigation
 def move_to():
-    x, y = input_coordinates()
+    x, y = input_values()
     if x is None or y is None:
         return
     player_sub.set_destination(Point(x, y))
@@ -311,6 +312,67 @@ def menu_navigation():
         opt()
     main()
 
+########## SONAR #############
+
+class Watefall(object):
+    def __init__(self):
+        self.asciiScaler = None
+        self.set_waterfall_level(50,70)
+
+    def set_waterfall_level(self, low,high):
+        self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=".:;|$#").map
+
+    def print_sonar(self):
+        s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
+        return "["+"".join(s)+"]"
+
+    def print_waterfall(self, compact=1, l=60):
+
+        wf = player_sub.sonar.waterfall
+        #print(wf)
+        idx = min(len(wf),l)
+        if idx == 0:
+            print ("no sonar data")
+            return
+
+
+        while idx > 0:
+            #print('idx ' + str(idx))
+            idx_compact = min(compact,idx)
+
+            total = [0.0] * 120
+            for _ in xrange(idx_compact):  # compacts the display, calculanting the average
+                #print(total)
+                wf_idx = wf[idx-1]
+                #print(wf_idx)
+                for c in xrange(120):
+                    #print(wf_idx[c])
+                    total[c] += wf_idx[c]
+                    #print(total[c])
+
+                    #print(total)
+                idx -= 1
+
+            #print(total)
+            line = [self.asciiScaler(d/idx_compact) for d in total]
+            print("[{0}]".format("".join(line)))
+
+    def print_waterfall_1m(self):
+        self.print_waterfall(compact=1, l=60)
+
+    def print_waterfall_30m(self):
+        self.print_waterfall(compact=30, l=1800)
+
+    def print_waterfall_2h(self):
+        self.print_waterfall(compact=120, l=7200)
+
+waterfall = Watefall()
+
+def adjust_watefall():
+    low, high = input_values("Enter the low and high db levels(default: 50,70): ")
+    if low is not None:
+        waterfall.set_waterfall_level(low, high)
+
 def print_near_objects():
     objs = player_sub.sonar.return_near_objects()
     if not objs:
@@ -325,24 +387,19 @@ def print_noise_profile():
     print("Sea background noise: {sea}   Sub noise:{sub}   total:{t}".format(
         sea=sea_noise, sub=sub_noise, t=sea_noise+sub_noise))
 
-
-def print_sonar():
-    s = [asciiScaler(x) for x in player_sub.sonar.sonar_array(72)]
-    return "["+"".join(s)+"]"
-
-
-# Sensors
 MAIN_SONAR = [
     ('Show near objects', print_near_objects),
-   # ('Land', None),
-    ('Noise Profile', print_noise_profile),
+    ('Waterfall (1 minute)', waterfall.print_waterfall_1m),
+    ('Waterfall (30 minutes)', waterfall.print_waterfall_30m),
+    ('Waterfall (2 hours)', waterfall.print_waterfall_2h),
+    ('Adjust waterfall scale', adjust_watefall),
 ]
 
 
 def menu_sonar():
     print(player_sub.sonar.status())
     print_noise_profile()
-    print(print_sonar())
+    print(waterfall.print_sonar())
     opt = show_menu(MAIN_SONAR)
     if opt:
         opt()

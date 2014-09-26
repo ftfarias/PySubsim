@@ -62,12 +62,13 @@ class AsciiLinearScale():
     def __init__(self, domain, ascii_scale=" .oO0#"):
         self.ascii_scale = ascii_scale
         l = len(ascii_scale)
-        self.scaler = linear_scaler(domain,[0,l])
+        self.scaler = linear_scaler(domain,[0,l-1])
         self.domain = domain
 
     def map(self, value):
         if value <= self.domain[0]:
-            return self.ascii_scale[0]
+            return " "
+            #return self.ascii_scale[0]
 
         if value >= self.domain[1]:
             return self.ascii_scale[-1]

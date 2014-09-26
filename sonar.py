@@ -102,13 +102,18 @@ class SonarContact:
 
 
 class Sonar(SubModule):
+    MAX_WATERFALL_HISTORY_SECONDS = 2 * 3600  # two hours
+
     def __init__(self, sub):
         SubModule.__init__(self, sub)
         self.module_name = "SONAR"
         self.contacts = {}
         self.sea = sub.sea
         self.counter = 0  # counter for Sierra Contacts
-        self.time_for_next_scan = 0
+        self.time_for_next_update = 0
+        self.time_for_next_waterfall = 0
+        self.waterfall = []
+
 
     def return_near_objects(self):
         return self.contacts
@@ -128,12 +133,20 @@ class Sonar(SubModule):
         return probs
 
     def turn(self, time_elapsed):  # time in hours
-        if self.time_for_next_scan <= 0.0:
+        if self.time_for_next_update <= 0.0:
             # passive scan
             self.passive_scan(time_elapsed)
-            self.time_for_next_scan = 10.0 / 3600 # every 10 seconds
+            self.time_for_next_update = 10.0 / 3600 # every 10 seconds
         else:
-            self.time_for_next_scan -= time_elapsed
+            self.time_for_next_update -= time_elapsed
+
+        if self.time_for_next_waterfall <= 0.0:
+            # passive scan
+            self.waterfall_update()
+            self.time_for_next_waterfall = 1.0 / 3600 # every 10 seconds
+        else:
+            self.time_for_next_waterfall -= time_elapsed
+
 
         #if self.mode == self.ACTIVE_SCAN:
         #    self.pulse_scan()
@@ -146,6 +159,13 @@ class Sonar(SubModule):
                 self.update_contact(self.contacts[idx], sr, time_elapsed)
             else:
                 self.add_contact(sr)
+
+    def waterfall_update(self):
+        s = [x.value for x in self.sonar_array(120)]
+        self.waterfall.append(s)
+        if len(self.waterfall) > self.MAX_WATERFALL_HISTORY_SECONDS:
+            self.waterfall = self.waterfall[-self.MAX_WATERFALL_HISTORY_SECONDS]
+
 
     def pulse_scan(self):
         pass
@@ -185,22 +205,22 @@ class Sonar(SubModule):
 
 
     def sonar_array(self, num_angles):
-        sea_noise = self.sea.get_background_noise()
-        sub_noise = self.sub.self_noise()
-        backgroung_noise = sea_noise + sub_noise
+        def backgroung_noise(self):
+            sea_noise = self.sea.get_background_noise()
+            sub_noise = self.sub.self_noise()
+            return sea_noise + sub_noise
 
         step = 360/num_angles
         angles = util.angles(num_angles)
-        noise = [backgroung_noise for _ in xrange(num_angles)]
+        noise = [backgroung_noise(self) for _ in xrange(num_angles)]
 
         for k, obj in self.contacts.items():
-            print(obj.bearing())
+            #print(obj.bearing())
             x = int(math.degrees(obj.bearing())/step)
-            print(x)
+            #print(x)
             noise[x] += obj.noise
 
-        print(noise)
-
+        #print(noise)
         return noise
 
 
