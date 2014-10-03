@@ -3,7 +3,7 @@ from sub import ShipFactory
 from sea import Sea, symbol_for_type
 from physic import Point
 from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale
-from util import abs_angle_to_bearing
+from util import abs_angle_to_bearing, time_length_to_str
 import time
 import sys
 import logging
@@ -49,6 +49,12 @@ def print_status():
 
 
 def menu_object(n):
+    if n not in player_sub.sonar.contacts:
+        print("Unknown track "+str(n))
+        print("Valid tracks: ")
+        for k,v in player_sub.sonar.contacts.items():
+            print(k)
+        return
     def f(value, str_format="{0}"):
         if value is None:
             return "?"
@@ -68,7 +74,7 @@ def menu_object(n):
         t = (sea.time - obj.time_history[(-(i+1))])
         scan_times.append(t.seconds)
 
-    times = " | ".join(["{0:5.0f}".format(b) for b in scan_times])
+    times = " | ".join(["{0:5s}".format(time_length_to_str(b)) for b in scan_times])
     bearings = " | ".join(["{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.bearings_history[-n:]])
     ranges = " | ".join(["{0:5.1f}".format(b) for b in obj.range_history[-n:]])
     speeds = " | ".join(["{0:5.1f}".format(b) for b in obj.speed_history[-n:]])
@@ -78,7 +84,6 @@ def menu_object(n):
     print ("Range  : {0}".format(ranges))
     print ("Speed  : {0}".format(speeds))
     print ("Course : {0}".format(courses))
-
 
     bands = obj.bands
     print("".join(["{0:5}".format(i)  for i in range(1,11)]))
@@ -154,98 +159,124 @@ def print_map():
 
 def show_menu(menu):
     while 1:
-        #for i, opt in enumerate(menu):
-        #    print ("{i} - {opt}".format(i=str(i+1), opt=opt[0]))
-        s = ['{0}-{1}'.format(i+1, o[0]) for i,o in enumerate(menu)]
-        s = ") (".join(s)
-        print("("+s+")")
-        option = raw_input('> ')
-        if option == '':
-            return None
-        opt = option.split(" ")
-
-        if opt[0] == '\\':
-            n = None
-            time_per_turn=0.1
-            if len(opt) > 1:
-                n = int(opt[1]/ time_per_turn)
-            game_loop(n, time_per_turn=time_per_turn, wait=0.1) # real time
-            print_status()
-            continue
-
-        if opt[0] == ']':
-            n = None
-            time_per_turn=0.1
-            if len(opt) > 1:
-                n = int(opt[1] / time_per_turn)
-            game_loop(n, time_per_turn=0.1, wait=0.01) # 10 times real
-            print_status()
-            continue
-
-        if opt[0] == '[':
-            n = None
-            time_per_turn=0.1
-            if len(opt) > 1:
-                n = int(opt[1] / time_per_turn)
-            game_loop(n, time_per_turn=0.1, wait=0)  # fast as possible, no wait
-            print_status()
-            continue
-
-        if opt[0] == 's':
-            print_status()
-            continue
-
-        if opt[0] == 'o':
-            if len(opt) == 1:
-                print_near_objects()
-            else:
-                n = int(opt[1])
-                menu_object(n)
-            continue
-
-        if opt[0] == 'spd':
-            if len(opt) == 2:
-                n = int(opt[1])
-                player_sub.nav.speed = n
-            continue
-
-        if opt[0] == 'mov':
-            dest = parse_coordinates(opt[1])
-            if dest:
-                player_sub.nav.set_destination(dest)
-                print("Destination set to {0}".format(player_sub.nav.destination))
-            else:
-                print("Invalid input")
-            continue
-
-        if opt[0] == 'm':
-            print_map()
-            continue
-
-        if opt[0] == 'q':
-            sys.exit(0)
-            continue
-
         try:
-            int_opt = int(option)
-            if 1 <= int_opt <= len(menu):
-                return menu[int_opt-1][1]
-            raise ValueError()
-        except ValueError:
-            print("Please choose a valid option:")
-            print("<number>: choose a option")
-            print("<empty>: return to previous menu")
-            print("]      : run game in real time")
-            print("] <n>  : run game in real time for n seconds")
-            print("[      : run game 10 times faster")
-            print("[ <n>  : run game 10 times faster for n seconds")
-            print("s      : Show status")
-            print("o      : Show objects in sonar")
-            print("o <n>  : Show detail information about object")
-            print("m      : Show map")
-            print("mov x,y: set destination x,y")
-            print("spd x  : set speed for x")
-            print("q      : quit")
+            #for i, opt in enumerate(menu):
+            #    print ("{i} - {opt}".format(i=str(i+1), opt=opt[0]))
+            s = ['{0}-{1}'.format(i+1, o[0]) for i,o in enumerate(menu)]
+            s = ") (".join(s)
+            print("("+s+")")
+            option = raw_input('> ')
+            if option == '':
+                return None
+            opt = option.split(" ")
+
+            if opt[0] == '\\':
+                n = None
+                time_per_turn=0.1
+                if len(opt) > 1:
+                    n = int(opt[1]/ time_per_turn)
+                game_loop(n, time_per_turn=time_per_turn, wait=0.1) # real time
+                print_status()
+                continue
+
+            if opt[0] == ']':
+                n = None
+                time_per_turn=0.1
+                if len(opt) > 1:
+                    n = int(opt[1] / time_per_turn)
+                game_loop(n, time_per_turn=0.1, wait=0.01) # 10 times real
+                print_status()
+                continue
+
+            if opt[0] == '[':
+                n = None
+                time_per_turn=0.1
+                if len(opt) > 1:
+                    n = int(opt[1] / time_per_turn)
+                game_loop(n, time_per_turn=0.1, wait=0)  # fast as possible, no wait
+                print_status()
+                continue
+
+            if opt[0] == 's':
+                print_status()
+                continue
+
+            if opt[0] == 'o':
+                if len(opt) == 1:
+                    print_near_objects()
+                else:
+                    n = int(opt[1])
+                    menu_object(n)
+                continue
+
+
+            if opt[0] == 'wf':
+                if len(opt) == 2:
+                    n = int(opt[1])
+                    if n == 1:
+                        waterfall.print_waterfall_1m()
+                    elif n == 2:
+                        waterfall.print_waterfall_30m()
+                    else:
+                        waterfall.print_waterfall_2h()
+
+                else:
+                    waterfall.print_waterfall_1m()
+
+                continue
+
+            if opt[0] == 'spd':
+                if len(opt) == 2:
+                    n = int(opt[1])
+                    player_sub.nav.speed = n
+                continue
+
+            if opt[0] == 'deep':
+                if len(opt) == 2:
+                    n = int(opt[1])
+                    player_sub.set_deep = n
+                continue
+
+            if opt[0] == 'mov':
+                dest = parse_coordinates(opt[1])
+                if dest:
+                    player_sub.nav.set_destination(dest)
+                    print("Destination set to {0}".format(player_sub.nav.destination))
+                else:
+                    print("Invalid input")
+                continue
+
+            if opt[0] == 'm':
+                print_map()
+                continue
+
+            if opt[0] == 'q':
+                sys.exit(0)
+                continue
+
+            try:
+                int_opt = int(option)
+                if 1 <= int_opt <= len(menu):
+                    return menu[int_opt-1][1]
+                raise ValueError()
+            except ValueError:
+                print("Please choose a valid option:")
+                print("<number>: choose a option")
+                print("<empty>: return to previous menu")
+                print("]      : run game in real time")
+                print("] <n>  : run game in real time for n seconds")
+                print("[      : run game 10 times faster")
+                print("[ <n>  : run game 10 times faster for n seconds")
+                print("s      : Show status")
+                print("o      : Show objects in sonar")
+                print("o <n>  : Show detail information about object")
+                print("m      : Show map")
+                print("mov x,y: set destination x,y")
+                print("spd x  : set speed for x")
+                print("deep x : set deep to x")
+                print("q      : quit")
+        except ValueError:  # catchs all other errors inside the big loop
+            pass
 
 
 def input_integer(min=0, max=100):
@@ -326,36 +357,41 @@ class Watefall(object):
         s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
         return "["+"".join(s)+"]"
 
-    def print_waterfall(self, compact=1, l=60):
+    def print_waterfall(self, compact=1, l=60, inverted=True):
+        """
+        Inverted watefall means the most recente events shows in th bottom, not in top
+        """
+        wf = player_sub.sonar.waterfall[-l:] # filters the last "l" events
+        len_wf = len(wf)
 
-        wf = player_sub.sonar.waterfall
+        wf_c = []  # compact waterfall
         #print(wf)
-        idx = min(len(wf),l)
-        if idx == 0:
+        if len_wf == 0:
             print ("no sonar data")
             return
 
-
-        while idx > 0:
-            #print('idx ' + str(idx))
-            idx_compact = min(compact,idx)
-
+        idx = 0
+        while idx < len_wf:
+            # idx_compact in the number of sonar resings to be "compacted" for next printed line
+            idx_compact = min(compact, len_wf-idx)
+            print(idx_compact)
             total = [0.0] * 120
             for _ in xrange(idx_compact):  # compacts the display, calculanting the average
-                #print(total)
-                wf_idx = wf[idx-1]
-                #print(wf_idx)
+                wf_idx = wf[idx]
                 for c in xrange(120):
-                    #print(wf_idx[c])
                     total[c] += wf_idx[c]
-                    #print(total[c])
-
-                    #print(total)
-                idx -= 1
+                idx += 1
 
             #print(total)
             line = [self.asciiScaler(d/idx_compact) for d in total]
-            print("[{0}]".format("".join(line)))
+            wf_c.append("[{0}]".format("".join(line)))
+
+        if not inverted:
+            wf_c.reverse()
+
+        for l in wf_c:
+            print(l)
+
 
     def print_waterfall_1m(self):
         self.print_waterfall(compact=1, l=60)
@@ -379,7 +415,7 @@ def print_near_objects():
         print("<no contacts>")
     else:
         for k,v in objs.items():
-            print "{0:3o}: {1}".format(k, v)
+            print "{0:3d}: {1}".format(k, v)
 
 def print_noise_profile():
     sea_noise = sea.get_background_noise()
@@ -514,7 +550,9 @@ def game_loop(turns, time_per_turn=0.1, wait=0.01):
 def run_turn(time_per_turn):
     sea.turn(time_per_turn/3600)  # sea turn runs in hours, run_turn in seconds
     #print(universe)
-    sys.stdout.write("\r ({sd}) {nav} ".format(sd=sea, nav=player_sub.nav))
+    sys.stdout.write("\r ({sd}) {nav} deep:{deep:.0f}(set:{sdeep})".format(sd=sea, nav=player_sub.nav,
+                                                                       deep=player_sub.actual_deep,
+                                                                       sdeep=player_sub.set_deep))
     sys.stdout.flush()
     messages, stop = player_sub.get_messages()
     if messages:

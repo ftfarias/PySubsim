@@ -6,7 +6,7 @@ import random
 import math
 import unittest
 import datetime
-from sound import Decibel, db, simple_sound_absortion_by_sea
+from sound import Decibel, db, simple_sound_absortion_by_sea, sound_absortion_by_sea
 import logging
 logger = logging.getLogger()
 """
@@ -36,14 +36,14 @@ KNOWN_TYPES = {
     'Whale': {'symbol': 'B',
          'blades': [0, 0],
          'bands': Bands([0]),
-         'noise': [20, 30],
+         'noise': [50, 80],
          'deep': [0, 100]},
 
     # generate intense broadband noise, f = 1-10 kHz, SL =60-90 dB
     'Snapping Shrimp': {'symbol': 'B',
          'blades': [0, 0],
          'bands': Bands([0]),
-         'noise': [10, 15],
+         'noise': [80, 100],
          'deep': [10, 15]},
 
 
@@ -53,14 +53,14 @@ KNOWN_TYPES = {
         {'symbol': 'M',
          'blades': [3, 4],
          'bands': Bands([0]),
-         'noise': [70, 80],
+         'noise': [80, 90],
          'deep': [0, 0]},
 
     'Small Merchant Vessel':
         {'symbol': 'M',
          'blades': [3, 4],
          'bands': Bands([0]),
-         'noise': [50, 70],
+         'noise': [70, 80],
          'deep': [0, 0]},
 
     # Warships: Typically four or five-bladed propellers; quieter, smoother
@@ -70,14 +70,14 @@ KNOWN_TYPES = {
         {'symbol': '^',
          'blades': [4, 5],
          'bands': Bands([0]),
-         'noise': [20, 30],
+         'noise': [60, 70],
          'deep': [0, 0]},
 
     'Warship':
         {'symbol': '^',
          'blades': [4, 5],
          'bands': Bands([0]),
-         'noise': [20, 45],
+         'noise': [75, 85],
          'deep': [0, 0]},
 
     # Submarines: Five, six or seven-bladed propellers;
@@ -86,14 +86,14 @@ KNOWN_TYPES = {
         {'symbol': 'S',
          'blades': [7, 7],
          'bands': Bands([0]),
-         'noise': [5, 15],
+         'noise': [55, 75],
          'deep': [68, 300]},
 
     '688':
         {'symbol': 'S',
          'blades': [6, 6],
          'bands': Bands([0]),
-         'noise': [5, 15],
+         'noise': [50, 70],
          'deep': [68, 300]},
 
     # Fishing Vessels/Trawlers/Pleasure Craft: Three- or four-bladed propellers;
@@ -103,21 +103,21 @@ KNOWN_TYPES = {
         {'symbol': 'F',
          'blades': [3, 4],
          'bands': Bands([0]),
-         'noise': [50, 65],
+         'noise': [80, 90],
          'deep': [0, 0]},
 
     'Fishing Ship':
         {'symbol': 'F',
          'blades': [3, 4],
          'bands': Bands([0]),
-         'noise': [65, 85],
+         'noise': [55, 65],
          'deep': [0, 0]},
 
     'Torpedo':
         {'symbol': 'T',
          'blades': [5, 5],
          'bands': Bands([20000]),
-         'noise': [65, 85],
+         'noise': [110, 110],
          'deep': [0, 0]},
 
 }
@@ -175,7 +175,7 @@ class SeaObject():
         return self.deep;
 
     def self_noise(self):
-        return self.noise
+        return db(db=self.noise + random.gauss(0,2))
 
     def __str__(self):
         return "{k}: pos:{pos} deep={deep} noise={noise}  blades={bl} {det}".format(k=self.kind,
@@ -230,7 +230,7 @@ class SeaSubmarine(SeaObject):
         return self.sub.get_pos()
 
     def get_deep(self):
-        return self.sub.get_deep()
+        return self.sub.actual_deep
 
     def self_noise(self):
         return self.sub.self_noise()
@@ -298,7 +298,8 @@ class Sea:
         return db(random.gauss(20, 2))
 
     def sound_attenuation(self, freq, deep):
-        return db(simple_sound_absortion_by_sea(freq, deep))
+        #return db(db=simple_sound_absortion_by_sea(freq, deep))
+        return db(db=sound_absortion_by_sea(freq,deep))
 
     def passive_scan(self, sub, time_elapsed):
         logger.debug("--- Passive scan ---")
@@ -309,36 +310,39 @@ class Sea:
         logger.debug("background_noise {0}".format(background_noise))
         for i, obj in enumerate(self.objects):
             obj_pos = obj.get_pos()
-            dist = obj_pos.distance_to(sub_pos)
-            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}".format(i=i, dist=dist, obj=obj))
+            range = obj_pos.distance_to(sub_pos)
+            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}".format(i=i, dist=range, obj=obj))
             #if dist > 15:  # hard limit for object detection.
             #    continue
             assert isinstance(obj.get_pos(), Point)
             object_sound = obj.self_noise()
-            deep_in_km = sub.get_deep() / 3280  # 3280 feet = 1 km
-            attenuation = self.sound_attenuation(freq=100, deep=deep_in_km) * 1.8  # in db/km * 1.8 = db/knot
-            logger.debug("{i}: object_sound:{os}  deep_in_km:{deep}  attenuation:{at}/nm".format(i=i, os=object_sound, deep=deep_in_km, at=attenuation))
-            #received_sound = object_sound - (attenuation * dist)
+            deep_in_km = sub.actual_deep / 3280  # 3280 feet = 1 km
+            attenuation_per_knot = self.sound_attenuation(freq=10, deep=deep_in_km) * 1.8  # in db/km * 1.8 = db/knot
+            attenuation_total = attenuation_per_knot * range
+            received_sound = object_sound / attenuation_total
+            logger.debug("{i}: object_sound:{os}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} recived_sound={rs}".format(
+                i=i, os=object_sound, deep=deep_in_km,
+                at=attenuation_per_knot,
+                tat=attenuation_total ,rs=received_sound))
             #if not isinstance(object_sound, Decibel):
             #    received_sound = db(received_sound)
-            #signal_to_noise = received_sound / background_noise
-            signal_to_noise = 1
-            deep = obj.get_deep()
-
-            bands = (obj.get_sonar_bands())  # add_noise
-            # .add_noise(0.1*dist)
-            range = sub_pos.distance_to(obj_pos)
-            bearing = sub_pos.angle_to(obj_pos)
-            # Scan Result
-            r = ScanResult(i)
-            r.signal_to_noise = signal_to_noise
-            r.range = range
-            r.bearing = bearing
-            r.deep = deep
-            r.bands = bands
-            logger.debug("scan_result: {0}".format(r))
-            logger.debug("")
-            result.append(r)
+            signal_to_noise = received_sound / background_noise
+            if signal_to_noise.value > 1:
+                deep = obj.get_deep()
+                bands = (obj.get_sonar_bands())  # add_noise
+                # .add_noise(0.1*dist)
+                bearing = sub_pos.angle_to(obj_pos)
+                # Scan Result
+                r = ScanResult(i)
+                r.signal_to_noise = signal_to_noise
+                r.blades = obj.blades
+                r.range = range
+                r.bearing = bearing
+                r.deep = deep
+                r.bands = bands
+                logger.debug("scan_result: {0}".format(r))
+                logger.debug("")
+                result.append(r)
         return result
 
     def pulse(self, ship):

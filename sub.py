@@ -5,6 +5,7 @@ from physic import Point, MovableNewtonObject
 from sub_module import SubModule
 from sonar import Sonar
 from sound import db
+from linear_scale import linear_scaler
 import random
 from sub_navigation import Navigation
 
@@ -23,7 +24,7 @@ class ShipFactory():
     def create_simple_sub(sea, pos):
         sub = Submarine(sea)
         sub.set_speed(1)
-        sub.deep = random.randint(50, 300)
+        sub.actual_deep = random.randint(50, 300)
         sub.set_destination(Point(random.randint(0, 60), random.randint(0, 60)))
         sub.pos = pos
         return sub
@@ -31,6 +32,7 @@ class ShipFactory():
 
 class Submarine(MovableNewtonObject):
     MAX_TURN_RATE_HOUR = math.radians(35)*60  # max 35 degrees per minute
+    MAX_DEEP_RATE_FEET = 1   # 1 foot per second
 
     def __init__(self, sea, kind):
         MovableNewtonObject.__init__(self)
@@ -40,7 +42,8 @@ class Submarine(MovableNewtonObject):
         self.max_hull_integrity = 100  # in "damage points"
         self.hull_integrity = self.max_hull_integrity
         self.damages = None
-        self.deep = 0
+        self.actual_deep = 150
+        self.set_deep = 150
         self.message_stop = False
         self.cavitation = False
 
@@ -65,15 +68,15 @@ class Submarine(MovableNewtonObject):
         self.messages = []
         self.message_stop = False
 
-    def get_deep(self):  # in feet
-        return self.deep
-
-    def set_target_deep(self, deep):  # in feet
-        self.target_deep = deep
-
     def stop_moving(self):
         self.nav.stop_all()
 
+    # non-liner noise:
+    # for 0 < speed < 15 :  linear from 40 to 60
+    # for speed > 15 : linear with factor of 2db for each knot
+    # ref: http://fas.org/man/dod-101/navy/docs/es310/uw_acous/uw_acous.htm
+    NOISE_RANGE1 = linear_scaler([0,15],[40,60])
+    NOISE_RANGE2 = linear_scaler([15,35],[60,100])
     def self_noise(self): # returns
         #
         """
@@ -100,19 +103,13 @@ class Submarine(MovableNewtonObject):
 
         :return: sound in in decibels
         """
-
-        # non-liner noise:
-        # for 0 < speed < 15 :  linear from 50 to 60
-        # for speed > 15 : linear with factor of 2db for each knot
-        # ref: http://fas.org/man/dod-101/navy/docs/es310/uw_acous/uw_acous.htm
-
         if self.speed <= 15:
-            noise = 50 + (0.667 * self.speed)
+            noise = self.NOISE_RANGE1(self.speed)
         else:
-            noise = 60.0 + (2 * (self.speed-15))
+            noise = self.NOISE_RANGE2(self.speed)
 
         # cavitation doesn't occur with spd < 7
-        max_speed_for_deep = max((self.get_deep() / 10) - 1, 7)
+        max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
         cavitating = max_speed_for_deep < self.speed
 
         if cavitating and not self.cavitation:
@@ -144,6 +141,13 @@ class Submarine(MovableNewtonObject):
 
     def turn(self, time_elapsed):
         MovableNewtonObject.turn(self, time_elapsed)
+        # deep
+        deep_diff = self.set_deep - self.actual_deep
+        if abs(deep_diff) > 0.1:
+            dive_rate = min(deep_diff, self.MAX_DEEP_RATE_FEET)
+            self.actual_deep += dive_rate * time_elapsed * 3600
+
+
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
         self.sonar.turn(time_elapsed)
@@ -155,7 +159,8 @@ class Submarine(MovableNewtonObject):
         return self.pos
 
     def __str__(self):
-        return "Submarine: {status}".format(status=MovableNewtonObject.__str__(self))
+        return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status=MovableNewtonObject.__str__(self),
+                                                                  deep=self.actual_deep,sdeep=self.set_deep)
 
 
 class TMA(SubModule):

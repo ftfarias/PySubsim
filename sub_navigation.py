@@ -76,7 +76,7 @@ class Navigation(SubModule):
         if abs(self.get_actual_speed() - self.speed) < 0.01:
             sub.acceleration = 0
         elif self.get_actual_speed() > self.speed:
-            sub.acceleration = -1 * 60
+            sub.acceleration = -5 * 60
         else:
             sub.acceleration = 2 * 60
 

@@ -39,7 +39,7 @@ class Decibel(object):
 
     def __div__(self, other):
         if isinstance(other, Decibel):
-            return Decibel(ratio=abs(self.value) / abs(other.value))
+            return Decibel(db=self.value - other.value)
         else:
             return Decibel(ratio=abs(self) / other)
 
@@ -89,7 +89,7 @@ class Decibel(object):
         return self + db(random.gauss(0, noise_level_db))
 
     def __str__(self):
-        return "{0:.1f}db".format(self.value)
+        return "{0:3.1f}db".format(self.value)
 
     __repr__ = __str__
 

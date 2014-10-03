@@ -211,6 +211,21 @@ def linreg(X, Y):
     return a, b
 
 
+def time_length_to_str(seconds):
+    if seconds < 60:
+        return "{0}s".format(seconds)
+    elif 3600 > seconds >= 60:
+        minutes = int(math.floor(seconds/60))
+        seconds -= minutes * 60
+        return "{0}m{1}".format(minutes,seconds)
+    else:
+        hours = int(math.floor(seconds/3600))
+        seconds -= hours * 3600
+        minutes = int(math.floor(seconds/60))
+        seconds -= minutes * 60
+        return "{0}h{1}".format(hours,minutes)
+
+
 class TestUtil(unittest.TestCase):
     def test_bands_equal(self):
         b1 = Bands([1.0, 2.0, 3.0, 4.0])
