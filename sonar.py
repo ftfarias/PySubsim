@@ -37,9 +37,7 @@ class SonarContact:
         self.blade_frequence = None   # Turns for second of the propeller
         self.knots_per_turn = 0
         self.deep = 0
-        self.bands = [0.0] * 10
-
-
+        self.bands = Bands()
 
     def bearing(self):
         return self.bearings_history[-1]
@@ -101,7 +99,7 @@ class SonarContact:
         course = abs_angle_to_bearing(self.course()) if self.course() is not None else '-'
         range_str = round(self.range(),1) if self.range() is not None else '-'
         speed = round(self.speed()) if self.speed() is not None else '-'
-        bearing = util.abs_angle_to_bearing(self.bearing())
+        bearing = abs_angle_to_bearing(self.bearing())
         return "{ident:3} ({ty}) bearing {bearing:3.0f}  range {range:5.1f}  course {course:3.0f}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>".\
             format(ident=self.ident, ty=obj_type, bearing=bearing, range=range_str,
             course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
@@ -184,6 +182,7 @@ class Sonar(SubModule):
         sc = SonarContact(self, scan_result.sonar_idx)
         sc.time_history.append(self.sea.time)
         sc.ident = self.get_new_contact_id()
+        sc.bands = scan_result.bands
 
         sc.bearings_history.append(scan_result.bearing)
         sc.range_history.append(scan_result.range)
@@ -191,6 +190,7 @@ class Sonar(SubModule):
         sc.stn_history.append(scan_result.signal_to_noise)
         sc.speed_history.append(0.0)
         sc.course_history.append(0.0)
+        sc.blade_number = scan_result.blades
         sc.deep = scan_result.deep
         sc.tracking_status = sc.NEW
 
@@ -207,8 +207,8 @@ class Sonar(SubModule):
         sc.tracking_status = sc.TRACKING
         sc.mark(self.sea.time, scan_result.bearing, scan_result.range, scan_result.signal_to_noise)
         sc.deep = scan_result.deep
-        #sc.bands = scan_result.bands
-        pass
+        sc.blade_number = scan_result.blades
+        sc.bands = scan_result.bands
 
     def noise_by_angle(self, from_angle, to_angle):
         sea_noise = self.sea.get_background_noise()

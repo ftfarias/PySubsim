@@ -4,15 +4,15 @@ from util import abs_angle_to_bearing, normalize_angle360, limits
 import math
 
 class Navigation(SubModule):
-    MAX_SPEED = 30
-
-    def __init__(self, sub):
+    def __init__(self, sub, MAX_SPEED=30):
         self.module_name = "NAV"
         self.sub = sub
         self.destination = None
         self._speed = 0
         self._course = 0
         self.waypoints = []
+        self.MAX_SPEED = MAX_SPEED
+
 
     def stop_all(self):
         self.set_speed(0)
@@ -80,10 +80,8 @@ class Navigation(SubModule):
         else:
             sub.acceleration = 2 * 60
 
-
         if self.destination:
             current_pos = sub.get_pos()
-            #dist_to_move = self.speed * time_elapsed / 3600  # speed in hours, time in seconds
             angle_to_destination = current_pos.angle_to(self.destination)
             #print("Angle to destination: {0}".format(abs_angle_to_bearing(angle_to_destination)))
             self.sub.set_sub_rudder(angle_to_destination)
@@ -96,16 +94,6 @@ class Navigation(SubModule):
                 angle_difference -= 2*math.pi
 
             sub.set_sub_rudder(angle_difference*60 * 2)
-
-            #if abs(angle_difference) < 0.1:
-            #    sub.set_sub_rudder(angle_difference)
-            #elif angle_difference > 0:
-            #    sub.rudder_right()
-            #else:
-            #    sub.rudder_left()
-
-            #dist = min(dist_to_move,dist_to_destination)
-            #self.pos = self.pos + (current_pos.movement_to(self.destination) * dist)
 
             dist_to_destination = current_pos.distance_to(self.destination)
             if dist_to_destination < 0.01:

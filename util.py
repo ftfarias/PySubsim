@@ -44,36 +44,14 @@ def limits(value, min, max):
 
 
 class Bands():
-    def __init__(self, bands=[0.0] * 10):
+    def __init__(self, bands=[10]):
         self.bands = bands
-
-    def __add__(self, other):
-        result = []
-        for a, b in zip(self, other):
-            result.append(a + b)
-        return result
-
-    def __sub__(self, other):
-        result = []
-        for a, b in zip(self, other):
-            result.append(a - b)
-        return result
-
-    def __mul__(self, other):
-        return Bands([b * other for b in self.bands])
-
-    def __div__(self, other):
-        return Bands([b / other for b in self.bands])
-
-    def __eq__(self, other):
-        return self.bands == other.bands
 
     def add_noise(self, noise):
         return Bands([max(0, b + random.gauss(0, noise)) for b in self.bands])
 
-    def normalize(self):
-        total = sum(self.bands)
-        return Bands([b / total for b in self.bands])
+    def log(self):
+        return [math.log10(b) for b in self.bands]
 
     def likelihood(self, other):
         var = 0.0
@@ -83,32 +61,8 @@ class Bands():
         return math.sqrt(var)
 
     def __str__(self):
-        return " | ".join(["{0:3.1f}".format(b) for b in self.bands])
-
-
-class BandsAcumulator():
-    def __init__(self):
-        self.bands = [OnLineMean() for _ in xrange(10)]
-
-    def normalize(self):
-        total = sum([b.mean for b in self.bands])
-        return Bands([b.mean / total for b in self.bands])
-
-    def passive(self):
-        return Bands(self.bands[0:5])
-
-    def active(self):
-        return Bands(self.bands[5:10])
-
-    def likelihood(self, other):
-        var = 0.0
-        for r, m in zip(self.normalize(), other.normalize()):
-            var += ((m - r) ** 2)
-        # print ("ref:{0} mensured:{1} {2} chi:{3}".format(ref_band,measured_band,n, chi))
-        return math.sqrt(var)
-
-    def __str__(self):
-        return " ".join(["{0:5}".format(b) for b in self.bands])
+        return self.bands
+        #return " | ".join(["{0:3.1f}".format(b) for b in self.bands])
 
 
 def calc_bands(ref_bands, factor, noise):
@@ -227,20 +181,9 @@ def time_length_to_str(seconds):
 
 
 class TestUtil(unittest.TestCase):
-    def test_bands_equal(self):
-        b1 = Bands([1.0, 2.0, 3.0, 4.0])
-        b2 = Bands([1.0, 2.0, 3.0, 4.0])
-        self.assertEqual(b1, b2)
-
-    def test_bands_mul(self):
-        b1 = Bands([1.0, 2.0, 3.0, 4.0]) * 2
-        b2 = Bands([2.0, 4.0, 6.0, 8.0])
-        self.assertEqual(b1, b2)
-
+    pass
 
 if __name__ == '__main__':
     unittest.main()
-
-
 
 

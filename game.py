@@ -7,6 +7,7 @@ from util import abs_angle_to_bearing, time_length_to_str
 import time
 import sys
 import logging
+import math
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -66,7 +67,6 @@ def menu_object(n):
                                                                                kpt=obj.knots_per_turn,
                                                                                s=f(obj.propeller_speed())))
 
-
     n = 10
     start_time = sea.time
     scan_times = []
@@ -78,7 +78,7 @@ def menu_object(n):
     bearings = " | ".join(["{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.bearings_history[-n:]])
     ranges = " | ".join(["{0:5.1f}".format(b) for b in obj.range_history[-n:]])
     speeds = " | ".join(["{0:5.1f}".format(b) for b in obj.speed_history[-n:]])
-    courses = " | ".join(["{0:5.1f}".format(b) for b in obj.course_history[-n:]])
+    courses = " | ".join(["{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.course_history[-n:]])
     print ("         {0}".format(times))
     print ("Bearing: {0}".format(bearings))
     print ("Range  : {0}".format(ranges))
@@ -86,8 +86,12 @@ def menu_object(n):
     print ("Course : {0}".format(courses))
 
     bands = obj.bands
-    print("".join(["{0:5}".format(i)  for i in range(1,11)]))
-    print("".join(["{0:5.1f}".format(b) for b in bands]))
+
+    #print("".join(["{0:5}".format(i)  for i in range(1,11)]))
+    #print("".join(["{0:5.1f}".format(b) for b in bands]))
+
+
+
     #for prob in obj.obj_type_probs:
     #    print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
 

@@ -9,7 +9,7 @@ class SurfaceShip(MovableNewtonObject):
         self.navigation = Navigation(self)
 
     def get_deep(self):
-        return self.z
+        return 0
 
     def get_pos(self):
         return self.pos

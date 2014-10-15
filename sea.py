@@ -7,6 +7,8 @@ import math
 import unittest
 import datetime
 from sound import Decibel, db, simple_sound_absortion_by_sea, sound_absortion_by_sea
+from objecttypes import KNOWN_TYPES
+
 import logging
 logger = logging.getLogger()
 """
@@ -23,104 +25,7 @@ are perfect within themselves, serene and elegant, their purpose self-evident.
 Truly, he has entered the mystery of Tao.”
 """
 
-KNOWN_TYPES = {
-    # Symbol for map display
-    # Number of blades. ex: [4,5] four or five blades.
-    # Sonar Bands
-    # bands:  50, 100, 300, 500, 1000, 2000, 15000, 20000
 
-
-
-
-    # f = 12 Hz - @2-5 kHz for “whale songs”, SL up to 188 dB
-    'Whale': {'symbol': 'B',
-         'blades': [0, 0],
-         'bands': Bands([0]),
-         'noise': [50, 80],
-         'deep': [0, 100]},
-
-    # generate intense broadband noise, f = 1-10 kHz, SL =60-90 dB
-    'Snapping Shrimp': {'symbol': 'B',
-         'blades': [0, 0],
-         'bands': Bands([0]),
-         'noise': [80, 100],
-         'deep': [10, 15]},
-
-
-    # Merchant Vessels/Tankers: Typically three or four blades; noisy;
-    # often maintains predictable course.
-    'Large Merchant Vessel':
-        {'symbol': 'M',
-         'blades': [3, 4],
-         'bands': Bands([0]),
-         'noise': [80, 90],
-         'deep': [0, 0]},
-
-    'Small Merchant Vessel':
-        {'symbol': 'M',
-         'blades': [3, 4],
-         'bands': Bands([0]),
-         'noise': [70, 80],
-         'deep': [0, 0]},
-
-    # Warships: Typically four or five-bladed propellers; quieter, smoother
-    # sound than merchant ships; possibly unpredictable course changes.
-
-    'Destroyer':
-        {'symbol': '^',
-         'blades': [4, 5],
-         'bands': Bands([0]),
-         'noise': [60, 70],
-         'deep': [0, 0]},
-
-    'Warship':
-        {'symbol': '^',
-         'blades': [4, 5],
-         'bands': Bands([0]),
-         'noise': [75, 85],
-         'deep': [0, 0]},
-
-    # Submarines: Five, six or seven-bladed propellers;
-    # very quiet when submerged and at low speed; unpredictable course changes.
-    'Akula':
-        {'symbol': 'S',
-         'blades': [7, 7],
-         'bands': Bands([0]),
-         'noise': [55, 75],
-         'deep': [68, 300]},
-
-    '688':
-        {'symbol': 'S',
-         'blades': [6, 6],
-         'bands': Bands([0]),
-         'noise': [50, 70],
-         'deep': [68, 300]},
-
-    # Fishing Vessels/Trawlers/Pleasure Craft: Three- or four-bladed propellers;
-    # noisy; erratic courses and speeds, frequently stopping and starting.
-
-    'Fishing Boat':
-        {'symbol': 'F',
-         'blades': [3, 4],
-         'bands': Bands([0]),
-         'noise': [80, 90],
-         'deep': [0, 0]},
-
-    'Fishing Ship':
-        {'symbol': 'F',
-         'blades': [3, 4],
-         'bands': Bands([0]),
-         'noise': [55, 65],
-         'deep': [0, 0]},
-
-    'Torpedo':
-        {'symbol': 'T',
-         'blades': [5, 5],
-         'bands': Bands([20000]),
-         'noise': [110, 110],
-         'deep': [0, 0]},
-
-}
 
 
 def symbol_for_type(kind):
@@ -192,7 +97,7 @@ class SimpleSeaObject(SeaObject, MovableNewtonObject):
         return self.pos
 
     def turn(self, time_elapsed):
-        MovableNewtonObject.turn(self,time_elapsed)
+        MovableNewtonObject.turn(self, time_elapsed)
 
     def set_destination(self, course, speed):
         self.vel = Point(1,1)
@@ -264,6 +169,7 @@ class Sea:
         bio.deep = random.randint(30, 100)
         bio.set_destination(random.randint(0,359), 1)
         self.objects.append(bio)
+        return bio
 
     def create_warship(self, pos=None, ship_type=None):
         t = ['Destroyer', 'Warship']
@@ -274,6 +180,7 @@ class Sea:
         ship = SimpleSeaObject(ship_type, pos)
         ship.set_destination(random.randint(0, 359), random.randint(5, 15))
         self.objects.append(ship)
+        return ship
 
     def create_fishing(self, pos=None, ship_type=None):
         t = ['Fishing Boat', 'Fishing Ship']
@@ -310,6 +217,9 @@ class Sea:
         logger.debug("background_noise {0}".format(background_noise))
         for i, obj in enumerate(self.objects):
             obj_pos = obj.get_pos()
+            # skips the sub itself
+            if sub_pos == obj_pos:
+                continue
             range = obj_pos.distance_to(sub_pos)
             logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}".format(i=i, dist=range, obj=obj))
             #if dist > 15:  # hard limit for object detection.
@@ -328,6 +238,15 @@ class Sea:
             #    received_sound = db(received_sound)
             signal_to_noise = received_sound / background_noise
             if signal_to_noise.value > 1:
+                # error: greater the signal_to_noise, less the error
+                if signal_to_noise > 10:
+                    error = 0.0001 # means 0.1% in measure
+                else:
+                    # the error moves from 5% to 1% in a exponencial decay
+                    error = 0.0001+0.0004*math.exp(-0.5*signal_to_noise.value)
+                # it's divided by 3 because in a gaussian 99% of time we have 3 sigmas...
+                # so the error is "max" error for 99% of measures
+                error /= 3
                 deep = obj.get_deep()
                 bands = (obj.get_sonar_bands())  # add_noise
                 # .add_noise(0.1*dist)
@@ -336,8 +255,8 @@ class Sea:
                 r = ScanResult(i)
                 r.signal_to_noise = signal_to_noise
                 r.blades = obj.blades
-                r.range = range
-                r.bearing = bearing
+                r.range = range + random.gauss(0, error)
+                r.bearing = bearing + random.gauss(0, error)
                 r.deep = deep
                 r.bands = bands
                 logger.debug("scan_result: {0}".format(r))
