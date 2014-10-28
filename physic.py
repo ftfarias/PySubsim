@@ -133,6 +133,14 @@ class Point(object):
             return 0
         return math.atan2(p.y, p.x)
 
+
+    def bearing_to(self, other):
+        p = other - self
+        if p.get_length_sqrd() == 0:
+            return 0
+        return normalize_angle360(math.atan2(1.0*p.y, p.x)+(math.pi/2))
+        #return round(math.degrees(normalize_angle360(math.atan2(p.y, p.x)+(math.pi/2))))
+
     def get_angle(self):
         if self.get_length_sqrd() == 0:
             return 0

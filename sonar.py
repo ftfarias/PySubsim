@@ -70,7 +70,8 @@ class SonarContact:
     def estimate_pos(self, ship_pos=None):
         if ship_pos is None:
             ship_pos = Point(0,0)
-        return ship_pos + Point(math.cos(self.bearing())*self.range(), math.sin(self.bearing())*self.range())
+        angle = self.bearing() - (math.pi/2)
+        return ship_pos + Point(math.cos(angle)*self.range(), math.sin(angle)*self.range())
 
     def mark(self, time, bearing, contact_range, stn, speed=None, course=None):
         time_elapsed_since_last = (time - self.time_history[-1]).seconds
@@ -97,17 +98,20 @@ class SonarContact:
     def __str__(self):
         obj_type = self.obj_type if self.obj_type is not None else '<unknown>'
         course = abs_angle_to_bearing(self.course()) if self.course() is not None else '-'
-        range_str = round(self.range(),1) if self.range() is not None else '-'
+        course_symbol = util.angles_to_unicode(abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
+        range_str = round(self.range(), 1) if self.range() is not None else '-'
         speed = round(self.speed()) if self.speed() is not None else '-'
         bearing = abs_angle_to_bearing(self.bearing())
-        return "{ident:3} ({ty}) bearing {bearing:3.0f}  range {range:5.1f}  course {course:3.0f}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>".\
+        bearing_symbol = util.angles_to_unicode(bearing)
+        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>".\
             format(ident=self.ident, ty=obj_type, bearing=bearing, range=range_str,
             course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
-            snt=self.stn())
+            snt=self.stn(), arrow=course_symbol, bs=bearing_symbol)
 
 
 class Sonar(SubModule):
     MAX_WATERFALL_HISTORY_SECONDS = 2 * 3600  # two hours
+    WATERFALL_STEPS = 120
 
     def __init__(self, sub):
         SubModule.__init__(self, sub)
@@ -148,7 +152,7 @@ class Sonar(SubModule):
         if self.time_for_next_waterfall <= 0.0:
             # passive scan
             self.waterfall_update()
-            self.time_for_next_waterfall = 1.0 / 3600 # every 10 seconds
+            self.time_for_next_waterfall = 1.0 / 3600 # every second
         else:
             self.time_for_next_waterfall -= time_elapsed
 
@@ -169,7 +173,7 @@ class Sonar(SubModule):
                 self.add_contact(sr)
 
     def waterfall_update(self):
-        s = [x.value for x in self.sonar_array(120)]
+        s = [x.value for x in self.sonar_array(self.WATERFALL_STEPS)]
         self.waterfall.append(s)
         if len(self.waterfall) > self.MAX_WATERFALL_HISTORY_SECONDS:
             self.waterfall = self.waterfall[-self.MAX_WATERFALL_HISTORY_SECONDS]
@@ -201,7 +205,7 @@ class Sonar(SubModule):
 
         self.contacts[scan_result.sonar_idx] = sc
         self.add_message("Conn, Sonar: New {st} contact on sonar, bearing {br:3.0f}, designated {d}".format(
-            st=st,br=util.abs_angle_to_bearing(scan_result.bearing), d=sc.ident), True)
+            st=st, br=util.abs_angle_to_bearing(scan_result.bearing), d=sc.ident), True)
 
     def update_contact(self, sc, scan_result, time_elapsed):
         sc.tracking_status = sc.TRACKING
@@ -219,6 +223,7 @@ class Sonar(SubModule):
             #if from_angle <= angle <= to_angle:
 
         return backgroung_noise
+
 
 
     def sonar_array(self, num_angles):

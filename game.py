@@ -3,10 +3,11 @@ from sub import ShipFactory
 from sea import Sea, symbol_for_type
 from physic import Point
 from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale
-from util import abs_angle_to_bearing, time_length_to_str
+from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift
 import time
 import sys
 import logging
+from sonar import Sonar
 import math
 
 logger = logging.getLogger()
@@ -38,8 +39,6 @@ D - 0
 """
 
 
-
-
 def print_status():
     print('* Status *')
     #print(player_sub.status())
@@ -49,7 +48,16 @@ def print_status():
     #print(player_sub.weapons.status())
 
 
-def menu_object(n):
+def print_near_objects():
+    objs = player_sub.sonar.return_near_objects()
+    if not objs:
+        print("<no contacts>")
+    else:
+        for k,v in objs.items():
+            print u"{0:3d}: {1}".format(k, v)
+
+
+def show_object_details(n):
     if n not in player_sub.sonar.contacts:
         print("Unknown track "+str(n))
         print("Valid tracks: ")
@@ -94,6 +102,7 @@ def menu_object(n):
 
     #for prob in obj.obj_type_probs:
     #    print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
+
 
 
 def parse_coordinates(text):
@@ -210,7 +219,7 @@ def show_menu(menu):
                     print_near_objects()
                 else:
                     n = int(opt[1])
-                    menu_object(n)
+                    show_object_details(n)
                 continue
 
 
@@ -278,9 +287,10 @@ def show_menu(menu):
                 print("mov x,y: set destination x,y")
                 print("spd x  : set speed for x")
                 print("deep x : set deep to x")
+                print("wf <n> : show waterfall display (n=1 for 30 seconds, n=2 for 30 minutes, n=3 for 2 hours")
                 print("q      : quit")
-        except ValueError:  # catchs all other errors inside the big loop
-            pass
+        except ValueError as e:  # catchs all other errors inside the big loop
+            print e
 
 
 def input_integer(min=0, max=100):
@@ -355,11 +365,12 @@ class Watefall(object):
         self.set_waterfall_level(50,70)
 
     def set_waterfall_level(self, low,high):
-        self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=".:;|$#").map
+        #self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=".:;|$#").map
+        self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=u"\u2591\u2592\u2593\u2588").map
 
     def print_sonar(self):
         s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
-        return "["+"".join(s)+"]"
+        return u"["+"".join(s)+"]"
 
     def print_waterfall(self, compact=1, l=60, inverted=True):
         """
@@ -376,7 +387,7 @@ class Watefall(object):
 
         idx = 0
         while idx < len_wf:
-            # idx_compact in the number of sonar resings to be "compacted" for next printed line
+            # idx_compact in the number of sonar readings to be "compacted" for next printed line
             idx_compact = min(compact, len_wf-idx)
             print(idx_compact)
             total = [0.0] * 120
@@ -388,10 +399,14 @@ class Watefall(object):
 
             #print(total)
             line = [self.asciiScaler(d/idx_compact) for d in total]
-            wf_c.append("[{0}]".format("".join(line)))
+            wf_c.append(u"[{0}]".format("".join(shift(line, Sonar.WATERFALL_STEPS/2))))
 
         if not inverted:
             wf_c.reverse()
+
+        step = 360 / Sonar.WATERFALL_STEPS
+        header = [angles_to_unicode(i*step) for i in xrange(Sonar.WATERFALL_STEPS)]
+        print(" "+"".join(shift(header,Sonar.WATERFALL_STEPS/2)))
 
         for l in wf_c:
             print(l)
@@ -408,24 +423,19 @@ class Watefall(object):
 
 waterfall = Watefall()
 
+
 def adjust_watefall():
     low, high = input_values("Enter the low and high db levels(default: 50,70): ")
     if low is not None:
         waterfall.set_waterfall_level(low, high)
 
-def print_near_objects():
-    objs = player_sub.sonar.return_near_objects()
-    if not objs:
-        print("<no contacts>")
-    else:
-        for k,v in objs.items():
-            print "{0:3d}: {1}".format(k, v)
 
 def print_noise_profile():
     sea_noise = sea.get_background_noise()
     sub_noise = player_sub.self_noise()
     print("Sea background noise: {sea}   Sub noise:{sub}   total:{t}".format(
         sea=sea_noise, sub=sub_noise, t=sea_noise+sub_noise))
+
 
 MAIN_SONAR = [
     ('Show near objects', print_near_objects),
@@ -532,7 +542,7 @@ def start():
         sea.create_warship()
 
     ship = sea.create_fishing(pos=Point(5,5))
-    ship.set_destination(0, 10/3600)
+    ship.set_destination(0, 1)
 
     game_loop(1, 0.1)
 

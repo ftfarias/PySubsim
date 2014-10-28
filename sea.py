@@ -7,7 +7,9 @@ import math
 import unittest
 import datetime
 from sound import Decibel, db, simple_sound_absortion_by_sea, sound_absortion_by_sea
-from objecttypes import KNOWN_TYPES
+from object_types import KNOWN_TYPES
+from sea_object import *
+
 
 import logging
 logger = logging.getLogger()
@@ -25,18 +27,6 @@ are perfect within themselves, serene and elegant, their purpose self-evident.
 Truly, he has entered the mystery of Tao.”
 """
 
-
-
-
-def symbol_for_type(kind):
-    if kind is None:
-        return '?'
-    elif kind not in KNOWN_TYPES:
-        return '<UNKNOW TYPE>'
-    else:
-        return KNOWN_TYPES[kind]['symbol']
-
-
 class ScanResult:
     def __init__(self, sonar_idx):
         self.sonar_idx = sonar_idx
@@ -53,98 +43,6 @@ class ScanResult:
         return "ScanResult idx={id} snt={snt} bearing={b} range={r} deep={deep} blades={bl} band={band}".\
             format(id=self.sonar_idx, snt=self.signal_to_noise, b=self.bearing, r=self.range,
                    deep=self.deep, bl=self.blades, band=self.bands)
-
-
-class SeaObject():
-    def __init__(self, kind):
-        self.details = None
-        self.kind = kind
-        self.sonar_bands = KNOWN_TYPES[kind]['bands']
-        blades_range = KNOWN_TYPES[kind]['blades']
-        self.blades = random.randint(blades_range[0], blades_range[1])
-        deep_range = KNOWN_TYPES[kind]['deep']
-        self.deep = random.randint(deep_range[0], deep_range[1])
-        noise_range = KNOWN_TYPES[kind]['noise']
-        self.noise = random.randint(noise_range[0], noise_range[1])
-
-    def get_pos(self):
-        return Point(0, 0)
-
-    def turn(self, time_elapsed):
-        pass
-
-    def get_sonar_bands(self):
-        return self.sonar_bands
-
-    def get_deep(self):
-        return self.deep;
-
-    def self_noise(self):
-        return db(db=self.noise + random.gauss(0,2))
-
-    def __str__(self):
-        return "{k}: pos:{pos} deep={deep} noise={noise}  blades={bl} {det}".format(k=self.kind,
-            deep=self.get_deep(), noise=self.self_noise(), pos=self.get_pos(), bl=self.blades, det=self.details)
-
-
-class SimpleSeaObject(SeaObject, MovableNewtonObject):
-    def __init__(self, kind, pos):
-        SeaObject.__init__(self, kind)
-        MovableNewtonObject.__init__(self)
-        self.pos = pos
-
-    def get_pos(self):
-        return self.pos
-
-    def turn(self, time_elapsed):
-        MovableNewtonObject.turn(self, time_elapsed)
-
-    def set_destination(self, course, speed):
-        self.vel = Point(1,1)
-        self.speed = speed
-        self.course = course
-
-
-class SeaSurfaceShip(SeaObject):  # adapter para class SHIP
-    def __init__(self, ship, kind='Surface Ship'):
-        SeaObject.__init__(self, kind)
-        self.ship = ship
-
-    def add_waypoint(self, dest):
-        self.ship.add_waypoint(dest)
-
-    def get_pos(self):
-        return self.ship.get_pos()
-
-    def get_deep(self):
-        return 0;
-
-    def turn(self, time_elapsed):
-        self.ship.turn(time_elapsed)
-
-
-class SeaSubmarine(SeaObject):
-    def __init__(self, sub):
-        SeaObject.__init__(self, sub.kind)
-        assert isinstance(sub, Submarine)
-        self.sub = sub
-
-    def get_pos(self):
-        p = self.sub.get_pos()
-        assert isinstance(p, Point)
-        return self.sub.get_pos()
-
-    def get_deep(self):
-        return self.sub.actual_deep
-
-    def self_noise(self):
-        return self.sub.self_noise()
-
-    def turn(self, time_elapsed):
-        self.sub.turn(time_elapsed)
-
-        # def get_sonar_bands(self):
-        #    return self.sonar_bands
 
 
 class Sea:
@@ -165,9 +63,10 @@ class Sea:
     def create_biologic(self, pos=None):
         if pos is None:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
-        bio = SimpleSeaObject("Whale", pos)
+        bio = MovableSeaObject("Whale", pos)
         bio.deep = random.randint(30, 100)
         bio.set_destination(random.randint(0,359), 1)
+        logging.debug("Creating random biologic {0}".format(bio))
         self.objects.append(bio)
         return bio
 
@@ -177,7 +76,7 @@ class Sea:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
         if ship_type is None:
             ship_type = t[random.randint(0, len(t) - 1)]
-        ship = SimpleSeaObject(ship_type, pos)
+        ship = MovableSeaObject(ship_type, pos)
         ship.set_destination(random.randint(0, 359), random.randint(5, 15))
         self.objects.append(ship)
         return ship
@@ -188,7 +87,7 @@ class Sea:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
         if ship_type is None:
             ship_type = t[random.randint(0, len(t) - 1)]
-        ship = SimpleSeaObject(ship_type, pos)
+        ship = MovableSeaObject(ship_type, pos)
         ship.set_destination(random.randint(0, 359), random.randint(1, 5))
         self.objects.append(ship)
         return ship
@@ -202,7 +101,7 @@ class Sea:
             obj.turn(time_elapsed)
 
     def get_background_noise(self):
-        return db(random.gauss(20, 2))
+        return db(random.gauss(40, 2))
 
     def sound_attenuation(self, freq, deep):
         #return db(db=simple_sound_absortion_by_sea(freq, deep))
@@ -225,18 +124,26 @@ class Sea:
             #if dist > 15:  # hard limit for object detection.
             #    continue
             assert isinstance(obj.get_pos(), Point)
-            object_sound = obj.self_noise()
-            deep_in_km = sub.actual_deep / 3280  # 3280 feet = 1 km
-            attenuation_per_knot = self.sound_attenuation(freq=10, deep=deep_in_km) * 1.8  # in db/km * 1.8 = db/knot
-            attenuation_total = attenuation_per_knot * range
-            received_sound = object_sound / attenuation_total
-            logger.debug("{i}: object_sound:{os}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} recived_sound={rs}".format(
-                i=i, os=object_sound, deep=deep_in_km,
-                at=attenuation_per_knot,
-                tat=attenuation_total ,rs=received_sound))
+            source_level = obj.self_noise()
+
+            deep_in_km = 1.0 * sub.actual_deep / 3280  # 3280 feet = 1 km
+            # most part of a sub self-noise is around 30 Hz
+            attenuation_per_mile = self.sound_attenuation(freq=1, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
+            transmission_loss = attenuation_per_mile * range  # TL
+
+            received_sound = source_level / transmission_loss
+
+            receiving_array_gain = 0  # AG
+
+
+            logger.debug("{i}: source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} recived_sound={rs}".format(
+                i=i, sl=source_level, deep=deep_in_km,
+                at=attenuation_per_mile,
+                tat=transmission_loss ,rs=received_sound))
             #if not isinstance(object_sound, Decibel):
             #    received_sound = db(received_sound)
             signal_to_noise = received_sound / background_noise
+            logger.debug("{i}: signal_to_noise:{stn}".format(i=i,stn=signal_to_noise))
             if signal_to_noise.value > 1:
                 # error: greater the signal_to_noise, less the error
                 if signal_to_noise > 10:
@@ -244,13 +151,14 @@ class Sea:
                 else:
                     # the error moves from 5% to 1% in a exponencial decay
                     error = 0.0001+0.0004*math.exp(-0.5*signal_to_noise.value)
-                # it's divided by 3 because in a gaussian 99% of time we have 3 sigmas...
+                # it's divided by 3 because in a gaussian 99% of time we are inside 3 sigmas...
                 # so the error is "max" error for 99% of measures
                 error /= 3
                 deep = obj.get_deep()
-                bands = (obj.get_sonar_bands())  # add_noise
+                bands = obj.sonar_bands
                 # .add_noise(0.1*dist)
-                bearing = sub_pos.angle_to(obj_pos)
+                bearing = sub_pos.bearing_to(obj_pos)
+                #bearing = obj_pos.bearing_to(sub_pos)
                 # Scan Result
                 r = ScanResult(i)
                 r.signal_to_noise = signal_to_noise
@@ -303,3 +211,28 @@ class TestUtil(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
+"""
+Source:
+Can Russian Strategic
+Submarines Survive at Sea?
+The Fundamental Limits of
+Passive Acoustics
+http://scienceandglobalsecurity.org/archive/sgs04miasnikov.pdf
+
+
+
+http://fas.org/man/dod-101/sys/ship/deep.htm
+The most obvious contribution to the ambient noise is the action occurring on the surface of
+the ocean. The greater the size of the waves, the greater the ambient noise contribution. The
+waves are driven by the winds, so there is a direct correspondence between the steady wind speed
+and the sea state. The greater the wind speed or sea state, obviously the greater the ambient
+noise contribution. The frequency of the noise from sea state tends to be greater than 300 Hz.
+
+The second main contribution to ambient noise comes from shipping in general. In regions where
+there are many transiting ships, the ambient noise will be increased substantially. This noise,
+in contrast to the noise from sea state, will be at low frequency (< 300 Hz).
+
+The third possible ambient noise source is biologics, meaning sea-life. These are as widely
+varied as they are unpredictable. One common source is snapping shrimp. Others include whales
+and dolphins.
+"""

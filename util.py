@@ -2,6 +2,7 @@
 import collections
 import math
 import random
+from sound import db
 import unittest
 
 
@@ -9,6 +10,32 @@ def angles(num_angles):
     step = 360 / num_angles
     return [(a*step, (a+1)*step) for a in xrange(num_angles)]
 
+
+def angles_to_unicode(angle):
+    def interval(a, direction):
+        return direction-22.5 <= a < direction+22.5
+
+    if angle is None:
+        return u'\u2219'
+    elif interval(angle, 45):
+        return u'\u2197'
+    elif interval(angle, 90):
+        return u'\u2192'
+    elif interval(angle, 135):
+        return u'\u2198'
+    elif interval(angle, 180):
+        return u'\u2193'
+    elif interval(angle, 225):
+        return u'\u2199'
+    elif interval(angle, 270):
+        return u'\u2190'
+    elif interval(angle, 315):
+        return u'\u2196'
+    else:
+        return u'\u2191'
+
+def shift(l, n):
+    return l[n:] + l[:n]
 
 def normalize_angle360(angle):
     # return the angle between 0 and 360 (in radians)
@@ -43,26 +70,61 @@ def limits(value, min, max):
         return value
 
 
+HERTZ_LABEL = ['Hz', 'KHz', 'MHz', 'GHz']
+def int_to_hertz(value):
+    scale = 0
+    while value >= 1000:
+        value /= 1000.0
+        scale += 1
+
+    value = round(value, 1)
+    return "{0}{1}".format(value,HERTZ_LABEL[scale])
+
+    # if scale == 0 and value < 1:
+    #     return "{0:0.1f}{1}".format(value,HERTZ_LABEL[scale])
+    # else:
+    #     return "{0:0.0f}{1}".format(value,HERTZ_LABEL[scale])
+
+
 class Bands():
-    def __init__(self, bands=[10]):
+    def __init__(self, bands={}):
         self.bands = bands
 
-    def add_noise(self, noise):
-        return Bands([max(0, b + random.gauss(0, noise)) for b in self.bands])
+    def add(self, level, freq):
+        self.bands[freq] = level
 
-    def log(self):
-        return [math.log10(b) for b in self.bands]
+    def get_bands(self):
+        return self.bands.keys()
 
-    def likelihood(self, other):
-        var = 0.0
-        for r, m in zip(self.normalize(), other.normalize()):
-            var += ((m - r) ** 2)
-        # print ("ref:{0} mensured:{1} {2} chi:{3}".format(ref_band,measured_band,n, chi))
-        return math.sqrt(var)
+    def total_level(self):
+        return sum(self.bands.values())
+
+    def filter(self, min_level):
+        for k, v in self.bands.items():
+            if v < min_level:
+                del self.bands[k]
+
+
+    #def add_noise(self, noise):
+    #    return Bands([max(0, b + random.gauss(0, noise)) for b in self.bands])
+
+    #def log(self):
+    #    return [math.log10(b) for b in self.bands]
+
+    # def likelihood(self, other):
+    #     var = 0.0
+    #     for r, m in zip(self.normalize(), other.normalize()):
+    #         var += ((m - r) ** 2)
+    #     # print ("ref:{0} mensured:{1} {2} chi:{3}".format(ref_band,measured_band,n, chi))
+    #     return math.sqrt(var)
+
 
     def __str__(self):
-        return self.bands
-        #return " | ".join(["{0:3.1f}".format(b) for b in self.bands])
+        #return self.bands
+        if self.bands:
+            return " | ".join(["{0} @ {1}".format(b[0], int_to_hertz(b[1])) for b in self.bands])
+        else:
+            return "<no bands>"
 
 
 def calc_bands(ref_bands, factor, noise):

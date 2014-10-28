@@ -8,17 +8,35 @@ KNOWN_TYPES = {
 
     # f = 12 Hz - @2-5 kHz for “whale songs”, SL up to 188 dB
     'Whale': {'symbol': 'B',
-         'blades': [0, 0],
-         'bands': Bands(),
-         'noise': [50, 80],
-         'deep': [0, 100]},
+              'blades': [0, 0],
+              'bands': Bands(),
+              'noise': [50, 80],
+              'deep': [0, 100]},
+
+    # "The snapping shrimp competes with much larger animals
+    # such as the Sperm Whale and Beluga Whale for the title of
+    # 'loudest animal in the sea'. The animal snaps a specialized claw
+    #  shut to create a cavitation bubble that generates acoustic pressures
+    # of up to 80 kPa at a distance of 4 cm from the claw. As it extends
+    # out from the claw, the bubble reaches speeds of 60 miles per hour
+    #  (97 km/h) and releases a sound reaching 218 decibels.[11] The pressure
+    #  is strong enough to kill small fish.[12] It corresponds to a
+    # zero to peak pressure level of 218 decibels relative to one micropascal
+    #  (dB re 1 μPa), equivalent to a zero to peak source level of 190 dB re
+    # 1 μPa at the standard reference distance of 1 m. Au and Banks measured
+    # peak to peak source levels between 185 and 190 dB re 1 μPa at 1 m, depending
+    #  on the size of the claw.[13] Similar values are reported by Ferguson
+    # and Cleary.[14] The duration of the click is less than 1 millisecond.
 
     # generate intense broadband noise, f = 1-10 kHz, SL =60-90 dB
+
+    # Read more: http://www.physicsforums.com
+
     'Snapping Shrimp': {'symbol': 'B',
-         'blades': [0, 0],
-         'bands': Bands(),
-         'noise': [80, 100],
-         'deep': [10, 15]},
+                        'blades': [0, 0],
+                        'bands': Bands(),
+                        'noise': [100, 210],
+                        'deep': [10, 15]},
 
 
     # Merchant Vessels/Tankers: Typically three or four blades; noisy;

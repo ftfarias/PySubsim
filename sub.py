@@ -15,7 +15,7 @@ class ShipFactory():
     def create_player_sub(sea):
         print("Creating Player Submarine")
         sub = Submarine(sea, kind='688')
-        sub.pos = Point(10, 10)
+        sub.pos = Point(6, 6)
         sub.name = "Mautilus"
         sea.add_submarine(sub)
         return sub
@@ -185,4 +185,65 @@ class Communication(SubModule):
         self.module_name = "COMM"
 
 
+"""
+the 093’s noise level has been reduced to that of
+the Russian Akula-class submarine at 110 decibels.
+He states that the 094’s acoustic signature has been
+reduced to 120 decibels. According to this report,
+this is definitely not equal to that of the Ohio class,
+but is on a par with the Los Angeles. There is no additional
+information given to evaluate concerning the origins or
+comparability of these 'data.'" - Andrew S. Erickson & Lyle J. Goldstein, 2006.
 
+As a reminder, a decibel is: "a unit used to measure the intensity
+of a sound or the power level of an electrical signal by comparing
+it with a given level on a logarithmic scale" - American English in
+Oxford dictionary, 2013.
+
+Decibels do not scale linearly. A 3db change is signifies a
+doubling power and a change of 10 db signifies the power increasing
+by a factor of ten.  Therefore, the 636 Kilo class with an acoustic
+signature of 105 decibels is 10 times as loud as the 95 decibel
+acoustic signature of the Virginia class submarine.
+
+To provide a point of reference, the following acoustic
+signatures are from "Chinese Evaluations of the U.S. Navy Submarine Force"
+ and "CHINA’S FUTURE NUCLEAR SUBMARINE FORCE"
+
+Ocean background noise - 90 decibels
+Seawolf-class - 95 decibels
+Virginia-class - 95 decibels
+636 Kilo class - 105 decibels
+Akula-class - 110 decibels
+Type 093 - 110 decibels
+Type 094 - 120 decibels
+
+The Shang has an acoustic signature similar to the original
+Russian Akula class boats or roughly equivalent to the original
+Los-Angles class submarine, not the 688I (improved Los-Angles class).
+Judging from acoustic signatures, the most modern Chinese nuclear
+submarines are comparabile to 1970s and 1980s US and Soviet
+designs shown on the chart below.
+
+
+DEEP:
+
+During World War II, American fleet submarines normally operated at a depth of 200 feet,
+ though in emergencies they would dive to a depth of 400 feet.
+
+Post-War American submarines, both conventional and nuclear, had improved designs
+and were constructed of improved materials [the equivalent of "HY-42"]. These boats
+ had normal operating depths of some 700 feet, and a crush depth of 1100 feet.
+
+The Thresher, the first American submarine constructed of HY-80 steel, reportedly
+ had a normal operating depth of 1,300 feet, roughly two-thirds the crush depth limit
+  imposed by the HY-80 steel.
+
+The Seawolf, the first American submarine constructed of HY-100 steel, is officially
+claimed by the Navy to have a normal operating depth of "greater than 800 feet," but based
+on the reported operating depth of the Thresher, it may be assumed that the normaly operating
+ depth of the Seawolf is roughly double the official figure.
+
+The Soviet Alfa submarines, constructed of titanium, reportedly had an operating depth
+of nearly 4,000 feet.
+"""
