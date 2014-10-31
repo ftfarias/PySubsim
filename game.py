@@ -2,8 +2,8 @@
 from sub import ShipFactory
 from sea import Sea, symbol_for_type
 from physic import Point
-from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale
-from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift
+from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale, linear_scaler_with_limit
+from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift, ascii_gray, ascii_reset
 import time
 import sys
 import logging
@@ -69,8 +69,8 @@ def show_object_details(n):
             return "?"
         return str_format.format(value)
     obj = player_sub.sonar.contacts[n]
-    print (obj)
-    print ("Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number),
+    print (u'{0}'.format(obj))
+    print (u"Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number),
                                                                                f=f(obj.blade_frequence),
                                                                                kpt=obj.knots_per_turn,
                                                                                s=f(obj.propeller_speed())))
@@ -82,16 +82,16 @@ def show_object_details(n):
         t = (sea.time - obj.time_history[(-(i+1))])
         scan_times.append(t.seconds)
 
-    times = " | ".join(["{0:5s}".format(time_length_to_str(b)) for b in scan_times])
-    bearings = " | ".join(["{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.bearings_history[-n:]])
-    ranges = " | ".join(["{0:5.1f}".format(b) for b in obj.range_history[-n:]])
-    speeds = " | ".join(["{0:5.1f}".format(b) for b in obj.speed_history[-n:]])
-    courses = " | ".join(["{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.course_history[-n:]])
-    print ("         {0}".format(times))
-    print ("Bearing: {0}".format(bearings))
-    print ("Range  : {0}".format(ranges))
-    print ("Speed  : {0}".format(speeds))
-    print ("Course : {0}".format(courses))
+    times = u" | ".join([u"{0:5s}".format(time_length_to_str(b)) for b in scan_times])
+    bearings = u" | ".join([u"{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.bearings_history[-n:]])
+    ranges = u" | ".join([u"{0:5.1f}".format(b) for b in obj.range_history[-n:]])
+    speeds = u" | ".join([u"{0:5.1f}".format(b) for b in obj.speed_history[-n:]])
+    courses = u" | ".join([u"{0:5.0f}".format(abs_angle_to_bearing(b)) for b in obj.course_history[-n:]])
+    print (u"         {0}".format(times))
+    print (u"Bearing: {0}".format(bearings))
+    print (u"Range  : {0}".format(ranges))
+    print (u"Speed  : {0}".format(speeds))
+    print (u"Course : {0}".format(courses))
 
     bands = obj.bands
 
@@ -364,9 +364,10 @@ class Watefall(object):
         self.asciiScaler = None
         self.set_waterfall_level(50,70)
 
-    def set_waterfall_level(self, low,high):
+    def set_waterfall_level(self, low, high):
         #self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=".:;|$#").map
-        self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=u"\u2591\u2592\u2593\u2588").map
+        #self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=u"\u2591\u2592\u2593\u2588").map
+        self.scaler = linear_scaler_with_limit([low, high], [250, 1])
 
     def print_sonar(self):
         s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
@@ -398,8 +399,10 @@ class Watefall(object):
                 idx += 1
 
             #print(total)
-            line = [self.asciiScaler(d/idx_compact) for d in total]
-            wf_c.append(u"[{0}]".format("".join(shift(line, Sonar.WATERFALL_STEPS/2))))
+            #line = [self.asciiScaler(d/idx_compact) for d in total]
+            line = [ascii_gray(".", int(round(self.scaler(d/idx_compact)))) for d in total]
+
+            wf_c.append("[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS/2)),ascii_reset()))
 
         if not inverted:
             wf_c.reverse()

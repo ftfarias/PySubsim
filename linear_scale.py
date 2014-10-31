@@ -79,6 +79,15 @@ class AsciiLinearScale():
 def linear_scaler(domain, range):
     return LinearScale().domain(domain).range(range).map
 
+def linear_scaler_with_limit(domain, range):
+    def f(value):
+        if value <= domain[0]:
+            return range[0]
+        elif value >= domain[1]:
+            return range[1]
+        else:
+            return LinearScale().domain(domain).range(range).map(value)
+    return f
 
 class LinearScale2D():
     def __init__(self):

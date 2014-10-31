@@ -1,19 +1,23 @@
-from sub import ShipFactory
-from sea import Sea,SeaObject
-from util import abs_angle_to_bearing, Bands
-from physic import Point, MovableNewtonObject
-import time
-import sys
-
-sea = Sea()
-sub = ShipFactory.create_player_sub(sea)
-
-sub.nav.set_destination(Point(11,11))
-sub.nav.speed = 5
-
-for _ in range(30):
-    print("-"*20)
-    sea.turn(0.1)
-    print(sub.nav)
-    print(sub)
-    print("")
+import curses
+ 
+def init_colors(s):
+    curses.start_color()
+    curses.use_default_colors()
+    cpt = 0
+    for i in range(-1, 8):
+        for y in range(-1, 8):
+            curses.init_pair(cpt, y, i)
+            # display the just-initialized color onscreen                                                                  
+            s.addstr(str(cpt), curses.color_pair(cpt))
+            s.addstr(' ')
+            s.refresh()
+            cpt += 1
+ 
+def main():
+    s = curses.initscr()
+    init_colors(s)
+    s.getch()
+    curses.endwin()
+ 
+if __name__ == '__main__':
+    main()

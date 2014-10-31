@@ -128,7 +128,7 @@ class Sea:
 
             deep_in_km = 1.0 * sub.actual_deep / 3280  # 3280 feet = 1 km
             # most part of a sub self-noise is around 30 Hz
-            attenuation_per_mile = self.sound_attenuation(freq=1, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
+            attenuation_per_mile = self.sound_attenuation(freq=30, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
             transmission_loss = attenuation_per_mile * range  # TL
 
             received_sound = source_level / transmission_loss

@@ -239,7 +239,16 @@ def time_length_to_str(seconds):
         seconds -= hours * 3600
         minutes = int(math.floor(seconds/60))
         seconds -= minutes * 60
-        return "{0}h{1}".format(hours,minutes)
+        return "{0}h{1}".format(hours, minutes)
+
+def ascii_color(text, r, g, b):
+    return '\033[38;2;{r};{g};{b}m{s}'.format(r=r, b=b, g=g, s=text)
+
+def ascii_gray(text, gray_level):
+    return ascii_color(text, gray_level, gray_level, gray_level)
+
+def ascii_reset():
+    return '\033[30m'
 
 
 class TestUtil(unittest.TestCase):
