@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from sub import ShipFactory
-from sea import Sea, symbol_for_type
+from sea import Sea
 from physic import Point
 from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale, linear_scaler_with_limit
 from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift, ascii_gray, ascii_reset
@@ -149,7 +149,8 @@ def print_map():
         pos = sc.estimate_pos(player_pos)
         if pos is not None:
             x_map, y_map = double_round(pos2map(pos.x, pos.y))
-            s = symbol_for_type(sc.obj_type)
+            #s = symbol_for_type(sc.obj_type)
+            s = '?'
             if 0 <=x_map<mc_x_size and 0<=y_map<mc_y_size:
                 symbols[x_map][y_map] = s
 
@@ -536,16 +537,16 @@ def start():
     universe.add_ship(dummy_ship)
     """
     for i in xrange(2):
-        sea.create_biologic()
+        sea.create_whale()
 
-    for i in xrange(3):
-        sea.create_fishing()
-
-    for i in xrange(2):
-        sea.create_warship()
-
-    ship = sea.create_fishing(pos=Point(5,5))
-    ship.set_destination(0, 1)
+    # for i in xrange(3):
+    #     sea.create_fishing()
+    #
+    # for i in xrange(2):
+    #     sea.create_warship()
+    #
+    # ship = sea.create_fishing(pos=Point(5,5))
+    # ship.set_destination(0, 1)
 
     game_loop(1, 0.1)
 

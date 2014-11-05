@@ -21,26 +21,4 @@ class AiRandomTraveller(ArtificialInteligence):
             self.sea_object.nav.speed = random.randint(3,8)
 
 
-class AiSnappingShrimp(ArtificialInteligence):
-    def __init__(self, shrimp):
-        ArtificialInteligence.__init__(self, shrimp)
-        self.snapping = False
-        self.counter = random.randint(3, 20) + random.gauss(5, 10)
-
-    def turn(self, time_elapsed):
-        ArtificialInteligence.turn(time_elapsed)
-        self.counter -= time_elapsed
-        if self.snapping:
-            if self.counter <= 0:
-                # Stop snapping
-                self.snapping = False
-                self.counter = random.randint(1, 10)+random.randint(1, 10)+random.randint(1, 10)
-        else:
-            # in silence
-            if self.counter <= 0:
-                # Stars to snapping
-                self.snapping = True
-                self.counter = random.gauss(8, 5)+random.gauss(12, 5)
-
-
 

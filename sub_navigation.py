@@ -2,6 +2,7 @@
 from sub_module import SubModule
 from util import abs_angle_to_bearing, normalize_angle360, limits
 import math
+import Queue
 
 class Navigation(SubModule):
     def __init__(self, sub, MAX_SPEED=30):
@@ -10,7 +11,7 @@ class Navigation(SubModule):
         self.destination = None
         self._speed = 0
         self._course = 0
-        self.waypoints = []
+        self.waypoints = Queue.Queue()
         self.MAX_SPEED = MAX_SPEED
 
 
@@ -43,7 +44,10 @@ class Navigation(SubModule):
         return self.sub.get_course()
 
     def add_waypoint(self, dest):
-        self.waypoints.append(dest)
+        if self.destination:
+            self.waypoints.put(dest)
+        else:
+            self.set_destination(dest)
 
     def get_pos(self):
         return self.sub.get_pos()
@@ -98,5 +102,9 @@ class Navigation(SubModule):
             dist_to_destination = current_pos.distance_to(self.destination)
             if dist_to_destination < 0.01:
                 self.add_message("Destination arrived at "+str(self.destination))
-                self.destination = None
-                self.speed = 0
+                if not self.waypoints.empty():
+                    self.destination = self.waypoints.get()
+                    self.waypoints.task_done()
+                else:
+                    self.destination = None
+                    self.speed = 0

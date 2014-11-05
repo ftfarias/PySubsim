@@ -4,7 +4,7 @@ import math
 import random
 from sound import db
 import unittest
-
+from sound import Decibel
 
 def angles(num_angles):
     step = 360 / num_angles
@@ -77,8 +77,11 @@ def int_to_hertz(value):
         value /= 1000.0
         scale += 1
 
+    #if isinstance(value, Decibel):
+    #    value = value.value
+
     value = round(value, 1)
-    return "{0}{1}".format(value,HERTZ_LABEL[scale])
+    return "{0}{1}".format(value, HERTZ_LABEL[scale])
 
     # if scale == 0 and value < 1:
     #     return "{0:0.1f}{1}".format(value,HERTZ_LABEL[scale])
@@ -90,14 +93,30 @@ class Bands():
     def __init__(self, bands={}):
         self.bands = bands
 
-    def add(self, level, freq):
+    def add(self, freq, level):
+        if isinstance(level,Decibel):
+            level = level.value
         self.bands[freq] = level
+        return self
 
-    def get_bands(self):
+    def add_random(self, freq_interval, level_interval, times=1):
+        for _ in xrange(times):
+            level = random.randint(level_interval[0], level_interval[1])
+            freq = random.randint(freq_interval[0], freq_interval[1])
+            self.add(freq, level)
+        return self
+
+    def get_freqs(self):
         return self.bands.keys()
 
+    def get_bands(self):
+        return self.bands.items()
+
     def total_level(self):
-        return sum(self.bands.values())
+        total = db(0)
+        for f,l in self.get_bands():
+            total += db(l)
+        return total
 
     def filter(self, min_level):
         for k, v in self.bands.items():
@@ -122,7 +141,7 @@ class Bands():
     def __str__(self):
         #return self.bands
         if self.bands:
-            return " | ".join(["{0} @ {1}".format(b[0], int_to_hertz(b[1])) for b in self.bands])
+            return " | ".join(["{0}db @ {1}".format(l, int_to_hertz(f)) for f,l in self.bands.items()])
         else:
             return "<no bands>"
 
@@ -249,6 +268,22 @@ def ascii_gray(text, gray_level):
 
 def ascii_reset():
     return '\033[30m'
+
+
+class Alternation(object):
+    def __init__(self, state=False, initial_counter=1):
+        self.state = state
+        self.counter = initial_counter
+
+    def turn(self, time_elapsed):
+        self.counter -= time_elapsed
+        if self.counter <= 0:
+            if self.state:
+                self.state = False
+                self.counter = random.randint(1, 10)+random.randint(1, 10)+random.randint(1, 10)
+            else:
+                self.state = True
+                self.counter = random.gauss(8, 5)+random.gauss(12, 5)
 
 
 class TestUtil(unittest.TestCase):

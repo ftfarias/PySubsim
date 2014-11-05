@@ -7,9 +7,7 @@ import math
 import unittest
 import datetime
 from sound import Decibel, db, simple_sound_absortion_by_sea, sound_absortion_by_sea
-from object_types import KNOWN_TYPES
 from sea_object import *
-
 
 import logging
 logger = logging.getLogger()
@@ -60,40 +58,40 @@ class Sea:
     def get_unique_id(self):
         return self.ids_collection.pop()
 
-    def create_biologic(self, pos=None):
+    def create_whale(self, pos=None):
         if pos is None:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
-        bio = MovableSeaObject("Whale", pos)
-        bio.deep = random.randint(30, 100)
-        bio.set_destination(random.randint(0,359), 1)
-        logging.debug("Creating random biologic {0}".format(bio))
-        self.objects.append(bio)
-        return bio
+        logger.debug("Creating a whale at {0}".format(pos))
+        whale = Whale(self)
+        whale.pos = pos
+        logging.debug("Whale {0}".format(whale))
+        self.objects.append(whale)
+        return whale
 
-    def create_warship(self, pos=None, ship_type=None):
-        t = ['Destroyer', 'Warship']
-        if pos is None:
-            pos = Point(random.randint(0, 10), random.randint(0, 10))
-        if ship_type is None:
-            ship_type = t[random.randint(0, len(t) - 1)]
-        ship = MovableSeaObject(ship_type, pos)
-        ship.set_destination(random.randint(0, 359), random.randint(5, 15))
-        self.objects.append(ship)
-        return ship
+    # def create_warship(self, pos=None, ship_type=None):
+    #     t = ['Destroyer', 'Warship']
+    #     if pos is None:
+    #         pos = Point(random.randint(0, 10), random.randint(0, 10))
+    #     if ship_type is None:
+    #         ship_type = t[random.randint(0, len(t) - 1)]
+    #     ship = MovableSeaObject(ship_type, pos)
+    #     ship.set_destination(random.randint(0, 359), random.randint(5, 15))
+    #     self.objects.append(ship)
+    #     return ship
 
-    def create_fishing(self, pos=None, ship_type=None):
-        t = ['Fishing Boat', 'Fishing Ship']
-        if pos is None:
-            pos = Point(random.randint(0, 10), random.randint(0, 10))
-        if ship_type is None:
-            ship_type = t[random.randint(0, len(t) - 1)]
-        ship = MovableSeaObject(ship_type, pos)
-        ship.set_destination(random.randint(0, 359), random.randint(1, 5))
-        self.objects.append(ship)
-        return ship
+    # def create_fishing(self, pos=None, ship_type=None):
+    #     t = ['Fishing Boat', 'Fishing Ship']
+    #     if pos is None:
+    #         pos = Point(random.randint(0, 10), random.randint(0, 10))
+    #     if ship_type is None:
+    #         ship_type = t[random.randint(0, len(t) - 1)]
+    #     ship = MovableSeaObject(ship_type, pos)
+    #     ship.set_destination(random.randint(0, 359), random.randint(1, 5))
+    #     self.objects.append(ship)
+    #     return ship
 
-    def add_submarine(self, sub):
-        self.objects.append(SeaSubmarine(sub))
+    def add_player_submarine(self, sub):
+        self.objects.append(sub)
 
     def turn(self, time_elapsed):
         self.time = self.time + datetime.timedelta(seconds=time_elapsed*3600)
@@ -105,7 +103,7 @@ class Sea:
 
     def sound_attenuation(self, freq, deep):
         #return db(db=simple_sound_absortion_by_sea(freq, deep))
-        return db(db=sound_absortion_by_sea(freq,deep))
+        return db(db=sound_absortion_by_sea(freq, deep))
 
     def passive_scan(self, sub, time_elapsed):
         logger.debug("--- Passive scan ---")
@@ -124,22 +122,25 @@ class Sea:
             #if dist > 15:  # hard limit for object detection.
             #    continue
             assert isinstance(obj.get_pos(), Point)
-            source_level = obj.self_noise()
-
             deep_in_km = 1.0 * sub.actual_deep / 3280  # 3280 feet = 1 km
             # most part of a sub self-noise is around 30 Hz
-            attenuation_per_mile = self.sound_attenuation(freq=30, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
-            transmission_loss = attenuation_per_mile * range  # TL
+            object_bands = obj.get_bands()
+            listened_bands = Bands()
+            for freq, level in object_bands.get_bands():
+                level_db = db(level)
+                attenuation_per_mile = self.sound_attenuation(freq=freq, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
+                transmission_loss = attenuation_per_mile * range  # TL
+                received_sound = level_db / transmission_loss
+                receiving_array_gain = db(db=0)  # AG
+                received_sound += receiving_array_gain
+                listened_bands.add(freq, received_sound)
+                logger.debug("{i}: freq:{f} source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} received_sound={rs}".format(
+                    i=i, f=freq, sl=object_bands.total_level(), deep=deep_in_km,
+                    at=attenuation_per_mile,
+                    tat=transmission_loss, rs=received_sound))
 
-            received_sound = source_level / transmission_loss
-
-            receiving_array_gain = 0  # AG
-
-
-            logger.debug("{i}: source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} recived_sound={rs}".format(
-                i=i, sl=source_level, deep=deep_in_km,
-                at=attenuation_per_mile,
-                tat=transmission_loss ,rs=received_sound))
+            received_sound = listened_bands.total_level()
+            logger.debug("Bands: {0}".format(listened_bands))
             #if not isinstance(object_sound, Decibel):
             #    received_sound = db(received_sound)
             signal_to_noise = received_sound / background_noise
@@ -155,18 +156,17 @@ class Sea:
                 # so the error is "max" error for 99% of measures
                 error /= 3
                 deep = obj.get_deep()
-                bands = obj.sonar_bands
                 # .add_noise(0.1*dist)
                 bearing = sub_pos.bearing_to(obj_pos)
                 #bearing = obj_pos.bearing_to(sub_pos)
                 # Scan Result
                 r = ScanResult(i)
                 r.signal_to_noise = signal_to_noise
-                r.blades = obj.blades
+                r.blades = 0
                 r.range = range + random.gauss(0, error)
                 r.bearing = bearing + random.gauss(0, error)
                 r.deep = deep
-                r.bands = bands
+                r.bands = listened_bands
                 logger.debug("scan_result: {0}".format(r))
                 logger.debug("")
                 result.append(r)

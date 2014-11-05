@@ -17,7 +17,7 @@ class ShipFactory():
         sub = Submarine(sea, kind='688')
         sub.pos = Point(6, 6)
         sub.name = "Mautilus"
-        sea.add_submarine(sub)
+        sea.add_player_submarine(sub)
         return sub
 
     @staticmethod
