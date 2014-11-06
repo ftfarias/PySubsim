@@ -106,7 +106,7 @@ class Whale(MovableSeaObject):
         MovableSeaObject.__init__(self, sea)
         self.nav = Navigation(self)
         self.bands_swim = Bands().add_random([10, 20], [60, 80])
-        self.bands_swim_sing = copy.deepcopy(self.bands_swim).add_random([2000, 5000], [120,150], times=3)
+        self.bands_swim_sing = self.bands_swim.add_random([2000, 5000], [120,150], times=3)
         self.deep = random.randint(10, 20)
         print ("Swim: "+str(self.bands_swim))
         print ("Sing: "+str(self.bands_swim_sing))

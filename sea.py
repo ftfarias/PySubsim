@@ -118,15 +118,16 @@ class Sea:
             if sub_pos == obj_pos:
                 continue
             range = obj_pos.distance_to(sub_pos)
-            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}".format(i=i, dist=range, obj=obj))
             #if dist > 15:  # hard limit for object detection.
             #    continue
             assert isinstance(obj.get_pos(), Point)
             deep_in_km = 1.0 * sub.actual_deep / 3280  # 3280 feet = 1 km
             # most part of a sub self-noise is around 30 Hz
             object_bands = obj.get_bands()
+            assert isinstance(object_bands, Bands)
+            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}  type:{ty}  obj bands: {b}".format(i=i, dist=range, obj=obj, ty=type(obj), b=object_bands))
             listened_bands = Bands()
-            for freq, level in object_bands.get_bands():
+            for freq, level in object_bands.get_freq_level():
                 level_db = db(level)
                 attenuation_per_mile = self.sound_attenuation(freq=freq, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
                 transmission_loss = attenuation_per_mile * range  # TL
@@ -139,12 +140,12 @@ class Sea:
                     at=attenuation_per_mile,
                     tat=transmission_loss, rs=received_sound))
 
-            received_sound = listened_bands.total_level()
+            total_received_sound = listened_bands.total_level()
             logger.debug("Bands: {0}".format(listened_bands))
             #if not isinstance(object_sound, Decibel):
             #    received_sound = db(received_sound)
-            signal_to_noise = received_sound / background_noise
-            logger.debug("{i}: signal_to_noise:{stn}".format(i=i,stn=signal_to_noise))
+            signal_to_noise = total_received_sound / background_noise
+            logger.debug("{i}: signal_to_noise:{stn}".format(i=i, stn=signal_to_noise))
             if signal_to_noise.value > 1:
                 # error: greater the signal_to_noise, less the error
                 if signal_to_noise > 10:

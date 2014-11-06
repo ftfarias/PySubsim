@@ -371,8 +371,10 @@ class Watefall(object):
         self.scaler = linear_scaler_with_limit([low, high], [250, 1])
 
     def print_sonar(self):
-        s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
-        return u"["+"".join(s)+"]"
+        #s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
+        line = [ascii_gray(".", int(round(self.scaler(d)))) for d in player_sub.sonar.sonar_array(120)]
+        return "[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS/2)),ascii_reset())
+
 
     def print_waterfall(self, compact=1, l=60, inverted=True):
         """

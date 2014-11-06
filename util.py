@@ -5,6 +5,7 @@ import random
 from sound import db
 import unittest
 from sound import Decibel
+import copy
 
 def angles(num_angles):
     step = 360 / num_angles
@@ -91,30 +92,31 @@ def int_to_hertz(value):
 
 class Bands():
     def __init__(self, bands={}):
-        self.bands = bands
+        self.bands = bands.copy()
 
     def add(self, freq, level):
         if isinstance(level,Decibel):
             level = level.value
         self.bands[freq] = level
-        return self
+        return Bands(self.bands)
 
     def add_random(self, freq_interval, level_interval, times=1):
+        result = Bands()
         for _ in xrange(times):
             level = random.randint(level_interval[0], level_interval[1])
             freq = random.randint(freq_interval[0], freq_interval[1])
-            self.add(freq, level)
-        return self
+            result = self.add(freq, level)
+        return result
 
     def get_freqs(self):
         return self.bands.keys()
 
-    def get_bands(self):
-        return self.bands.items()
+    def get_freq_level(self):
+        return self.bands.copy().items()
 
     def total_level(self):
         total = db(0)
-        for f,l in self.get_bands():
+        for f,l in self.bands.items():
             total += db(l)
         return total
 
