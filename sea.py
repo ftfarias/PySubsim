@@ -134,7 +134,7 @@ class Sea:
                 received_sound = level_db / transmission_loss
                 receiving_array_gain = db(db=0)  # AG
                 received_sound += receiving_array_gain
-                listened_bands.add(freq, received_sound)
+                listened_bands = listened_bands.add(freq, received_sound)
                 logger.debug("{i}: freq:{f} source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} received_sound={rs}".format(
                     i=i, f=freq, sl=object_bands.total_level(), deep=deep_in_km,
                     at=attenuation_per_mile,

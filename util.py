@@ -101,11 +101,11 @@ class Bands():
         return Bands(self.bands)
 
     def add_random(self, freq_interval, level_interval, times=1):
-        result = Bands()
+        result = Bands(bands=self.bands)
         for _ in xrange(times):
             level = random.randint(level_interval[0], level_interval[1])
             freq = random.randint(freq_interval[0], freq_interval[1])
-            result = self.add(freq, level)
+            result = result.add(freq, level)
         return result
 
     def get_freqs(self):
@@ -124,6 +124,7 @@ class Bands():
         for k, v in self.bands.items():
             if v < min_level:
                 del self.bands[k]
+        return Bands(self.bands.copy())
 
 
     #def add_noise(self, noise):

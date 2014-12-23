@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import random
 from util import Bands
 from physic import Point, MovableNewtonObject
