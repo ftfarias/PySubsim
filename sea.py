@@ -183,6 +183,13 @@ class Sea:
     def __str__(self):
         return "Time: {0}".format(self.time.strftime("%d/%m/%Y %H:%M:%S"))
 
+    def debug(self):
+        print('------ SEA DEBUG ------')
+        print(self)
+        for obj in self.objects:
+            print (obj)
+            print ('')
+        print('------ END OF SEA DEBUG ------')
 
 class TestUtil(unittest.TestCase):
     class FakeShip():

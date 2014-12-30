@@ -24,6 +24,7 @@ sea = Sea()
 sea.initialize()
 player_sub = ShipFactory.create_player_sub(sea)
 
+selected_object_detail = None
 
 """
 -2 | -2  -1  0  +1  +2 |
@@ -47,6 +48,21 @@ def print_status():
     print(player_sub)
     #print(player_sub.weapons.status())
 
+def get_text(text = '> '):
+    option = raw_input(text)
+    return option
+
+def parse_coordinates(text):
+    try:
+        coord = text.split(',')
+        if len(coord) != 2:
+            return None
+        x = float(coord[0])
+        y = float(coord[1])
+        return Point(x,y)
+    except ValueError:
+        return None
+
 
 def print_near_objects():
     objs = player_sub.sonar.return_near_objects()
@@ -56,6 +72,19 @@ def print_near_objects():
         for k,v in objs.items():
             print u"{0:3d}: {1}".format(k, v)
 
+
+def obj_change_name():
+    new_name = get_text("Name for contact {0}: ".format(selected_object_detail.ident))
+    selected_object_detail.name = new_name
+
+
+OBJECT_DETAIL_MENU = [
+    (u'Change name ', obj_change_name),
+    (u'Send to TMA ', None),
+
+   # ('Land', None),
+   # ('Take Off', None),
+]
 
 def show_object_details(n):
     if n not in player_sub.sonar.contacts:
@@ -94,27 +123,18 @@ def show_object_details(n):
     print (u"Course : {0}".format(courses))
 
     bands = obj.bands
+    print bands
 
     #print("".join(["{0:5}".format(i)  for i in range(1,11)]))
     #print("".join(["{0:5.1f}".format(b) for b in bands]))
 
-
-
     #for prob in obj.obj_type_probs:
     #    print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
-
-
-
-def parse_coordinates(text):
-    try:
-        coord = text.split(',')
-        if len(coord) != 2:
-            return None
-        x = float(coord[0])
-        y = float(coord[1])
-        return Point(x,y)
-    except ValueError:
-        return None
+    global selected_object_detail
+    selected_object_detail = obj
+    opt = show_menu(OBJECT_DETAIL_MENU)
+    if opt:
+        opt()
 
 def print_map():
     h = ["P - Player Sub",
@@ -170,13 +190,15 @@ def print_map():
     for i, y in enumerate(y_range):
         print ("{idx:5}|{linha}|".format(idx=int(round(map2pos_y(y))), linha="  ".join(symbols[i])))
 
+def debug():
+    sea.debug()
 
 def show_menu(menu):
     while 1:
         try:
             #for i, opt in enumerate(menu):
             #    print ("{i} - {opt}".format(i=str(i+1), opt=opt[0]))
-            s = ['{0}-{1}'.format(i+1, o[0]) for i,o in enumerate(menu)]
+            s = ['{0}-{1}'.format(i+1, o[0]) for i, o in enumerate(menu)]
             s = ") (".join(s)
             print("("+s+")")
             option = raw_input('> ')
@@ -223,6 +245,9 @@ def show_menu(menu):
                     show_object_details(n)
                 continue
 
+            if opt[0] == 'debug':
+                debug()
+                continue
 
             if opt[0] == 'wf':
                 if len(opt) == 2:
@@ -277,10 +302,12 @@ def show_menu(menu):
                 print("Please choose a valid option:")
                 print("<number>: choose a option")
                 print("<empty>: return to previous menu")
-                print("]      : run game in real time")
+                print("\      : run game in real time")
                 print("] <n>  : run game in real time for n seconds")
-                print("[      : run game 10 times faster")
-                print("[ <n>  : run game 10 times faster for n seconds")
+                print("]      : run game 10 times faster")
+                print("] <n>  : run game 10 times faster for n seconds")
+                print("[      : run game fast as possible")
+                print("[ <n>  : run game fast as possible for n seconds")
                 print("s      : Show status")
                 print("o      : Show objects in sonar")
                 print("o <n>  : Show detail information about object")

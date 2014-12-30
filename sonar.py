@@ -101,12 +101,13 @@ class SonarContact:
         course_symbol = util.angles_to_unicode(abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
         range_str = round(self.range(), 1) if self.range() is not None else '-'
         speed = round(self.speed()) if self.speed() is not None else '-'
+        name = self.name if self.name else '<no name>'
         bearing = abs_angle_to_bearing(self.bearing())
         bearing_symbol = util.angles_to_unicode(bearing)
-        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>".\
+        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>\t{name}".\
             format(ident=self.ident, ty=obj_type, bearing=bearing, range=range_str,
             course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
-            snt=self.stn(), arrow=course_symbol, bs=bearing_symbol)
+            snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
 
 
 class Sonar(SubModule):

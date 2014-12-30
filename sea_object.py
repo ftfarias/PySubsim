@@ -2,13 +2,12 @@
 import random
 from util import Bands
 from physic import Point, MovableNewtonObject
-from sub_navigation import Navigation
-import copy
+from navigation import Navigation
+import math
+
 
 class SeaObject(object):
     def __init__(self, sea):
-        self.details = None
-        self.kind = "Sea Object"
         self.bands = Bands()
         self.pos = Point(0, 0)
         self.sea = sea
@@ -25,19 +24,19 @@ class SeaObject(object):
 
     def get_bands(self):
         return self.bands
-        #return db(db=self.noise + random.gauss(0,2))
+        # return db(db=self.noise + random.gauss(0,2))
 
     def __str__(self):
-        return self.kind
-        # return "{k}: pos:{pos} deep={deep} noise={noise} blades={bl} bands={bands} {det}".format(k=self.kind,
-        #     deep=self.get_deep(), noise=self.self_noise(), pos=self.get_pos(),
-        #     bl=self.blades, det=self.details, bands=self.bands)
+        #return self.kind
+        return "pos:{pos} deep={deep}".format(
+            deep=self.get_deep(), pos=self.get_pos())
+
 
 class SnappingShrimp(SeaObject):
     # "The snapping shrimp competes with much larger animals
     # such as the Sperm Whale and Beluga Whale for the title of
     # 'loudest animal in the sea'. The animal snaps a specialized claw
-    #  shut to create a cavitation bubble that generates acoustic pressures
+    # shut to create a cavitation bubble that generates acoustic pressures
     # of up to 80 kPa at a distance of 4 cm from the claw. As it extends
     # out from the claw, the bubble reaches speeds of 60 miles per hour
     #  (97 km/h) and releases a sound reaching 218 decibels.[11] The pressure
@@ -58,8 +57,8 @@ class SnappingShrimp(SeaObject):
         self.counter = random.randint(3, 20) + random.gauss(5, 10)
         # generate intense broadband noise, f = 1-10 kHz, SL = 60-90 dB
         # bands: 5 to 10 high frequence bands
-        self.bands = Bands().add_random([1000,10000],[100,160],times=random.randint(5,10))
-        self.deep = random.randint(9,20)
+        self.bands = Bands().add_random([1000, 10000], [100, 160], times=random.randint(5, 10))
+        self.deep = random.randint(9, 20)
 
     def turn(self, time_elapsed):
         self.counter -= time_elapsed
@@ -67,13 +66,13 @@ class SnappingShrimp(SeaObject):
             if self.counter <= 0:
                 # Stop snapping
                 self.snapping = False
-                self.counter = random.randint(1, 10)+random.randint(1, 10)+random.randint(1, 10)
+                self.counter = random.randint(1, 10) + random.randint(1, 10) + random.randint(1, 10)
         else:
             # in silence
             if self.counter <= 0:
                 # Stars to snapping
                 self.snapping = True
-                self.counter = random.gauss(8, 5)+random.gauss(12, 5)
+                self.counter = random.gauss(8, 5) + random.gauss(12, 5)
 
     def get_bands(self):
         if self.snapping:
@@ -83,9 +82,9 @@ class SnappingShrimp(SeaObject):
 
 
 class MovableSeaObject(SeaObject, MovableNewtonObject):
-    def __init__(self, sea):
+    def __init__(self, sea, max_speed = 40, max_turn_rate_hour = math.radians(360)*60):  # max 360 degrees per minute
         SeaObject.__init__(self, sea)
-        MovableNewtonObject.__init__(self)
+        MovableNewtonObject.__init__(self, max_speed, max_turn_rate_hour)
 
     def get_pos(self):
         return self.pos
@@ -93,41 +92,45 @@ class MovableSeaObject(SeaObject, MovableNewtonObject):
     def turn(self, time_elapsed):
         MovableNewtonObject.turn(self, time_elapsed)
 
-    # def set_destination(self, course, speed):
-    #     self.vel = Point(1,1)  # just to initialize the vector
-    #     self.speed = speed
-    #     self.course = course
+        # def set_destination(self, course, speed):
+        # self.vel = Point(1,1)  # just to initialize the vector
+        #     self.speed = speed
+        #     self.course = course
 
+    def __str__(self):
+        return MovableNewtonObject.__str__(self)
 
 class Whale(MovableSeaObject):
     # f = 12 Hz - @2-5 kHz for “whale songs”, SL up to 188 dB
     # Swimming: 10 - 20 Hz, 60 to 80 DB
     # Sing: 2Khz - 5 Khz, 120 to 190 DB (AI should handle this later)
     def __init__(self, sea):
-        MovableSeaObject.__init__(self, sea)
+        MovableSeaObject.__init__(self, sea, 15)
         self.nav = Navigation(self)
+        self.nav.destination = None
         self.bands_swim = Bands().add_random([10, 20], [60, 80])
-        self.bands_swim_sing = self.bands_swim.add_random([2000, 5000], [120,150], times=3)
+        self.bands_swim_sing = self.bands_swim.add_random([2000, 5000], [120, 150], times=3)
         self.deep = random.randint(10, 20)
-        print ("Swim: "+str(self.bands_swim))
-        print ("Sing: "+str(self.bands_swim_sing))
+        print ("Swim: " + str(self.bands_swim))
+        print ("Sing: " + str(self.bands_swim_sing))
         self.singing = False
-        self.counter = random.randint(5, 10)+random.gauss(6, 5)
+        self.counter = (random.randint(5, 10) + random.gauss(6, 5)) / 60
 
     def turn(self, time_elapsed):
         MovableSeaObject.turn(self, time_elapsed)
+        self.nav.turn(time_elapsed)
         self.counter -= time_elapsed
         if self.counter <= 0:
             if self.singing:
                 self.singing = False
-                self.counter = random.randint(10, 5)+random.gauss(5, 5)
+                self.counter = (random.randint(10, 5) + random.gauss(5, 5)) / 60
             else:
                 self.singing = True
-                self.counter = random.gauss(10, 3)+5
+                self.counter = (random.gauss(10, 3) + 5) / 60
 
         if self.nav.destination is None:
-            self.nav.destination = Point(random.randint(0,10),random.randint(0,10))
-            self.nav.speed = random.random()*20+0.1
+            self.nav.destination = Point(random.randint(0, 10), random.randint(0, 10))
+            self.nav.speed = random.random() * 15 + 0.1
 
     def get_deep(self):
         return self.deep
@@ -140,6 +143,15 @@ class Whale(MovableSeaObject):
             return self.bands_swim_sing
         else:
             return self.bands_swim
+
+    def __str__(self):
+        return "Whale {is_singing}, {pos}, swim:{swim}, sing:{sing}, counter:{counter}, dest:{dest}".format(
+                                                                               is_singing = self.singing,
+                                                                               pos=MovableSeaObject.__str__(self),
+                                                                               swim=str(self.bands_swim),
+                                                                               sing=str(self.bands_swim_sing),
+                                                                               counter=self.counter,
+                                                                               dest=self.nav.destination)
 
 
 class Ship(MovableSeaObject):
@@ -154,10 +166,13 @@ class Ship(MovableSeaObject):
         return self.pos
 
     def turn(self, time_elapsed):
-        MovableSeaObject.turn(self,time_elapsed)
+        MovableSeaObject.turn(self, time_elapsed)
 
     def add_waypoint(self, dest):
         self.navigation.add_waypoint(dest)
+
+    def __str__(self):
+        return "Ship {0}, swim:{swim}, sing:{sing}, counter:counter".format(MovableSeaObject.__str__(self), )
 
 
 class ComputerSubmarine(MovableSeaObject):
@@ -170,6 +185,6 @@ class ComputerSubmarine(MovableSeaObject):
         return self.deep
 
     def turn(self, time_elapsed):
-        MovableSeaObject.turn(self,time_elapsed)
+        MovableSeaObject.turn(self, time_elapsed)
 
 

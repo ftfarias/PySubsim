@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
-from util import normalize_angle360, abs_angle_to_bearing
+from util import normalize_angle360, abs_angle_to_bearing, limits
 import random
 import unittest
 
@@ -164,24 +164,20 @@ class Point(object):
 
 
 class MovableNewtonObject(object):
-    def __init__(self):
+    def __init__(self, max_speed, max_turn_rate_hour):
         self.pos = Point(0, 0)
         self.vel = Point(0, 0)
         self.accel = Point(0, 0)
         self.friction = 0
-        self.rudder = 0  # rudder in radians por minute
-
-    def turn(self, time_elapsed):  # time in seconds
-        self.vel += self.accel * time_elapsed
-        self.vel.length -= self.vel.length * self.friction
-        if self.rudder != 0:
-            self.rotate(self.rudder * time_elapsed)
-        self.pos += self.vel * time_elapsed
+        self._rudder = 0  # rudder in radians por minute
+        self.MAX_TURN_RATE_HOUR = max_turn_rate_hour
+        self.MAX_SPEED = max_speed
 
     def get_speed(self):
         return self.vel.length
 
     def _set_speed(self, value):
+        value = limits(value, -self.MAX_SPEED, self.MAX_SPEED)
         self.vel.length = value
 
     speed = property(get_speed, _set_speed, None, "Speed")
@@ -201,18 +197,53 @@ class MovableNewtonObject(object):
         self.vel.angle = normalize_angle360(angle)
         self.accel.angle = self.vel.angle  # assumes the rotation also changes the acceleration
 
-    course = property(get_course, new_course)
+    course = property(get_course, new_course, "Course")
+
+    def set_speed(self, new_speed):
+        self.nav.speed = new_speed
+
+    def get_rudder(self):
+        return self._rudder
+
+    def set_rudder(self, angle):
+        angle = limits(angle, -self.MAX_TURN_RATE_HOUR, self.MAX_TURN_RATE_HOUR)
+        self._rudder = angle
+
+    rudder = property(get_rudder, set_rudder, "Rudder")
+
+    def rudder_right(self):
+        self.rudder = self.MAX_TURN_RATE_HOUR
+
+    def rudder_left(self):
+        self.rudder = -self.MAX_TURN_RATE_HOUR
+
+    def rudder_center(self):
+        self.rudder = 0
+
+    # Destination
 
     def set_destination(self, dest, speed):
         assert isinstance(dest, Point)
         self.vel = self.pos.movement_to(dest) * speed
 
+    def set_destination(self, dest):
+        self.set_destination(dest, self.speed)
+
     def rotate(self, angle):
         #print(self.course)
         self.course = normalize_angle360(self.course + angle)
         #print(self.course)
-
         #self.vel.rotate(self.course)
+
+    def get_pos(self):
+        return self.pos
+
+    def turn(self, time_elapsed):  # time in seconds
+        self.vel += self.accel * time_elapsed
+        self.vel.length -= self.vel.length * self.friction
+        if self.rudder != 0:
+            self.rotate(self.rudder * time_elapsed)
+        self.pos += self.vel * time_elapsed
 
     def __str__(self):
         return "pos:{p}  vel:{v}(r={vt:.1f};{va:.0f}˚)  accel:{a}(r={at:.1f};{aa:.0f}˚)  course:{c:.1f}, rudder:{rudder}".format(p=self.pos,

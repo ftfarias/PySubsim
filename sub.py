@@ -7,7 +7,7 @@ from sonar import Sonar
 from sound import db
 from linear_scale import linear_scaler
 import random
-from sub_navigation import Navigation
+from navigation import Navigation
 
 
 class ShipFactory():
@@ -33,9 +33,10 @@ class ShipFactory():
 class Submarine(MovableNewtonObject):
     MAX_TURN_RATE_HOUR = math.radians(35)*60  # max 35 degrees per minute
     MAX_DEEP_RATE_FEET = 1   # 1 foot per second
+    MAX_SPEED = 35
 
     def __init__(self, sea, kind):
-        MovableNewtonObject.__init__(self)
+        MovableNewtonObject.__init__(self, self.MAX_SPEED, self.MAX_TURN_RATE_HOUR )
         self.kind = kind
         self.messages = []
         self.sea = sea
@@ -119,25 +120,6 @@ class Submarine(MovableNewtonObject):
 
         return db(noise + (100 if cavitating else 0) + random.gauss(0,0.4))
 
-    # Navigation
-    def set_destination(self, dest):
-        self.nav.set_destination(dest)
-
-    def set_speed(self, new_speed):
-        self.nav.speed = new_speed
-
-    def set_sub_rudder(self, angle):
-        angle = limits(angle, -self.MAX_TURN_RATE_HOUR, self.MAX_TURN_RATE_HOUR)
-        self.rudder = angle
-
-    def rudder_right(self):
-        self.rudder = self.MAX_TURN_RATE_HOUR
-
-    def rudder_left(self):
-        self.rudder = -self.MAX_TURN_RATE_HOUR
-
-    def rudder_center(self):
-        self.rudder = 0
 
     def turn(self, time_elapsed):
         MovableNewtonObject.turn(self, time_elapsed)
@@ -153,10 +135,6 @@ class Submarine(MovableNewtonObject):
         self.sonar.turn(time_elapsed)
         self.tma.turn(time_elapsed)
         self.weapon.turn(time_elapsed)
-
-    def get_pos(self):
-        assert isinstance(self.pos, Point)
-        return self.pos
 
     def __str__(self):
         return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status=MovableNewtonObject.__str__(self),
