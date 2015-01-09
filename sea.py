@@ -10,6 +10,7 @@ from sound import Decibel, db, simple_sound_absortion_by_sea, sound_absortion_by
 from sea_object import *
 
 import logging
+
 logger = logging.getLogger()
 """
 A novice asked the Master: “Here is a programmer that never designs,
@@ -25,6 +26,7 @@ are perfect within themselves, serene and elegant, their purpose self-evident.
 Truly, he has entered the mystery of Tao.”
 """
 
+
 class ScanResult:
     def __init__(self, sonar_idx):
         self.sonar_idx = sonar_idx
@@ -38,7 +40,7 @@ class ScanResult:
         self.bands = [0.0] * 10
 
     def __str__(self):
-        return "ScanResult idx={id} snt={snt} bearing={b} range={r} deep={deep} blades={bl} band={band}".\
+        return "ScanResult idx={id} snt={snt} bearing={b} range={r} deep={deep} blades={bl} band={band}". \
             format(id=self.sonar_idx, snt=self.signal_to_noise, b=self.bearing, r=self.range,
                    deep=self.deep, bl=self.blades, band=self.bands)
 
@@ -49,7 +51,11 @@ class Sea:
         self.counter = 0
         self.objects = []
         self.ids_collection = range(1000, 9999)
-        self.temp = 10  # Celsius
+        self.conditions = 'Calm'
+        # limits below because sound absortion formula
+        self.temperature = random.randint(-60,150) / 10.0 # Celsius, -6 < T < 35
+        self.salinity = float(random.randint(30,35)) # 5 < S < 50 ppt
+        self.ph = 1.0 * random.randint(77,83) / 10 #  7.7 < pH < 8.3
         random.shuffle(self.ids_collection)
 
     def initialize(self):
@@ -69,7 +75,7 @@ class Sea:
         return whale
 
     # def create_warship(self, pos=None, ship_type=None):
-    #     t = ['Destroyer', 'Warship']
+    # t = ['Destroyer', 'Warship']
     #     if pos is None:
     #         pos = Point(random.randint(0, 10), random.randint(0, 10))
     #     if ship_type is None:
@@ -94,7 +100,7 @@ class Sea:
         self.objects.append(sub)
 
     def turn(self, time_elapsed):
-        self.time = self.time + datetime.timedelta(seconds=time_elapsed*3600)
+        self.time = self.time + datetime.timedelta(seconds=time_elapsed * 3600)
         for obj in self.objects:
             obj.turn(time_elapsed)
 
@@ -103,7 +109,10 @@ class Sea:
 
     def sound_attenuation(self, freq, deep):
         #return db(db=simple_sound_absortion_by_sea(freq, deep))
-        return db(db=sound_absortion_by_sea(freq, deep))
+        return db(db=sound_absortion_by_sea(float(freq), float(deep),
+                                            temperature=self.temperature,
+                                            salinity=self.salinity,
+                                            pH=self.ph))
 
     def passive_scan(self, sub, time_elapsed):
         logger.debug("--- Passive scan ---")
@@ -125,20 +134,24 @@ class Sea:
             # most part of a sub self-noise is around 30 Hz
             object_bands = obj.get_bands()
             assert isinstance(object_bands, Bands)
-            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}  type:{ty}  obj bands: {b}".format(i=i, dist=range, obj=obj, ty=type(obj), b=object_bands))
+            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}  type:{ty}  obj bands: {b}".format(i=i, dist=range, obj=obj,
+                                                                                              ty=type(obj),
+                                                                                              b=object_bands))
             listened_bands = Bands()
             for freq, level in object_bands.get_freq_level():
                 level_db = db(level)
-                attenuation_per_mile = self.sound_attenuation(freq=freq, deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
+                attenuation_per_mile = self.sound_attenuation(freq=freq,
+                                                              deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
                 transmission_loss = attenuation_per_mile * range  # TL
                 received_sound = level_db / transmission_loss
                 receiving_array_gain = db(db=0)  # AG
                 received_sound += receiving_array_gain
                 listened_bands = listened_bands.add(freq, received_sound)
-                logger.debug("{i}: freq:{f} source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} received_sound={rs}".format(
-                    i=i, f=freq, sl=object_bands.total_level(), deep=deep_in_km,
-                    at=attenuation_per_mile,
-                    tat=transmission_loss, rs=received_sound))
+                logger.debug(
+                    "{i}: freq:{f} source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} received_sound={rs}".format(
+                        i=i, f=freq, sl=object_bands.total_level(), deep=deep_in_km,
+                        at=attenuation_per_mile,
+                        tat=transmission_loss, rs=received_sound))
 
             total_received_sound = listened_bands.total_level()
             logger.debug("Bands: {0}".format(listened_bands))
@@ -149,10 +162,10 @@ class Sea:
             if signal_to_noise.value > 1:
                 # error: greater the signal_to_noise, less the error
                 if signal_to_noise > 10:
-                    error = 0.0001 # means 0.1% in measure
+                    error = 0.0001  # means 0.1% in measure
                 else:
                     # the error moves from 5% to 1% in a exponencial decay
-                    error = 0.0001+0.0004*math.exp(-0.5*signal_to_noise.value)
+                    error = 0.0001 + 0.0004 * math.exp(-0.5 * signal_to_noise.value)
                 # it's divided by 3 because in a gaussian 99% of time we are inside 3 sigmas...
                 # so the error is "max" error for 99% of measures
                 error /= 3
@@ -191,6 +204,7 @@ class Sea:
             print ('')
         print('------ END OF SEA DEBUG ------')
 
+
 class TestUtil(unittest.TestCase):
     class FakeShip():
         def get_pos(self):
@@ -210,7 +224,7 @@ class TestUtil(unittest.TestCase):
         print("test_scan_passive")
         u = self.universe
         # u.create_asteroid(Point(2,1))
-        #        u.create_asteroid(Point(1,2))
+        # u.create_asteroid(Point(1,2))
         scan = u.passive_scan(self.FakeShip(), 0.1)
         self.assertEquals(len(scan), 2)
         print ([str(sr) for sr in scan])

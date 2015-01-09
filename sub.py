@@ -10,6 +10,7 @@ import random
 from navigation import Navigation
 
 
+
 class ShipFactory():
     @staticmethod
     def create_player_sub(sea):
@@ -164,6 +165,14 @@ class Communication(SubModule):
 
 
 """
+- http://www.naval-technology.com/projects/nssn/
+- http://www.naval-technology.com/projects/la/
+- https://actuv.darpa.mil/
+- http://www.subsim.com/radioroom
+- http://manglermuldoon.blogspot.com.br/2013_12_01_archive.html
+- http://www.subsim.com/radioroom/showthread.php?t=214023
+
+
 the 093’s noise level has been reduced to that of
 the Russian Akula-class submarine at 110 decibels.
 He states that the 094’s acoustic signature has been

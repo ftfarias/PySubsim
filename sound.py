@@ -89,7 +89,7 @@ class Decibel(object):
         return self + db(random.gauss(0, noise_level_db))
 
     def __str__(self):
-        return "{0:3.1f}db".format(self.value)
+        return "{0:3.3f}db".format(self.value)
 
     __repr__ = __str__
 
@@ -221,7 +221,7 @@ def simple_sound_absortion_by_sea(freq, deep):
         return 1000
 
 
-def sound_absortion_by_sea(freq, deep, temperature=10, salinity=35, pH=8):
+def sound_absortion_by_sea(freq, deep, temperature=10.0, salinity=35.0, pH=8.0):
     """
     http://resource.npl.co.uk/acoustics/techguides/seaabsorption/
     calculation of absorption according to:
@@ -242,25 +242,28 @@ def sound_absortion_by_sea(freq, deep, temperature=10, salinity=35, pH=8):
     :return Total absorption (dB/km)
     """
 
+    freq = freq / 1000.0 # converts from KHz to Hz
+    deep = deep / 1000.0 # convert meters to km
+
     kelvin = 273.1  # for converting to Kelvin (273.15)  # Measured ambient temp
     t_kel = kelvin + temperature
 
     # Boric acid contribution
-    a1 = 0.106 * math.exp((pH - 8) / 0.56);
-    p1 = 1;
-    f1 = 0.78 * math.sqrt(salinity / 35) * math.exp(temperature / 26);
-    boric = (a1 * p1 * f1 * freq * freq) / (freq * freq + f1 * f1);
+    a1 = 0.106 * math.exp((pH - 8.0) / 0.56);
+    p1 = 1.0;
+    f1 = 0.78 * math.sqrt(salinity / 35.0) * math.exp(temperature / 26.0);
+    boric = 1.0 * (a1 * p1 * f1 * freq * freq) / (freq * freq + f1 * f1);
 
     # MgSO4 contribution
-    a2 = 0.52 * (salinity / 35) * (1 + temperature / 43);
+    a2 = 0.52 * (salinity / 35.0) * (1 + temperature / 43.0);
     p2 = math.exp(-deep / 6);
-    f2 = 42 * math.exp(temperature / 17);
-    mgso4 = (a2 * p2 * f2 * freq * freq) / (freq * freq + f2 * f2);
+    f2 = 42.0 * math.exp(temperature / 17.0);
+    mgso4 = 1.0 * (a2 * p2 * f2 * freq * freq) / (freq * freq + f2 * f2);
 
     # Pure water contribution
-    a3 = 0.00049 * math.exp(-(temperature / 27 + deep / 17));
-    p3 = 1;
-    h2o = a3 * p3 * freq * freq;
+    a3 = 0.00049 * math.exp(-(temperature / 27.0 + deep / 17.0));
+    p3 = 1.0;
+    h2o = 1.0 * a3 * p3 * freq * freq;
 
     # Total absorption (dB/km)
     alpha = boric + mgso4 + h2o;

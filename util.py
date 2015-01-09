@@ -72,7 +72,7 @@ def limits(value, min, max):
 
 
 HERTZ_LABEL = ['Hz', 'KHz', 'MHz', 'GHz']
-def int_to_hertz(value):
+def int_to_hertz(value, str_format = "{0}{1}"):
     scale = 0
     while value >= 1000:
         value /= 1000.0
@@ -82,7 +82,7 @@ def int_to_hertz(value):
     #    value = value.value
 
     value = round(value, 1)
-    return "{0}{1}".format(value, HERTZ_LABEL[scale])
+    return str_format.format(value, HERTZ_LABEL[scale])
 
     # if scale == 0 and value < 1:
     #     return "{0:0.1f}{1}".format(value,HERTZ_LABEL[scale])

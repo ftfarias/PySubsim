@@ -57,7 +57,7 @@ class SnappingShrimp(SeaObject):
         self.counter = random.randint(3, 20) + random.gauss(5, 10)
         # generate intense broadband noise, f = 1-10 kHz, SL = 60-90 dB
         # bands: 5 to 10 high frequence bands
-        self.bands = Bands().add_random([1000, 10000], [100, 160], times=random.randint(5, 10))
+        self.bands = Bands().add_random([1000, 10000], [100, 120], times=random.randint(5, 10))
         self.deep = random.randint(9, 20)
 
     def turn(self, time_elapsed):
@@ -130,7 +130,7 @@ class Whale(MovableSeaObject):
 
         if self.nav.destination is None:
             self.nav.destination = Point(random.randint(0, 10), random.randint(0, 10))
-            self.nav.speed = random.random() * 15 + 0.1
+            self.nav.speed = random.random() *  + 0.1
 
     def get_deep(self):
         return self.deep

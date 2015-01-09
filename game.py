@@ -3,7 +3,8 @@ from sub import ShipFactory
 from sea import Sea
 from physic import Point
 from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale, linear_scaler_with_limit
-from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift, ascii_gray, ascii_reset
+from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift, ascii_gray, ascii_reset, \
+    int_to_hertz
 import time
 import sys
 import logging
@@ -14,8 +15,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 # create debug file handler and set level to debug
-handler = logging.FileHandler("sub.log","w")
-#handler.setLevel(logging.DEBUG)
+handler = logging.FileHandler("sub.log", "w")
+# handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -48,9 +49,11 @@ def print_status():
     print(player_sub)
     #print(player_sub.weapons.status())
 
-def get_text(text = '> '):
+
+def get_text(text='> '):
     option = raw_input(text)
     return option
+
 
 def parse_coordinates(text):
     try:
@@ -59,7 +62,7 @@ def parse_coordinates(text):
             return None
         x = float(coord[0])
         y = float(coord[1])
-        return Point(x,y)
+        return Point(x, y)
     except ValueError:
         return None
 
@@ -69,7 +72,7 @@ def print_near_objects():
     if not objs:
         print("<no contacts>")
     else:
-        for k,v in objs.items():
+        for k, v in objs.items():
             print u"{0:3d}: {1}".format(k, v)
 
 
@@ -82,33 +85,36 @@ OBJECT_DETAIL_MENU = [
     (u'Change name ', obj_change_name),
     (u'Send to TMA ', None),
 
-   # ('Land', None),
-   # ('Take Off', None),
+    # ('Land', None),
+    # ('Take Off', None),
 ]
+
 
 def show_object_details(n):
     if n not in player_sub.sonar.contacts:
-        print("Unknown track "+str(n))
+        print("Unknown track " + str(n))
         print("Valid tracks: ")
-        for k,v in player_sub.sonar.contacts.items():
+        for k, v in player_sub.sonar.contacts.items():
             print(k)
         return
+
     def f(value, str_format="{0}"):
         if value is None:
             return "?"
         return str_format.format(value)
+
     obj = player_sub.sonar.contacts[n]
     print (u'{0}'.format(obj))
     print (u"Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number),
-                                                                               f=f(obj.blade_frequence),
-                                                                               kpt=obj.knots_per_turn,
-                                                                               s=f(obj.propeller_speed())))
+                                                                                f=f(obj.blade_frequence),
+                                                                                kpt=obj.knots_per_turn,
+                                                                                s=f(obj.propeller_speed())))
 
     n = 10
     start_time = sea.time
     scan_times = []
     for i in xrange(len(obj.time_history[-n:])):
-        t = (sea.time - obj.time_history[(-(i+1))])
+        t = (sea.time - obj.time_history[(-(i + 1))])
         scan_times.append(t.seconds)
 
     times = u" | ".join([u"{0:5s}".format(time_length_to_str(b)) for b in scan_times])
@@ -136,6 +142,7 @@ def show_object_details(n):
     if opt:
         opt()
 
+
 def print_map():
     h = ["P - Player Sub",
          "^ - Warship",
@@ -143,7 +150,8 @@ def print_map():
          ""]
 
     def double_round(x):
-        return int(round(x[0])),int(round(x[1]))
+        return int(round(x[0])), int(round(x[1]))
+
     # all variables with map coordinates begins with "mc_"
     # all variables with game coordinates begins with "gc_"
     mc_x_size = 12  # from 0 to 11
@@ -152,17 +160,17 @@ def print_map():
     y_range = range(mc_y_size)
 
     player_pos = player_sub.get_pos()
-    topleft = player_pos - Point(mc_x_size/2, mc_y_size/2)
-    bottomright = player_pos + Point(mc_x_size/2 - 1, mc_y_size/2 - 1)
+    topleft = player_pos - Point(mc_x_size / 2, mc_y_size / 2)
+    bottomright = player_pos + Point(mc_x_size / 2 - 1, mc_y_size / 2 - 1)
 
     pos2map = linear_scaler2d([topleft.x, bottomright.x], [min(x_range), max(x_range)],
                               [topleft.y, bottomright.y], [min(y_range), max(y_range)])
 
-    map2pos_x = linear_scaler([min(x_range), max(x_range)],[topleft.x, bottomright.x])
-    map2pos_y = linear_scaler([min(y_range), max(y_range)],[topleft.y, bottomright.y])
+    map2pos_x = linear_scaler([min(x_range), max(x_range)], [topleft.x, bottomright.x])
+    map2pos_y = linear_scaler([min(y_range), max(y_range)], [topleft.y, bottomright.y])
 
     # empty grid
-    symbols = [['.']*mc_x_size for x in xrange(mc_y_size)]
+    symbols = [['.'] * mc_x_size for x in xrange(mc_y_size)]
 
     # put symbols in grid
     for k, sc in player_sub.sonar.contacts.items():
@@ -171,7 +179,7 @@ def print_map():
             x_map, y_map = double_round(pos2map(pos.x, pos.y))
             #s = symbol_for_type(sc.obj_type)
             s = '?'
-            if 0 <=x_map<mc_x_size and 0<=y_map<mc_y_size:
+            if 0 <= x_map < mc_x_size and 0 <= y_map < mc_y_size:
                 symbols[x_map][y_map] = s
 
     # player pos:
@@ -186,21 +194,23 @@ def print_map():
 
     #
     # print ("     +"+("-"*(x_size*2-1))+"+")
-    print ("     "+"".join(["{0:+3}".format(int(round(map2pos_x(x)))) for x in x_range]))
+    print ("     " + "".join(["{0:+3}".format(int(round(map2pos_x(x)))) for x in x_range]))
     for i, y in enumerate(y_range):
         print ("{idx:5}|{linha}|".format(idx=int(round(map2pos_y(y))), linha="  ".join(symbols[i])))
 
+
 def debug():
     sea.debug()
+
 
 def show_menu(menu):
     while 1:
         try:
             #for i, opt in enumerate(menu):
             #    print ("{i} - {opt}".format(i=str(i+1), opt=opt[0]))
-            s = ['{0}-{1}'.format(i+1, o[0]) for i, o in enumerate(menu)]
+            s = ['{0}-{1}'.format(i + 1, o[0]) for i, o in enumerate(menu)]
             s = ") (".join(s)
-            print("("+s+")")
+            print("(" + s + ")")
             option = raw_input('> ')
             if option == '':
                 return None
@@ -208,25 +218,25 @@ def show_menu(menu):
 
             if opt[0] == '\\':
                 n = None
-                time_per_turn=0.1
+                time_per_turn = 0.1
                 if len(opt) > 1:
-                    n = int(opt[1]/ time_per_turn)
-                game_loop(n, time_per_turn=time_per_turn, wait=0.1) # real time
+                    n = int(opt[1] / time_per_turn)
+                game_loop(n, time_per_turn=time_per_turn, wait=0.1)  # real time
                 print_status()
                 continue
 
             if opt[0] == ']':
                 n = None
-                time_per_turn=0.1
+                time_per_turn = 0.1
                 if len(opt) > 1:
                     n = int(opt[1] / time_per_turn)
-                game_loop(n, time_per_turn=0.1, wait=0.01) # 10 times real
+                game_loop(n, time_per_turn=0.1, wait=0.01)  # 10 times real
                 print_status()
                 continue
 
             if opt[0] == '[':
                 n = None
-                time_per_turn=0.1
+                time_per_turn = 0.1
                 if len(opt) > 1:
                     n = int(opt[1] / time_per_turn)
                 game_loop(n, time_per_turn=0.1, wait=0)  # fast as possible, no wait
@@ -296,7 +306,7 @@ def show_menu(menu):
             try:
                 int_opt = int(option)
                 if 1 <= int_opt <= len(menu):
-                    return menu[int_opt-1][1]
+                    return menu[int_opt - 1][1]
                 raise ValueError()
             except ValueError:
                 print("Please choose a valid option:")
@@ -324,7 +334,7 @@ def show_menu(menu):
 def input_integer(min=0, max=100):
     while 1:
         try:
-            option = raw_input('(enter integer [{0},{1}]) > '.format(min,max))
+            option = raw_input('(enter integer [{0},{1}]) > '.format(min, max))
             if option == '':
                 return None
             x = int(option)
@@ -347,9 +357,10 @@ def input_values(msg='(enter coordinates) > '):
                 continue
             x = int(coord[0])
             y = int(coord[1])
-            return x,y
+            return x, y
         except ValueError:
             print ('Invalid! Please enter integer values \n')
+
 
 # Navigation
 def move_to():
@@ -365,6 +376,7 @@ def set_speed():
     if new_speed:
         player_sub.set_speed(new_speed)
 
+
 MAIN_NAVIGATION = [
     ('Move to (MOV x,y)', move_to),
     ('Stop', player_sub.stop_moving),
@@ -373,9 +385,10 @@ MAIN_NAVIGATION = [
     ('Rudder center', player_sub.rudder_center),
     ('Rudder right', player_sub.rudder_right)
 
-   # ('Land', None),
-   # ('Take Off', None),
+    # ('Land', None),
+    # ('Take Off', None),
 ]
+
 
 def menu_navigation():
     print("* Navigation *")
@@ -385,12 +398,13 @@ def menu_navigation():
         opt()
     main()
 
+
 ########## SONAR #############
 
 class Watefall(object):
     def __init__(self):
         self.asciiScaler = None
-        self.set_waterfall_level(50,70)
+        self.set_waterfall_level(50, 70)
 
     def set_waterfall_level(self, low, high):
         #self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=".:;|$#").map
@@ -400,14 +414,14 @@ class Watefall(object):
     def print_sonar(self):
         #s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
         line = [ascii_gray(".", int(round(self.scaler(d)))) for d in player_sub.sonar.sonar_array(120)]
-        return "[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS/2)),ascii_reset())
+        return "[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS / 2)), ascii_reset())
 
 
     def print_waterfall(self, compact=1, l=60, inverted=True):
         """
         Inverted watefall means the most recente events shows in th bottom, not in top
         """
-        wf = player_sub.sonar.waterfall[-l:] # filters the last "l" events
+        wf = player_sub.sonar.waterfall[-l:]  # filters the last "l" events
         len_wf = len(wf)
 
         wf_c = []  # compact waterfall
@@ -419,7 +433,7 @@ class Watefall(object):
         idx = 0
         while idx < len_wf:
             # idx_compact in the number of sonar readings to be "compacted" for next printed line
-            idx_compact = min(compact, len_wf-idx)
+            idx_compact = min(compact, len_wf - idx)
             print(idx_compact)
             total = [0.0] * 120
             for _ in xrange(idx_compact):  # compacts the display, calculanting the average
@@ -430,16 +444,16 @@ class Watefall(object):
 
             #print(total)
             #line = [self.asciiScaler(d/idx_compact) for d in total]
-            line = [ascii_gray(".", int(round(self.scaler(d/idx_compact)))) for d in total]
+            line = [ascii_gray(".", int(round(self.scaler(d / idx_compact)))) for d in total]
 
-            wf_c.append("[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS/2)),ascii_reset()))
+            wf_c.append("[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS / 2)), ascii_reset()))
 
         if not inverted:
             wf_c.reverse()
 
         step = 360 / Sonar.WATERFALL_STEPS
-        header = [angles_to_unicode(i*step) for i in xrange(Sonar.WATERFALL_STEPS)]
-        print(" "+"".join(shift(header,Sonar.WATERFALL_STEPS/2)))
+        header = [angles_to_unicode(i * step) for i in xrange(Sonar.WATERFALL_STEPS)]
+        print(" " + "".join(shift(header, Sonar.WATERFALL_STEPS / 2)))
 
         for l in wf_c:
             print(l)
@@ -454,6 +468,7 @@ class Watefall(object):
     def print_waterfall_2h(self):
         self.print_waterfall(compact=120, l=7200)
 
+
 waterfall = Watefall()
 
 
@@ -467,7 +482,20 @@ def print_noise_profile():
     sea_noise = sea.get_background_noise()
     sub_noise = player_sub.self_noise()
     print("Sea background noise: {sea}   Sub noise:{sub}   total:{t}".format(
-        sea=sea_noise, sub=sub_noise, t=sea_noise+sub_noise))
+        sea=sea_noise, sub=sub_noise, t=sea_noise + sub_noise))
+
+
+def sea_conditions():
+    print("Sea Conditions:")
+    print("\tSea conditions: {sea}".format(sea=sea.conditions))
+    print("\tSea noise: {sea}".format(sea=sea.get_background_noise()))
+    print("\tSea temperature: {sea} Celsius".format(sea=sea.temperature))
+    print("\tSea salinity: {sea} ppt".format(sea=sea.salinity))
+    print("\tSea Acidity: pH {sea}".format(sea=sea.ph))
+    print("Sea sound absortion (50 meters deep):")
+    values = [0.1, 1, 10, 50, 100, 500, 1000, 2000, 5000, 10000, 15000, 20000]
+    for v in values:
+        print("\t{0}: {1}".format(int_to_hertz(v),sea.sound_attenuation(v,50)))
 
 
 MAIN_SONAR = [
@@ -476,6 +504,7 @@ MAIN_SONAR = [
     ('Waterfall (30 minutes)', waterfall.print_waterfall_30m),
     ('Waterfall (2 hours)', waterfall.print_waterfall_2h),
     ('Adjust waterfall scale', adjust_watefall),
+    ('Sea conditions', sea_conditions),
 ]
 
 
@@ -493,9 +522,10 @@ def menu_sonar():
 MAIN_TMA = [
     ('', None),
     ('', None),
-   # ('Land', None),
-   # ('Take Off', None),
+    # ('Land', None),
+    # ('Take Off', None),
 ]
+
 
 def menu_tma():
     print("Target Motion Analysis")
@@ -511,9 +541,10 @@ def menu_tma():
 MAIN_TARGET = [
     ('Set Target', None),
     ('Fire', None),
-   # ('Land', None),
-   # ('Take Off', None),
+    # ('Land', None),
+    # ('Take Off', None),
 ]
+
 
 def menu_weapons():
     print("Weapons")
@@ -529,8 +560,9 @@ def menu_weapons():
 MAIN_COMM = [
     ('', None),
     ('', None),
-   # ('Take Off', None),
+    # ('Take Off', None),
 ]
+
 
 def menu_comm():
     opt = show_menu(MAIN_COMM)
@@ -595,11 +627,11 @@ def game_loop(turns, time_per_turn=0.1, wait=0.01):
 
 
 def run_turn(time_per_turn):
-    sea.turn(time_per_turn/3600)  # sea turn runs in hours, run_turn in seconds
+    sea.turn(time_per_turn / 3600)  # sea turn runs in hours, run_turn in seconds
     #print(universe)
     sys.stdout.write("\r ({sd}) {nav} deep:{deep:.0f}(set:{sdeep})".format(sd=sea, nav=player_sub.nav,
-                                                                       deep=player_sub.actual_deep,
-                                                                       sdeep=player_sub.set_deep))
+                                                                           deep=player_sub.actual_deep,
+                                                                           sdeep=player_sub.set_deep))
     sys.stdout.flush()
     messages, stop = player_sub.get_messages()
     if messages:
@@ -623,6 +655,7 @@ def main():
                 opt()
         except KeyboardInterrupt:
             pass
+
 
 if __name__ == "__main__":
     start()
