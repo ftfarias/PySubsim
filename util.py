@@ -288,6 +288,49 @@ class Alternation(object):
                 self.state = True
                 self.counter = random.gauss(8, 5)+random.gauss(12, 5)
 
+class Deployable(object):
+    STOP = "Stopped"
+    DEPLOY = 'Deploying'
+    RETRIEVE = 'Retrieving'
+    BROKE = 'Broke'
+
+    def __init__(self, size, deploy_rate, inicial_deployed_size=0):
+        self.state = self.STOP
+        self.deployed_size = inicial_deployed_size
+        self.total_size = size
+        self.deploy_rate = deploy_rate
+
+    def turn(self, time_elapsed):
+        if self.status == self.DEPLOY:
+            self.deployed_size += self.deploy_rate * time_elapsed
+            if self.deployed_size >= self.total_size:
+                self.deployed_size = self.total_size
+                self.status = self.STOP
+
+        elif self.status == self.RETRIEVE:
+            self.deployed_size -= self.deploy_rate * time_elapsed
+            if self.deployed_size <= 0:
+                self.deployed_size = 0
+                self.status = self.STOP
+
+    def deploy(self):
+        if self.status != self.BROKE:
+            self.status = self.DEPLOY
+
+    def stop(self):
+        if self.status != self.BROKE:
+            self.status = self.STOP
+
+    def retrieve(self):
+        if self.status != self.BROKE:
+            self.status = self.RETRIEVE
+
+    def broke(self):
+        self.status = self.BROKE
+        self.deployed_size = 0
+
+    def __str__(self):
+        return "{0} ({1})".format(self.state, self.deployed_size)
 
 class TestUtil(unittest.TestCase):
     pass

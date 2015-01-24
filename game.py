@@ -9,7 +9,6 @@ import time
 import sys
 import logging
 from sonar import Sonar
-import math
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -400,77 +399,9 @@ def menu_navigation():
 
 
 ########## SONAR #############
+from game_waterfall import Waterfall
 
-class Watefall(object):
-    def __init__(self):
-        self.asciiScaler = None
-        self.set_waterfall_level(50, 70)
-
-    def set_waterfall_level(self, low, high):
-        #self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=".:;|$#").map
-        #self.asciiScaler = AsciiLinearScale([low,high], ascii_scale=u"\u2591\u2592\u2593\u2588").map
-        self.scaler = linear_scaler_with_limit([low, high], [250, 1])
-
-    def print_sonar(self):
-        #s = [self.asciiScaler(x.value) for x in player_sub.sonar.sonar_array(120)]
-        line = [ascii_gray(".", int(round(self.scaler(d)))) for d in player_sub.sonar.sonar_array(120)]
-        return "[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS / 2)), ascii_reset())
-
-
-    def print_waterfall(self, compact=1, l=60, inverted=True):
-        """
-        Inverted watefall means the most recente events shows in th bottom, not in top
-        """
-        wf = player_sub.sonar.waterfall[-l:]  # filters the last "l" events
-        len_wf = len(wf)
-
-        wf_c = []  # compact waterfall
-        #print(wf)
-        if len_wf == 0:
-            print ("no sonar data")
-            return
-
-        idx = 0
-        while idx < len_wf:
-            # idx_compact in the number of sonar readings to be "compacted" for next printed line
-            idx_compact = min(compact, len_wf - idx)
-            print(idx_compact)
-            total = [0.0] * 120
-            for _ in xrange(idx_compact):  # compacts the display, calculanting the average
-                wf_idx = wf[idx]
-                for c in xrange(120):
-                    total[c] += wf_idx[c]
-                idx += 1
-
-            #print(total)
-            #line = [self.asciiScaler(d/idx_compact) for d in total]
-            line = [ascii_gray(".", int(round(self.scaler(d / idx_compact)))) for d in total]
-
-            wf_c.append("[{0}{1}]".format("".join(shift(line, Sonar.WATERFALL_STEPS / 2)), ascii_reset()))
-
-        if not inverted:
-            wf_c.reverse()
-
-        step = 360 / Sonar.WATERFALL_STEPS
-        header = [angles_to_unicode(i * step) for i in xrange(Sonar.WATERFALL_STEPS)]
-        print(" " + "".join(shift(header, Sonar.WATERFALL_STEPS / 2)))
-
-        for l in wf_c:
-            print(l)
-
-
-    def print_waterfall_1m(self):
-        self.print_waterfall(compact=1, l=60)
-
-    def print_waterfall_30m(self):
-        self.print_waterfall(compact=30, l=1800)
-
-    def print_waterfall_2h(self):
-        self.print_waterfall(compact=120, l=7200)
-
-
-waterfall = Watefall()
-
+waterfall = Waterfall(player_sub.sonar)
 
 def adjust_watefall():
     low, high = input_values("Enter the low and high db levels(default: 50,70): ")
@@ -498,15 +429,27 @@ def sea_conditions():
         print("\t{0}: {1}".format(int_to_hertz(v),sea.sound_attenuation(v,50)))
 
 
-MAIN_SONAR = [
-    ('Show near objects', print_near_objects),
+WATERFALL = [
     ('Waterfall (1 minute)', waterfall.print_waterfall_1m),
     ('Waterfall (30 minutes)', waterfall.print_waterfall_30m),
     ('Waterfall (2 hours)', waterfall.print_waterfall_2h),
     ('Adjust waterfall scale', adjust_watefall),
-    ('Sea conditions', sea_conditions),
 ]
 
+def menu_waterfall():
+    print(player_sub.sonar.status())
+    print_noise_profile()
+    print(waterfall.print_sonar())
+    opt = show_menu(WATERFALL)
+    if opt:
+        opt()
+    main()
+
+MAIN_SONAR = [
+    ('Show near objects', print_near_objects),
+    ('Waterfall', menu_waterfall),
+    ('Sea conditions', sea_conditions),
+]
 
 def menu_sonar():
     print(player_sub.sonar.status())

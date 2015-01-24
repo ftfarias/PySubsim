@@ -99,13 +99,13 @@ class Sea:
     def add_player_submarine(self, sub):
         self.objects.append(sub)
 
-    def turn(self, time_elapsed):
+    def turn(self, time_elapsed):  # time_elapsed in hours
         self.time = self.time + datetime.timedelta(seconds=time_elapsed * 3600)
         for obj in self.objects:
             obj.turn(time_elapsed)
 
     def get_background_noise(self):
-        return db(random.gauss(40, 2))
+        return db(random.gauss(80, 2))
 
     def sound_attenuation(self, freq, deep):
         #return db(db=simple_sound_absortion_by_sea(freq, deep))

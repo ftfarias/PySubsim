@@ -21,25 +21,24 @@ class Decibel(object):
         else:
             return other / abs(self)
 
-    # like: 100 - 3*db = 50  (3db ~= half)
     def __rsub__(self, other):
         if isinstance(other, Decibel):
             return Decibel(ratio=abs(self) - abs(other))
         else:
             return other / abs(self)
 
-
+    # like: 100 - 3*db = 50  (3db ~= half)
     def __mul__(self, other):
         if isinstance(other, Decibel):
-            return Decibel(db=self.value + other.value)
+            return Decibel(ratio=abs(self) * abs(other))
         else:
-            return Decibel(db=self.value * other)
+            return Decibel(ratio=abs(self) * other)
 
     __rmul__ = __mul__
 
     def __div__(self, other):
         if isinstance(other, Decibel):
-            return Decibel(db=self.value - other.value)
+            return Decibel(ratio=abs(self) / abs(other))
         else:
             return Decibel(ratio=abs(self) / other)
 

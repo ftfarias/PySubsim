@@ -1,7 +1,5 @@
 import curses
 
-
-
 def func(win):
     #curses.init_color(0,100,0,0)
     curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_GREEN)

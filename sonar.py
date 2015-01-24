@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from sub_module import SubModule
-from util import abs_angle_to_bearing, Bands
+from util import abs_angle_to_bearing, Bands, Deployable
 from physic import Point, MovableNewtonObject
 from sound import db
 import util
 import math
 import random
+
+class SonarReading(object):
 
 
 class SonarContact:
@@ -14,7 +16,7 @@ class SonarContact:
     LOST = 'Lost'
 
     def __init__(self, sonar, sonar_idx):
-        self.noise = db(db=random.randint(50,70))
+        self.noise = db(db=random.randint(50, 70))
         self.sonar_idx = sonar_idx
         self.sonar = sonar
         self.sub = sonar.sub
@@ -33,11 +35,12 @@ class SonarContact:
         self.speed_history = []
         self.stn_history = []
 
-        self.blade_number = None   # Number of blades in the propeller
-        self.blade_frequence = None   # Turns for second of the propeller
+        self.blade_number = None  # Number of blades in the propeller
+        self.blade_frequence = None  # Turns for second of the propeller
         self.knots_per_turn = 0
         self.deep = 0
         self.bands = Bands()
+
 
     def bearing(self):
         return self.bearings_history[-1]
@@ -69,14 +72,14 @@ class SonarContact:
 
     def estimate_pos(self, ship_pos=None):
         if ship_pos is None:
-            ship_pos = Point(0,0)
-        angle = self.bearing() - (math.pi/2)
-        return ship_pos + Point(math.cos(angle)*self.range(), math.sin(angle)*self.range())
+            ship_pos = Point(0, 0)
+        angle = self.bearing() - (math.pi / 2)
+        return ship_pos + Point(math.cos(angle) * self.range(), math.sin(angle) * self.range())
 
     def mark(self, time, bearing, contact_range, stn, speed=None, course=None):
         time_elapsed_since_last = (time - self.time_history[-1]).seconds
         last_pos = self.pos()
-        #time_delta = (time - self.start_tracking_time).seconds
+        # time_delta = (time - self.start_tracking_time).seconds
 
         self.time_history.append(time)
         self.bearings_history.append(bearing)
@@ -98,21 +101,76 @@ class SonarContact:
     def __str__(self):
         obj_type = self.obj_type if self.obj_type is not None else '<unknown>'
         course = abs_angle_to_bearing(self.course()) if self.course() is not None else '-'
-        course_symbol = util.angles_to_unicode(abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
+        course_symbol = util.angles_to_unicode(
+            abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
         range_str = round(self.range(), 1) if self.range() is not None else '-'
         speed = round(self.speed()) if self.speed() is not None else '-'
         name = self.name if self.name else '<no name>'
         bearing = abs_angle_to_bearing(self.bearing())
         bearing_symbol = util.angles_to_unicode(bearing)
-        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>\t{name}".\
+        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>\t{name}". \
             format(ident=self.ident, ty=obj_type, bearing=bearing, range=range_str,
-            course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
-            snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
+                   course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
+                   snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
+
+
+class TowedArrayTB16(Deployable):
+    """
+    TB-16 Fat Line Towed Array (688)
+    The TB-16 Fat Line Towed Array consists of a 1400
+    pound accoustic detector array, some 3.5 inches in diameter
+    and 240 feet long, towed on a 2,400 foot long cable
+    0.37 inches in diameter weighing 450 pounds.
+    """
+    def __init__(self, sea):
+        # Size: 2400 feet
+        # deploy rate: 7 feet/sec (* 3600 for feet/hour)
+        Deployable.__init__(self, 2400, 7 * 3600)
+        self.sea = sea
+
+    def turn(self, time_elapsed):  # time in hours
+        Deployable.turn(self, time_elapsed)
+
+    def __str__(self):
+        return "TB-16 {0} ({1} feet of {2} deployed)".format(self.state, self.deployed_size, self.total_size)
+
+
+class HullSonarBQQ10():
+    """
+    Passive Hull Sonar
+    """
+    def __init__(self, sea):
+        self.sea = sea
+
+
+class SphereSonarBQQ10():
+    """
+    Passive Sphere Sonar
+    """
+    def __init__(self, sea):
+        self.sea = sea
 
 
 class Sonar(SubModule):
     MAX_WATERFALL_HISTORY_SECONDS = 2 * 3600  # two hours
     WATERFALL_STEPS = 120
+    # Spherical
+    # Hull
+    # Towed
+    """
+    The Seawolf has two towed arrays the TB-29 and the TB-16.
+    In general, the TB-29 is longer and more sensitive than the TB-16,
+    but the TB-16 remains effective at higher speeds.
+    Select the Starboard Towed Array to deploy the TB-29 array.
+    Select the Port Towed Array to deploy the TB-16.
+
+    Also fitted are TB-16 surveillance and TB-29 tactical towed arrays,
+    which will be replaced by the TB-29A thin-line towed array being
+    developed by Lockheed Martin, and BQS 24 active sonar for close range detection.
+
+    http://www.globalsecurity.org/military/systems/ship/systems/towed-array.htm
+    """
+
 
     def __init__(self, sub):
         SubModule.__init__(self, sub)
@@ -123,7 +181,9 @@ class Sonar(SubModule):
         self.time_for_next_update = 0
         self.time_for_next_waterfall = 0
         self.waterfall = []
-
+        self.spherical = SphereSonarBQQ10(sea=self.sea)
+        self.hull = HullSonarBQQ10(sea=self.sea)
+        self.towed = TowedArrayTB16(sea=self.sea)
 
     def return_near_objects(self):
         return self.contacts
@@ -146,24 +206,24 @@ class Sonar(SubModule):
         if self.time_for_next_update <= 0.0:
             # passive scan
             self.passive_scan(time_elapsed)
-            self.time_for_next_update = 10.0 / 3600 # every 10 seconds
+            self.time_for_next_update = 10.0 / 3600  # every 10 seconds
         else:
             self.time_for_next_update -= time_elapsed
 
         if self.time_for_next_waterfall <= 0.0:
             # passive scan
             self.waterfall_update()
-            self.time_for_next_waterfall = 1.0 / 3600 # every second
+            self.time_for_next_waterfall = 1.0 / 3600  # every second
         else:
             self.time_for_next_waterfall -= time_elapsed
 
 
-        #if self.mode == self.ACTIVE_SCAN:
-        #    self.pulse_scan()
+            # if self.mode == self.ACTIVE_SCAN:
+            #    self.pulse_scan()
 
     def passive_scan(self, time_elapsed):
         scan = self.sea.passive_scan(self.sub, time_elapsed)
-        for k,c in self.contacts.items():
+        for k, c in self.contacts.items():
             c.tracking_status = SonarContact.LOST
 
         for sr in scan:  #
@@ -221,10 +281,9 @@ class Sonar(SubModule):
         backgroung_noise = sea_noise + sub_noise
         for k, obj in self.contacts:
             angle = obj.bearing
-            #if from_angle <= angle <= to_angle:
+            # if from_angle <= angle <= to_angle:
 
         return backgroung_noise
-
 
 
     def sonar_array(self, num_angles):
@@ -233,17 +292,17 @@ class Sonar(SubModule):
             sub_noise = self.sub.self_noise()
             return sea_noise + sub_noise
 
-        step = 360/num_angles
+        step = 360 / num_angles
         angles = util.angles(num_angles)
         noise = [backgroung_noise(self) for _ in xrange(num_angles)]
 
         for k, obj in self.contacts.items():
-            #print(obj.bearing())
-            x = int(math.degrees(obj.bearing())/step)
+            # print(obj.bearing())
+            x = int(math.degrees(obj.bearing()) / step)
             #print(x)
             noise[x] += obj.noise
 
-        #print(noise)
+        # print(noise)
         return noise
 
 
