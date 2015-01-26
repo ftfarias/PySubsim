@@ -28,20 +28,18 @@ Truly, he has entered the mystery of Tao.”
 
 
 class ScanResult:
-    def __init__(self, sonar_idx):
-        self.sonar_idx = sonar_idx
+    def __init__(self, object_idx):
+        self.object_idx = object_idx
         self.signal_to_noise = 0
-
         self.bearing = 0
         self.range = 0
         self.deep = 0
         self.blades = 0
-
-        self.bands = [0.0] * 10
+        self.bands = None
 
     def __str__(self):
         return "ScanResult idx={id} snt={snt} bearing={b} range={r} deep={deep} blades={bl} band={band}". \
-            format(id=self.sonar_idx, snt=self.signal_to_noise, b=self.bearing, r=self.range,
+            format(id=self.object_idx, snt=self.signal_to_noise, b=self.bearing, r=self.range,
                    deep=self.deep, bl=self.blades, band=self.bands)
 
 
@@ -51,12 +49,12 @@ class Sea:
         self.counter = 0
         self.objects = []
         self.ids_collection = range(1000, 9999)
+        random.shuffle(self.ids_collection)
         self.conditions = 'Calm'
         # limits below because sound absortion formula
         self.temperature = random.randint(-60,150) / 10.0 # Celsius, -6 < T < 35
         self.salinity = float(random.randint(30,35)) # 5 < S < 50 ppt
         self.ph = 1.0 * random.randint(77,83) / 10 #  7.7 < pH < 8.3
-        random.shuffle(self.ids_collection)
 
     def initialize(self):
         pass
@@ -64,45 +62,38 @@ class Sea:
     def get_unique_id(self):
         return self.ids_collection.pop()
 
-    def create_whale(self, pos=None):
-        if pos is None:
-            pos = Point(random.randint(0, 10), random.randint(0, 10))
-        logger.debug("Creating a whale at {0}".format(pos))
-        whale = Whale(self)
-        whale.pos = pos
-        logging.debug("Whale {0}".format(whale))
-        self.objects.append(whale)
-        return whale
-
-    # def create_warship(self, pos=None, ship_type=None):
-    # t = ['Destroyer', 'Warship']
-    #     if pos is None:
-    #         pos = Point(random.randint(0, 10), random.randint(0, 10))
-    #     if ship_type is None:
-    #         ship_type = t[random.randint(0, len(t) - 1)]
-    #     ship = MovableSeaObject(ship_type, pos)
-    #     ship.set_destination(random.randint(0, 359), random.randint(5, 15))
-    #     self.objects.append(ship)
-    #     return ship
-
-    # def create_fishing(self, pos=None, ship_type=None):
-    #     t = ['Fishing Boat', 'Fishing Ship']
-    #     if pos is None:
-    #         pos = Point(random.randint(0, 10), random.randint(0, 10))
-    #     if ship_type is None:
-    #         ship_type = t[random.randint(0, len(t) - 1)]
-    #     ship = MovableSeaObject(ship_type, pos)
-    #     ship.set_destination(random.randint(0, 359), random.randint(1, 5))
-    #     self.objects.append(ship)
-    #     return ship
-
-    def add_player_submarine(self, sub):
-        self.objects.append(sub)
+    def add_object(self, obj):
+        self.objects.append(obj)
 
     def turn(self, time_elapsed):  # time_elapsed in hours
         self.time = self.time + datetime.timedelta(seconds=time_elapsed * 3600)
         for obj in self.objects:
             obj.turn(time_elapsed)
+
+
+    def background_noise_for_freq(self, freq):
+        # using Wenz (1962)
+        # http://www.dosits.org/science/soundsinthesea/commonsounds
+        # Min and Max values done by linear aproximation
+        logfreq = math.log10(freq)
+
+        # for minimum value:
+        # > x = c(1,5)
+        # > y = c(85,20)
+        # > l = lm(y ~ x)
+        # Coefficients:
+        # (Intercept)            x
+        #      101.25       -16.25
+        min_value = 101.25 + (-16.25 * logfreq)
+
+        # > y_max = c(140,60)
+        # > l = lm(y_max ~ x)
+        # Coefficients:
+        # (Intercept)            x
+        #         160          -20
+
+        max_value = 160.0 + (-20.0 * logfreq)
+        return min_value, max_value
 
     def get_background_noise(self):
         return db(random.gauss(80, 2))
@@ -114,7 +105,15 @@ class Sea:
                                             salinity=self.salinity,
                                             pH=self.ph))
 
-    def passive_scan(self, sub, time_elapsed):
+
+    def passive_sonar_scan(self, sub, sonar):
+        logger.debug("--- Passive sonar scan ---")
+        sub_pos = sub.get_pos()
+        assert isinstance(sub_pos, Point)
+        result = []  # list of ScanResult
+
+
+    def passive_scan(self, sub, sonar):
         logger.debug("--- Passive scan ---")
         sub_pos = sub.get_pos()
         assert isinstance(sub_pos, Point)
@@ -159,7 +158,8 @@ class Sea:
             #    received_sound = db(received_sound)
             signal_to_noise = total_received_sound / background_noise
             logger.debug("{i}: signal_to_noise:{stn}".format(i=i, stn=signal_to_noise))
-            if signal_to_noise.value > 1:
+            if signal_to_noise.value > sonar.min_detection_stn:
+
                 # error: greater the signal_to_noise, less the error
                 if signal_to_noise > 10:
                     error = 0.0001  # means 0.1% in measure

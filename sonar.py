@@ -3,64 +3,41 @@ from sub_module import SubModule
 from util import abs_angle_to_bearing, Bands, Deployable
 from physic import Point, MovableNewtonObject
 from sound import db
+#from sub import Submarine
 import util
 import math
 import random
 
-class SonarReading(object):
+# class SonarReading(object):
+#     def __init__(self, time, bearing, distance, pos, course, speed, deep, stn, sources):
 
 
 class SonarContact:
     NEW = 'New'
     TRACKING = 'Tracking'
     LOST = 'Lost'
-
-    def __init__(self, sonar, sonar_idx):
-        self.noise = db(db=random.randint(50, 70))
-        self.sonar_idx = sonar_idx
-        self.sonar = sonar
-        self.sub = sonar.sub
-        self.sea = sonar.sub.sea
+    def __init__(self, current_time, bearing, stn, pos, range):
         self.tracking_status = self.NEW
-        self.name = None  # like "i688"
-        self.ident = ""  # like S1
-        self.obj_type = None
-        self.details = None
-
-        self.time_history = []
-        self.range_history = []
-        self.bearings_history = []
-        self.pos_history = []
-        self.course_history = []
-        self.speed_history = []
-        self.stn_history = []
+        self.name = '-'  # like "i688"
+        self.id = ""  # like S1
+        self.obj_type = ''
+        self.details = ''
 
         self.blade_number = None  # Number of blades in the propeller
         self.blade_frequence = None  # Turns for second of the propeller
         self.knots_per_turn = 0
-        self.deep = 0
         self.bands = Bands()
 
-
-    def bearing(self):
-        return self.bearings_history[-1]
-
-    def range(self):
-        return self.range_history[-1]
-
-    def speed(self):
-        return self.speed_history[-1]
-
-    def course(self):
-        return self.course_history[-1]
-
-    def pos(self):
-        return self.pos_history[-1]
-
-    def stn(self):
-        return self.stn_history[-1]
-
-    # auxiliar functions
+        self.first_contacted_time = current_time
+        self.last_contact_time = current_time
+        self.bearing = bearing
+        self.range = range # yards
+        self.pos = pos
+        self.course = None # radians
+        self.speed = None # in knots
+        self.deep = None # in feet
+        self.stn = stn
+        self.sources = '...'  # S - Spherical, H - Hull, T - Towed Array
 
     def propeller_speed(self):
         if self.blade_frequence is None or self.knots_per_turn is None:
@@ -73,45 +50,50 @@ class SonarContact:
     def estimate_pos(self, ship_pos=None):
         if ship_pos is None:
             ship_pos = Point(0, 0)
-        angle = self.bearing() - (math.pi / 2)
-        return ship_pos + Point(math.cos(angle) * self.range(), math.sin(angle) * self.range())
+        angle = self.bearing - (math.pi / 2)
+        return ship_pos + Point(math.cos(angle) * self.range, math.sin(angle) * self.range)
 
-    def mark(self, time, bearing, contact_range, stn, speed=None, course=None):
-        time_elapsed_since_last = (time - self.time_history[-1]).seconds
-        last_pos = self.pos()
+    def mark(self, time, bearing, range, stn, sub_pos, speed=None, course=None):
+        time_elapsed_since_last = (time - self.last_contact_time).seconds
+        last_pos = self.pos
         # time_delta = (time - self.start_tracking_time).seconds
 
-        self.time_history.append(time)
-        self.bearings_history.append(bearing)
-        self.range_history.append(contact_range)
+        self.last_contact_time = time
+        self.bearing = bearing
+        if range is None:
+            self.range = 10
+        else:
+            self.range = range
 
-        new_pos = self.estimate_pos(self.sub.pos)
-        self.pos_history.append(new_pos)
+        last_pos = self.pos
+        new_pos = self.estimate_pos(sub_pos)
+        self.pos = new_pos
 
         if speed is None:
-            speed = 3600 * last_pos.distance_to(new_pos) / time_elapsed_since_last
-        self.speed_history.append(speed)
+            # in knots
+            self.speed = 3600 * last_pos.distance_to(new_pos) / time_elapsed_since_last
+        else:
+            self.speed = 0
 
         if course is None:
             course = last_pos.angle_to(new_pos)
-        self.course_history.append(course)
-
-        self.stn_history.append(stn)
+        self.course = course
+        self.stn = stn
 
     def __str__(self):
         obj_type = self.obj_type if self.obj_type is not None else '<unknown>'
-        course = abs_angle_to_bearing(self.course()) if self.course() is not None else '-'
+        course = abs_angle_to_bearing(self.course) if self.course is not None else '-'
         course_symbol = util.angles_to_unicode(
-            abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
-        range_str = round(self.range(), 1) if self.range() is not None else '-'
-        speed = round(self.speed()) if self.speed() is not None else '-'
+            abs_angle_to_bearing(self.course)) if self.course is not None else '*'
+        range_str = round(self.range, 1) if self.range is not None else '-'
+        speed = round(self.speed) if self.speed else '-'
         name = self.name if self.name else '<no name>'
-        bearing = abs_angle_to_bearing(self.bearing())
+        bearing = abs_angle_to_bearing(self.bearing)
         bearing_symbol = util.angles_to_unicode(bearing)
-        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>\t{name}". \
-            format(ident=self.ident, ty=obj_type, bearing=bearing, range=range_str,
-                   course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
-                   snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
+        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs} range {range:5.1f} course {course:3.0f}{arrow} speed {speed:4.1f} stn {snt} src:{src} \tpos:{pos}\t<{status}>\t{name}". \
+            format(ident=self.id, ty=obj_type, bearing=bearing, range=range_str,
+                   course=course, speed=speed, pos=self.pos, status=self.tracking_status,
+                   snt=self.stn, arrow=course_symbol, bs=bearing_symbol, name=name, src=self.sources)
 
 
 class TowedArrayTB16(Deployable):
@@ -127,6 +109,9 @@ class TowedArrayTB16(Deployable):
         # deploy rate: 7 feet/sec (* 3600 for feet/hour)
         Deployable.__init__(self, 2400, 7 * 3600)
         self.sea = sea
+        # minimal Signal-to-Noise level dectection in DB
+        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
+        self.min_detection_stn = 1
 
     def turn(self, time_elapsed):  # time in hours
         Deployable.turn(self, time_elapsed)
@@ -141,6 +126,9 @@ class HullSonarBQQ10():
     """
     def __init__(self, sea):
         self.sea = sea
+        # minimal Signal-to-Noise level dectection in DB
+        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
+        self.min_detection_stn = 1
 
 
 class SphereSonarBQQ10():
@@ -149,6 +137,9 @@ class SphereSonarBQQ10():
     """
     def __init__(self, sea):
         self.sea = sea
+        # minimal Signal-to-Noise level dectection in DB
+        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
+        self.min_detection_stn = 1
 
 
 class Sonar(SubModule):
@@ -174,16 +165,18 @@ class Sonar(SubModule):
 
     def __init__(self, sub):
         SubModule.__init__(self, sub)
+        # assert isinstance(sub, Submarine)
         self.module_name = "SONAR"
         self.contacts = {}
-        self.sea = sub.sea
+        self.sea = sub.sea  # auxiliar
         self.counter = 0  # counter for Sierra Contacts
         self.time_for_next_update = 0
         self.time_for_next_waterfall = 0
-        self.waterfall = []
         self.spherical = SphereSonarBQQ10(sea=self.sea)
         self.hull = HullSonarBQQ10(sea=self.sea)
         self.towed = TowedArrayTB16(sea=self.sea)
+
+        self.waterfall = []
 
     def return_near_objects(self):
         return self.contacts
@@ -205,7 +198,7 @@ class Sonar(SubModule):
     def turn(self, time_elapsed):  # time in hours
         if self.time_for_next_update <= 0.0:
             # passive scan
-            self.passive_scan(time_elapsed)
+            self.passive_scan()
             self.time_for_next_update = 10.0 / 3600  # every 10 seconds
         else:
             self.time_for_next_update -= time_elapsed
@@ -221,40 +214,36 @@ class Sonar(SubModule):
             # if self.mode == self.ACTIVE_SCAN:
             #    self.pulse_scan()
 
-    def passive_scan(self, time_elapsed):
-        scan = self.sea.passive_scan(self.sub, time_elapsed)
+    # def passive_scan(self, time_elapsed):
+    #     scan = self.sea.passive_scan(self.sub, time_elapsed)
+    #     for k, c in self.contacts.items():
+    #         c.tracking_status = SonarContact.LOST
+    #
+    #     for sr in scan:  #
+    #         idx = sr.sonar_idx
+    #         if idx in self.contacts:
+    #             self.update_contact(self.contacts[idx], sr, time_elapsed)
+    #         else:
+    #             self.add_contact(sr)
+
+
+    def passive_scan(self):
+        # Sphere Array
+        scan = self.sea.passive_scan(self.sub, self.spherical )
         for k, c in self.contacts.items():
             c.tracking_status = SonarContact.LOST
 
         for sr in scan:  #
-            idx = sr.sonar_idx
+            idx = sr.object_idx
             if idx in self.contacts:
-                self.update_contact(self.contacts[idx], sr, time_elapsed)
+                self.update_contact(self.contacts[idx], sr)
             else:
                 self.add_contact(sr)
 
-    def waterfall_update(self):
-        s = [x.value for x in self.sonar_array(self.WATERFALL_STEPS)]
-        self.waterfall.append(s)
-        if len(self.waterfall) > self.MAX_WATERFALL_HISTORY_SECONDS:
-            self.waterfall = self.waterfall[-self.MAX_WATERFALL_HISTORY_SECONDS]
-
-
-    def pulse_scan(self):
-        pass
-
     def add_contact(self, scan_result):
-        sc = SonarContact(self, scan_result.sonar_idx)
-        sc.time_history.append(self.sea.time)
-        sc.ident = self.get_new_contact_id()
+        sc = SonarContact(self.sea.time, scan_result.bearing, scan_result.signal_to_noise, Point(0,0), scan_result.range)
+        # sc.id = self.get_new_contact_id()
         sc.bands = scan_result.bands
-
-        sc.bearings_history.append(scan_result.bearing)
-        sc.range_history.append(scan_result.range)
-        sc.pos_history.append(sc.estimate_pos(self.sub.pos))
-        sc.stn_history.append(scan_result.signal_to_noise)
-        sc.speed_history.append(0.0)
-        sc.course_history.append(0.0)
         sc.blade_number = scan_result.blades
         sc.deep = scan_result.deep
         sc.tracking_status = sc.NEW
@@ -266,14 +255,51 @@ class Sonar(SubModule):
 
         self.contacts[scan_result.sonar_idx] = sc
         self.add_message("Conn, Sonar: New {st} contact on sonar, bearing {br:3.0f}, designated {d}".format(
-            st=st, br=util.abs_angle_to_bearing(scan_result.bearing), d=sc.ident), True)
+            st=st, br=util.abs_angle_to_bearing(scan_result.bearing), d=sc.id), True)
 
-    def update_contact(self, sc, scan_result, time_elapsed):
-        sc.tracking_status = sc.TRACKING
-        sc.mark(self.sea.time, scan_result.bearing, scan_result.range, scan_result.signal_to_noise)
-        sc.deep = scan_result.deep
-        sc.blade_number = scan_result.blades
-        sc.bands = scan_result.bands
+    def update_contact(self, sonar_contact, scan_result):
+        sonar_contact.tracking_status = sonar_contact.TRACKING
+
+        time_elapsed_since_last = (self.sea.time - self.last_contact_time).seconds
+        last_pos = sonar_contact.pos
+
+        self.last_contact_time = self.sea.time
+        self.bearing = scan_result.bearing
+
+        if scan_result.range is None:
+            self.range = 10
+        else:
+            self.range = scan_result.range
+
+        last_pos = self.pos
+        new_pos = self.estimate_pos(self.sub.pos)
+        self.pos = new_pos
+
+        if sonar_contact.speed is None:
+            # in knots
+            self.speed = 3600 * last_pos.distance_to(new_pos) / time_elapsed_since_last
+        else:
+            self.speed = 0
+
+        self.course = last_pos.angle_to(new_pos)
+        self.stn = scan_result.signal_to_noise
+
+
+
+        sonar_contact.deep = scan_result.deep
+        sonar_contact.blade_number = scan_result.blades
+        sonar_contact.bands = scan_result.bands
+
+
+    def waterfall_update(self):
+        s = [x.value for x in self.sonar_array(self.WATERFALL_STEPS)]
+        self.waterfall.append(s)
+        if len(self.waterfall) > self.MAX_WATERFALL_HISTORY_SECONDS:
+            self.waterfall = self.waterfall[-self.MAX_WATERFALL_HISTORY_SECONDS]
+
+
+    def pulse_scan(self):
+        pass
 
     def noise_by_angle(self, from_angle, to_angle):
         sea_noise = self.sea.get_background_noise()
@@ -282,7 +308,6 @@ class Sonar(SubModule):
         for k, obj in self.contacts:
             angle = obj.bearing
             # if from_angle <= angle <= to_angle:
-
         return backgroung_noise
 
 

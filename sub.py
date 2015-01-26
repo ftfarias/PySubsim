@@ -1,54 +1,31 @@
 # -*- coding: utf-8 -*-
 import math
-from util import abs_angle_to_bearing, Bands, limits
-from physic import Point, MovableNewtonObject
+import random
+
+from physic import MovableNewtonObject
 from sub_module import SubModule
 from sonar import Sonar
 from sound import db
 from linear_scale import linear_scaler
-import random
 from navigation import Navigation
 
-
-
-class ShipFactory():
-    @staticmethod
-    def create_player_sub(sea):
-        print("Creating Player Submarine")
-        sub = Submarine(sea, kind='688')
-        sub.pos = Point(6, 6)
-        sub.name = "Mautilus"
-        sea.add_player_submarine(sub)
-        return sub
-
-    @staticmethod
-    def create_simple_sub(sea, pos):
-        sub = Submarine(sea)
-        sub.set_speed(1)
-        sub.actual_deep = random.randint(50, 300)
-        sub.set_destination(Point(random.randint(0, 60), random.randint(0, 60)))
-        sub.pos = pos
-        return sub
-
-
 class Submarine(MovableNewtonObject):
-    MAX_TURN_RATE_HOUR = math.radians(35)*60  # max 35 degrees per minute
-    MAX_DEEP_RATE_FEET = 1   # 1 foot per second
+    MAX_TURN_RATE_HOUR = math.radians(35) * 60  # max 35 degrees per minute
+    MAX_DEEP_RATE_FEET = 1  # 1 foot per second
     MAX_SPEED = 35
 
-    def __init__(self, sea, kind):
-        MovableNewtonObject.__init__(self, self.MAX_SPEED, self.MAX_TURN_RATE_HOUR )
-        self.kind = kind
+    def __init__(self, sea):
+        MovableNewtonObject.__init__(self, self.MAX_SPEED, self.MAX_TURN_RATE_HOUR)
+        self.kind = '688'
         self.messages = []
         self.sea = sea
         self.max_hull_integrity = 100  # in "damage points"
         self.hull_integrity = self.max_hull_integrity
         self.damages = None
-        self.actual_deep = 150
-        self.set_deep = 150
+        self.actual_deep = 150  # feet
+        self.set_deep = 150  # feet
         self.message_stop = False
         self.cavitation = False
-
 
         # build ship
         self.nav = Navigation(self)
@@ -77,9 +54,10 @@ class Submarine(MovableNewtonObject):
     # for 0 < speed < 15 :  linear from 40 to 60
     # for speed > 15 : linear with factor of 2db for each knot
     # ref: http://fas.org/man/dod-101/navy/docs/es310/uw_acous/uw_acous.htm
-    NOISE_RANGE1 = linear_scaler([0,15],[40,60])
-    NOISE_RANGE2 = linear_scaler([15,35],[60,100])
-    def self_noise(self): # returns
+    NOISE_RANGE1 = linear_scaler([0, 15], [40, 60])
+    NOISE_RANGE2 = linear_scaler([15, 35], [60, 100])
+
+    def self_noise(self):  # returns
         #
         """
         Assumes the noise is proportional to speed
@@ -115,11 +93,11 @@ class Submarine(MovableNewtonObject):
         cavitating = max_speed_for_deep < self.speed
 
         if cavitating and not self.cavitation:
-            self.add_message("SONAR","COMM, SONAR: CAVITATING !!!", True)
+            self.add_message("SONAR", "COMM, SONAR: CAVITATING !!!", True)
 
         self.cavitation = cavitating
 
-        return db(noise + (100 if cavitating else 0) + random.gauss(0,0.4))
+        return db(noise + (100 if cavitating else 0) + random.gauss(0, 0.4))
 
 
     def turn(self, time_elapsed):
@@ -130,7 +108,6 @@ class Submarine(MovableNewtonObject):
             dive_rate = min(deep_diff, self.MAX_DEEP_RATE_FEET)
             self.actual_deep += dive_rate * time_elapsed * 3600
 
-
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
         self.sonar.turn(time_elapsed)
@@ -139,7 +116,7 @@ class Submarine(MovableNewtonObject):
 
     def __str__(self):
         return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status=MovableNewtonObject.__str__(self),
-                                                                  deep=self.actual_deep,sdeep=self.set_deep)
+                                                                      deep=self.actual_deep, sdeep=self.set_deep)
 
 
 class TMA(SubModule):
@@ -211,6 +188,8 @@ Los-Angles class submarine, not the 688I (improved Los-Angles class).
 Judging from acoustic signatures, the most modern Chinese nuclear
 submarines are comparabile to 1970s and 1980s US and Soviet
 designs shown on the chart below.
+
+
 
 
 DEEP:

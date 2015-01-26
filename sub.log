@@ -1,18 +1,19 @@
-Creating a whale at (4.000, 8.000)
-Whale Whale False, pos:(4.000, 8.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:74db @ 14.0Hz, sing:134db @ 4.0KHz | 123db @ 2.7KHz | 74db @ 14.0Hz | 143db @ 3.6KHz, counter:0.182048326023, dest:None
-Creating a whale at (0.000, 2.000)
-Whale Whale False, pos:(0.000, 2.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:74db @ 19.0Hz, sing:133db @ 2.3KHz | 74db @ 19.0Hz | 132db @ 2.5KHz | 127db @ 2.9KHz, counter:0.165185880093, dest:None
+Creating a whale at (6.000, 4.000)
+Whale Whale False, pos:(6.000, 4.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:79db @ 19.0Hz, sing:79db @ 19.0Hz | 123db @ 3.9KHz | 140db @ 2.4KHz | 130db @ 2.5KHz, counter:0.0952187691023, dest:None
+Creating a whale at (7.000, 2.000)
+Whale Whale False, pos:(7.000, 2.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:68db @ 17.0Hz, sing:68db @ 17.0Hz | 148db @ 3.9KHz | 129db @ 2.9KHz | 128db @ 3.1KHz, counter:0.179638114038, dest:None
 --- Passive scan ---
-background_noise 42.160db
-1: dist: 2.83  obj:Whale False, pos:(4.000, 8.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:74db @ 14.0Hz, sing:134db @ 4.0KHz | 123db @ 2.7KHz | 74db @ 14.0Hz | 143db @ 3.6KHz, counter:0.182048326023, dest:None  type:<class 'sea_object.Whale'>  obj bands: 74db @ 14.0Hz
-1: freq:14 source level:74.000db  deep_in_km:0.0457317073171  attenuation:2.676db/nm * dist = 7.192db received_sound=66.808db
-Bands: 66.8080815722db @ 14.0Hz
-1: signal_to_noise:24.648db
-scan_result: ScanResult idx=1 snt=24.648db bearing=3.92706971556 range=2.82847736692 deep=14 blades=0 band=66.8080815722db @ 14.0Hz
+background_noise 79.785db
+0: dist: 2.00  obj:Whale True, pos:(6.000, 4.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:79db @ 19.0Hz, sing:79db @ 19.0Hz | 123db @ 3.9KHz | 140db @ 2.4KHz | 130db @ 2.5KHz, counter:0.199775836125, dest:(4.000, 6.000)  type:<class 'sea_object.Whale'>  obj bands: 79db @ 19.0Hz | 123db @ 3.9KHz | 140db @ 2.4KHz | 130db @ 2.5KHz
+0: freq:3865 source level:140.492db  deep_in_km:0.0457317073171  attenuation:2.895db/nm * dist = 5.905db received_sound=117.095db
+0: freq:2411 source level:140.492db  deep_in_km:0.0457317073171  attenuation:2.795db/nm * dist = 5.805db received_sound=134.195db
+0: freq:19 source level:140.492db  deep_in_km:0.0457317073171  attenuation:2.676db/nm * dist = 5.687db received_sound=73.313db
+0: freq:2519 source level:140.492db  deep_in_km:0.0457317073171  attenuation:2.801db/nm * dist = 5.812db received_sound=124.188db
+Bands: 73.3132563342db @ 19.0Hz | 117.09487027db @ 3.9KHz | 134.194575893db @ 2.4KHz | 124.188425407db @ 2.5KHz
+0: signal_to_noise:54.899db
+scan_result: ScanResult idx=0 snt=54.899db bearing=1.61342229779e-05 range=1.99998836977 deep=20 blades=0 band=73.3132563342db @ 19.0Hz | 117.09487027db @ 3.9KHz | 134.194575893db @ 2.4KHz | 124.188425407db @ 2.5KHz
 
-2: dist: 7.21  obj:Whale False, pos:(0.000, 2.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:74db @ 19.0Hz, sing:133db @ 2.3KHz | 74db @ 19.0Hz | 132db @ 2.5KHz | 127db @ 2.9KHz, counter:0.165185880093, dest:None  type:<class 'sea_object.Whale'>  obj bands: 74db @ 19.0Hz
-2: freq:19 source level:74.000db  deep_in_km:0.0457317073171  attenuation:2.677db/nm * dist = 11.257db received_sound=62.743db
-Bands: 62.7434660848db @ 19.0Hz
-2: signal_to_noise:20.583db
-scan_result: ScanResult idx=2 snt=20.583db bearing=5.30035686365 range=7.2111985859 deep=16 blades=0 band=62.7434660848db @ 19.0Hz
-
+1: dist: 4.12  obj:Whale False, pos:(7.000, 2.000)  vel:(0.000, 0.000)(r=0.0;0˚)  accel:(0.000, 0.000)(r=0.0;0˚)  course:0.0, rudder:0.0, swim:68db @ 17.0Hz, sing:68db @ 17.0Hz | 148db @ 3.9KHz | 129db @ 2.9KHz | 128db @ 3.1KHz, counter:0.0796381140379, dest:(1.000, 7.000)  type:<class 'sea_object.Whale'>  obj bands: 68db @ 17.0Hz
+1: freq:17 source level:68.000db  deep_in_km:0.0457317073171  attenuation:2.676db/nm * dist = 8.829db received_sound=59.171db
+Bands: 59.1713235339db @ 17.0Hz
+1: signal_to_noise:-20.613db
