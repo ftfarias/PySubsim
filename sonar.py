@@ -39,6 +39,10 @@ class SonarContact:
         self.stn = stn
         self.sources = '...'  # S - Spherical, H - Hull, T - Towed Array
 
+    def noise(self):
+        return self.bands.total_level()
+
+
     def propeller_speed(self):
         if self.blade_frequence is None or self.knots_per_turn is None:
             return None
@@ -253,14 +257,14 @@ class Sonar(SubModule):
         else:
             st = "submerged"
 
-        self.contacts[scan_result.sonar_idx] = sc
+        self.contacts[scan_result.object_idx] = sc
         self.add_message("Conn, Sonar: New {st} contact on sonar, bearing {br:3.0f}, designated {d}".format(
             st=st, br=util.abs_angle_to_bearing(scan_result.bearing), d=sc.id), True)
 
     def update_contact(self, sonar_contact, scan_result):
         sonar_contact.tracking_status = sonar_contact.TRACKING
 
-        time_elapsed_since_last = (self.sea.time - self.last_contact_time).seconds
+        time_elapsed_since_last = (self.sea.time - sonar_contact.last_contact_time).seconds
         last_pos = sonar_contact.pos
 
         self.last_contact_time = self.sea.time
@@ -271,8 +275,8 @@ class Sonar(SubModule):
         else:
             self.range = scan_result.range
 
-        last_pos = self.pos
-        new_pos = self.estimate_pos(self.sub.pos)
+        last_pos = sonar_contact.pos
+        new_pos = sonar_contact.estimate_pos(self.sub.pos)
         self.pos = new_pos
 
         if sonar_contact.speed is None:
@@ -323,9 +327,9 @@ class Sonar(SubModule):
 
         for k, obj in self.contacts.items():
             # print(obj.bearing())
-            x = int(math.degrees(obj.bearing()) / step)
+            x = int(math.degrees(obj.bearing) / step)
             #print(x)
-            noise[x] += obj.noise
+            noise[x] += obj.noise()
 
         # print(noise)
         return noise

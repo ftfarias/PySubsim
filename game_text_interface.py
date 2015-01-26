@@ -35,7 +35,7 @@ class GameTextInterface(object):
 
     def print_status(self):
         print('* Status *')
-        print(self.player_sub.status())
+        print(self.player_sub)
         print(self.player_sub.nav.status())
         print(self.player_sub.sonar.status())
         print(self.player_sub)
@@ -90,7 +90,7 @@ class GameTextInterface(object):
                 print(k)
             return
 
-        def f(value, str_format="{0}"):
+        def f(value, str_format=u"{0}"):
             if value is None:
                 return "?"
             return str_format.format(value)
@@ -239,54 +239,54 @@ class GameTextInterface(object):
 
                 if opt[0] == 'o':
                     if len(opt) == 1:
-                        print_near_objects()
+                        self.print_near_objects()
                     else:
                         n = int(opt[1])
-                        show_object_details(n)
+                        self.show_object_details(n)
                     continue
 
                 if opt[0] == 'debug':
-                    debug()
+                    self.debug()
                     continue
 
                 if opt[0] == 'wf':
                     if len(opt) == 2:
                         n = int(opt[1])
                         if n == 1:
-                            waterfall.print_waterfall_1m()
+                            self.waterfall.print_waterfall_1m()
                         elif n == 2:
-                            waterfall.print_waterfall_30m()
+                            self.waterfall.print_waterfall_30m()
                         else:
-                            waterfall.print_waterfall_2h()
+                            self.waterfall.print_waterfall_2h()
 
                     else:
-                        waterfall.print_waterfall_1m()
+                        self.waterfall.print_waterfall_1m()
 
                     continue
 
                 if opt[0] == 'spd':
                     if len(opt) == 2:
                         n = int(opt[1])
-                        player_sub.nav.speed = n
+                        self.player_sub.nav.speed = n
                     continue
 
                 if opt[0] == 'deep':
                     if len(opt) == 2:
                         n = int(opt[1])
-                        player_sub.set_deep = n
+                        self.player_sub.set_deep = n
                     continue
 
                 if opt[0] == 'mov':
                     dest = parse_coordinates(opt[1])
                     if dest:
-                        player_sub.nav.set_destination(dest)
+                        self.player_sub.nav.set_destination(dest)
                         print("Destination set to {0}".format(player_sub.nav.destination))
                     else:
                         print("Invalid input")
                     continue
 
                 if opt[0] == 'm':
-                    print_map()
+                    self.print_map()
                     continue
 
                 if opt[0] == 'q':
