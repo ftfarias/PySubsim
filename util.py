@@ -301,33 +301,36 @@ class Deployable(object):
         self.deploy_rate = deploy_rate
 
     def turn(self, time_elapsed):
-        if self.status == self.DEPLOY:
+        if self.state == self.DEPLOY:
             self.deployed_size += self.deploy_rate * time_elapsed
             if self.deployed_size >= self.total_size:
                 self.deployed_size = self.total_size
-                self.status = self.STOP
+                self.state = self.STOP
 
-        elif self.status == self.RETRIEVE:
+        elif self.state == self.RETRIEVE:
             self.deployed_size -= self.deploy_rate * time_elapsed
             if self.deployed_size <= 0:
                 self.deployed_size = 0
-                self.status = self.STOP
+                self.state = self.STOP
 
     def deploy(self):
-        if self.status != self.BROKE:
-            self.status = self.DEPLOY
+        if self.state != self.BROKE:
+            self.state = self.DEPLOY
 
     def stop(self):
-        if self.status != self.BROKE:
-            self.status = self.STOP
+        if self.state != self.BROKE:
+            self.state = self.STOP
 
     def retrieve(self):
-        if self.status != self.BROKE:
-            self.status = self.RETRIEVE
+        if self.state != self.BROKE:
+            self.state = self.RETRIEVE
 
     def broke(self):
-        self.status = self.BROKE
+        self.state = self.BROKE
         self.deployed_size = 0
+
+    def percent_deployed(self):
+        return self.deployed_size/self.total_size
 
     def __str__(self):
         return "{0} ({1})".format(self.state, self.deployed_size)

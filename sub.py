@@ -22,8 +22,8 @@ class Submarine(MovableNewtonObject):
         self.max_hull_integrity = 100  # in "damage points"
         self.hull_integrity = self.max_hull_integrity
         self.damages = None
-        self.actual_deep = 150  # feet
-        self.set_deep = 150  # feet
+        self.actual_deep = 60  # feet
+        self.set_deep = 60  # feet
         self.message_stop = False
         self.cavitation = False
 
@@ -49,6 +49,9 @@ class Submarine(MovableNewtonObject):
 
     def stop_moving(self):
         self.nav.stop_all()
+
+    def periscope_deep(self):
+        self.set_deep(60)
 
     # non-liner noise:
     # for 0 < speed < 15 :  linear from 40 to 60

@@ -124,6 +124,16 @@ class Whale(MovableSeaObject):
         self.singing = False
         self.counter = (random.randint(5, 10) + random.gauss(6, 5)) / 60
 
+        # The blue whale is a marine mammal belonging to the suborder of
+        # baleen whales (called Mysticeti). At up to 32.9 metres (108 ft)
+        # in length and 172 metric tons (190 short tons) or more in weight,
+        # it is the largest animal ever to have existed.
+        #
+        # Blue whales can reach speeds of 50 kilometres per hour (31 mph)
+        # over short bursts, usually when interacting with other whales, but 20
+        # kilometres per hour (12 mph) is a more typical traveling speed. When feeding,
+        # they slow down to 5 kilometres per hour (3.1 mph).
+
     def turn(self, time_elapsed):
         MovableSeaObject.turn(self, time_elapsed)
         self.nav.turn(time_elapsed)
@@ -138,7 +148,7 @@ class Whale(MovableSeaObject):
 
         if self.nav.destination is None:
             self.nav.destination = Point(random.randint(0, 10), random.randint(0, 10))
-            self.nav.speed = random.random() *  + 0.1
+            self.nav.speed = (random.random() * 10) + 3
 
     def get_deep(self):
         return self.deep

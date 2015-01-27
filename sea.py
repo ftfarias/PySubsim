@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from util import Bands
 from physic import Point, MovableNewtonObject
-from sub import Submarine
 import random
 import math
 import unittest

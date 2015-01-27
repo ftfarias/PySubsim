@@ -35,7 +35,6 @@ class GameTextInterface(object):
 
     def print_status(self):
         print('* Status *')
-        print(self.player_sub)
         print(self.player_sub.nav.status())
         print(self.player_sub.sonar.status())
         print(self.player_sub)
@@ -431,12 +430,28 @@ class GameTextInterface(object):
             opt()
 
 
+    def deploy_towed(self):
+        self.player_sub.sonar.deploy_towed_array()
+        print (self.player_sub.sonar.towed)
+
+    def retrieve_towed(self):
+        self.player_sub.sonar.retrieve_towed_array()
+        print (self.player_sub.sonar.towed)
+
+    def stop_towed(self):
+        self.player_sub.sonar.stop_towed_array()
+        print (self.player_sub.sonar.towed)
+
 
     def menu_sonar(self):
         MAIN_SONAR = [
             ('Show near objects', self.print_near_objects),
             ('Waterfall', self.menu_waterfall),
             ('Sea conditions', self.sea_conditions),
+            ('Deploy Towed Array', self.deploy_towed),
+            ('Retreive Towed Array', self.retrieve_towed),
+            ('Stop Towed Array', self.stop_towed),
+
         ]
         print(self.player_sub.sonar.status())
         self.print_noise_profile()
@@ -536,7 +551,7 @@ class GameTextInterface(object):
                         print("\t{0}".format(m))
                 opt = self.show_menu(self.MAIN_MENU)
                 if opt:
-                    opt()
+                    opt(self)
             except KeyboardInterrupt:
                 pass
 
