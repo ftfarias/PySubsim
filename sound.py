@@ -7,7 +7,7 @@ from linear_scale import linear_scaler
 
 class Decibel(object):
     def __init__(self, db=0, ratio=1):
-        self.value = float(db) + (math.log10(ratio) * 10)
+        self.value = float(db) + (10 * math.log10(ratio))
 
     def __add__(self, other):
         if isinstance(other, Decibel):
@@ -27,20 +27,19 @@ class Decibel(object):
         else:
             return other / abs(self)
 
-    # like: 100 - 3*db = 50  (3db ~= half)
-    def __mul__(self, other):
-        if isinstance(other, Decibel):
-            return Decibel(ratio=abs(self) * abs(other))
-        else:
-            return Decibel(ratio=abs(self) * other)
-
-    __rmul__ = __mul__
-
-    def __div__(self, other):
-        if isinstance(other, Decibel):
-            return Decibel(ratio=abs(self) / abs(other))
-        else:
-            return Decibel(ratio=abs(self) / other)
+    # def __mul__(self, other):
+    #     if isinstance(other, Decibel):
+    #         return Decibel(ratio=abs(self) * abs(other))
+    #     else:
+    #         return Decibel(ratio=abs(self) * other)
+    #
+    # __rmul__ = __mul__
+    #
+    # def __div__(self, other):
+    #     if isinstance(other, Decibel):
+    #         return Decibel(ratio=abs(self) / abs(other))
+    #     else:
+    #         return Decibel(ratio=abs(self) / other)
 
     def __abs__(self):
         return self.abs()
@@ -220,56 +219,6 @@ def simple_sound_absortion_by_sea(freq, deep):
         return 1000
 
 
-def sound_absortion_by_sea(freq, deep, temperature=10.0, salinity=35.0, pH=8.0):
-    """
-    http://resource.npl.co.uk/acoustics/techguides/seaabsorption/
-    calculation of absorption according to:
-	Ainslie & McColm, J. Acoust. Soc. Am., Vol. 103, No. 3, March 1998
-	// f frequency (kHz)
-	// T Temperature (degC)
-	// S Salinity (ppt)
-	// D Depth (km)
-	// pH Acidity
-
-	The Ainslie and McColm formula retains accuracy to within 10% of the
-	 Francois and Garrison model between 100 Hz and 1 MHz for the following range of oceanographic conditions:
-
-    -6 < T < 35 °C	(S = 35 ppt, pH=8, D = 0 km)
-    7.7 < pH < 8.3	(T = 10 °C, S = 35 ppt, D = 0 km)
-    5 < S < 50 ppt	(T = 10 °C, pH = 8, D = 0 km)
-    0 < D < 7 km	(T = 10 °C, S = 35 ppt, pH = 8)
-    :return Total absorption (dB/km)
-    """
-
-    freq = freq / 1000.0 # converts from KHz to Hz
-    deep = deep / 1000.0 # convert meters to km
-
-    kelvin = 273.1  # for converting to Kelvin (273.15)  # Measured ambient temp
-    t_kel = kelvin + temperature
-
-    # Boric acid contribution
-    a1 = 0.106 * math.exp((pH - 8.0) / 0.56);
-    p1 = 1.0;
-    f1 = 0.78 * math.sqrt(salinity / 35.0) * math.exp(temperature / 26.0);
-    boric = 1.0 * (a1 * p1 * f1 * freq * freq) / (freq * freq + f1 * f1);
-
-    # MgSO4 contribution
-    a2 = 0.52 * (salinity / 35.0) * (1 + temperature / 43.0);
-    p2 = math.exp(-deep / 6);
-    f2 = 42.0 * math.exp(temperature / 17.0);
-    mgso4 = 1.0 * (a2 * p2 * f2 * freq * freq) / (freq * freq + f2 * f2);
-
-    # Pure water contribution
-    a3 = 0.00049 * math.exp(-(temperature / 27.0 + deep / 17.0));
-    p3 = 1.0;
-    h2o = 1.0 * a3 * p3 * freq * freq;
-
-    # Total absorption (dB/km)
-    alpha = boric + mgso4 + h2o;
-
-    return alpha;
-
-
 class TestUtil(unittest.TestCase):
     def test_decibels(self):
         self.assertAlmostEqual(abs(db(db=3.01029995664)), abs(db(ratio=2)))
@@ -285,15 +234,12 @@ class TestUtil(unittest.TestCase):
 
     def test_decibels_sum(self):
         self.assertAlmostEqual(db(60) + db(60), db(63.01029995664), 5)
+        self.assertAlmostEqual(db(50) + db(50), db(53.01029995664), 5)
 
     def test_decibels_abs(self):
         self.assertAlmostEqual(abs(db(db=0)), 1)
         self.assertAlmostEqual(abs(db(db=10)), 10)
         self.assertAlmostEqual(abs(db(db=20)), 100)
-
-    def test_attenuation(self):
-        self.assertAlmostEqual(100 - (3.0103 * db(1)), 50, 4)
-
 
 if __name__ == '__main__':
     unittest.main()

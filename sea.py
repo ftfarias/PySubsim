@@ -5,12 +5,13 @@ import random
 import math
 import unittest
 import datetime
-from sound import Decibel, db, simple_sound_absortion_by_sea, sound_absortion_by_sea
+from sound import db
 from sea_object import *
-
+from util import feet_to_meters, meters_to_feet, knots_to_meters, meters_to_knots
 import logging
 
 logger = logging.getLogger()
+
 """
 A novice asked the Master: “Here is a programmer that never designs,
 documents or tests his programs. Yet all who know him consider him
@@ -46,14 +47,14 @@ class Sea:
     def __init__(self):
         self.time = datetime.datetime(2010, 05, 05, random.randint(0, 23), random.randint(0, 59), 0)
         self.counter = 0
-        self.objects = []
+        self.objects = {}
         self.ids_collection = range(1000, 9999)
         random.shuffle(self.ids_collection)
         self.conditions = 'Calm'
         # limits below because sound absortion formula
-        self.temperature = random.randint(-60,150) / 10.0 # Celsius, -6 < T < 35
-        self.salinity = float(random.randint(30,35)) # 5 < S < 50 ppt
-        self.ph = 1.0 * random.randint(77,83) / 10 #  7.7 < pH < 8.3
+        self.temperature = random.randint(-60, 150) / 10.0  # Celsius, -6 < T < 35
+        self.salinity = float(random.randint(30, 35))  # 5 < S < 50 ppt
+        self.ph = 1.0 * random.randint(77, 83) / 10  # 7.7 < pH < 8.3
 
     def initialize(self):
         pass
@@ -62,11 +63,12 @@ class Sea:
         return self.ids_collection.pop()
 
     def add_object(self, obj):
-        self.objects.append(obj)
+        #self.objects.append(obj)
+        self.objects[self.get_unique_id()] = obj
 
     def turn(self, time_elapsed):  # time_elapsed in hours
         self.time = self.time + datetime.timedelta(seconds=time_elapsed * 3600)
-        for obj in self.objects:
+        for obj in self.objects.values():
             obj.turn(time_elapsed)
 
 
@@ -82,28 +84,107 @@ class Sea:
         # > l = lm(y ~ x)
         # Coefficients:
         # (Intercept)            x
-        #      101.25       -16.25
+        # 101.25       -16.25
         min_value = 101.25 + (-16.25 * logfreq)
 
         # > y_max = c(140,60)
         # > l = lm(y_max ~ x)
         # Coefficients:
         # (Intercept)            x
-        #         160          -20
+        # 160          -20
 
         max_value = 160.0 + (-20.0 * logfreq)
         return min_value, max_value
 
-    def get_background_noise(self):
-        return db(random.gauss(80, 2))
+    # def get_background_noise(self):
+    # return db(random.gauss(80, 2))
 
-    def sound_attenuation(self, freq, deep):
-        #return db(db=simple_sound_absortion_by_sea(freq, deep))
-        return db(db=sound_absortion_by_sea(float(freq), float(deep),
-                                            temperature=self.temperature,
-                                            salinity=self.salinity,
-                                            pH=self.ph))
+    def sound_absortion_by_sea(self, freq, deep, temperature, salinity, pH):
+        """
+        freq in Hertz
+        deep in feet
+        temp in degC
+        salinity in ppt
 
+        http://resource.npl.co.uk/acoustics/techguides/seaabsorption/
+        calculation of absorption according to:
+        Ainslie & McColm, J. Acoust. Soc. Am., Vol. 103, No. 3, March 1998
+        // f frequency (kHz)
+        // T Temperature (degC)
+        // S Salinity (ppt)
+        // D Depth (km)
+        // pH Acidity
+        The Ainslie and McColm formula retains accuracy to within 10% of the
+         Francois and Garrison model between 100 Hz and 1 MHz for the following range of oceanographic conditions:
+        -6 < T < 35 °C	(S = 35 ppt, pH=8, D = 0 km)
+        7.7 < pH < 8.3	(T = 10 °C, S = 35 ppt, D = 0 km)
+        5 < S < 50 ppt	(T = 10 °C, pH = 8, D = 0 km)
+        0 < D < 7 km	(T = 10 °C, S = 35 ppt, pH = 8)
+        :return Total absorption (dB/km)
+        """
+
+        freq = freq / 1000.0  # converts from KHz to Hz
+        deep = feet_to_meters(deep) / 1000.0  # convert feet to km
+
+        # kelvin = 273.1  # for converting to Kelvin (273.15)  # Measured ambient temp
+        #t_kel = kelvin + temperature
+
+        # Boric acid contribution
+        a1 = 0.106 * math.exp((pH - 8.0) / 0.56);
+        p1 = 1.0;
+        f1 = 0.78 * math.sqrt(salinity / 35.0) * math.exp(temperature / 26.0);
+        boric = 1.0 * (a1 * p1 * f1 * freq * freq) / (freq * freq + f1 * f1);
+
+        # MgSO4 contribution
+        a2 = 0.52 * (salinity / 35.0) * (1 + temperature / 43.0);
+        p2 = math.exp(-deep / 6);
+        f2 = 42.0 * math.exp(temperature / 17.0);
+        mgso4 = 1.0 * (a2 * p2 * f2 * freq * freq) / (freq * freq + f2 * f2);
+
+        # Pure water contribution
+        a3 = 0.00049 * math.exp(-(temperature / 27.0 + deep / 17.0));
+        p3 = 1.0;
+        h2o = 1.0 * a3 * p3 * freq * freq;
+
+        # Total absorption (dB/km)
+        alpha = boric + mgso4 + h2o;
+
+        return alpha  # in db/km;
+
+
+    def spherical_spreading_loss(self, dist):
+        # dist in meters
+        # http://www.dosits.org/science/advancedtopics/spreading/
+        # Spherical spreading describes the decrease in level when a sound wave
+        # propagates away from a source uniformly in all directions.
+        return 20 * math.log10(dist)  # decibels
+
+    def cylindrical_spreading_loss(self, dist):
+        # dist in meters
+        # http://www.dosits.org/science/advancedtopics/spreading/
+        # Sound cannot propagate uniformly
+        # in all directions from a source in the ocean forever.
+        # Beyond some range the sound will hit the sea surface or sea floor.
+        # A simple approximation for spreading loss in a medium with upper and
+        # lower boundaries can be obtained by assuming that the sound is distributed
+        # uniformly over the surface of a cylinder having a radius equal to the range r
+        # and a height H equal to the depth of the ocean
+        return 10 * math.log10(dist)  # decibels
+
+
+    def sound_attenuation(self, freq, deep, distance):
+        # distance in meters
+        # deep in feet
+        # freq in Hertz
+
+        # TODO: mix spherical and cylindrical losses
+        spreading_loss = self.spherical_spreading_loss(distance)
+
+        absorption = self.sound_absortion_by_sea(float(freq), float(deep),
+                                                 temperature=self.temperature,
+                                                 salinity=self.salinity,
+                                                 pH=self.ph) * distance / 1000
+        return spreading_loss + absorption
 
     def passive_sonar_scan(self, sub, sonar):
         logger.debug("--- Passive sonar scan ---")
@@ -117,18 +198,17 @@ class Sea:
         sub_pos = sub.get_pos()
         assert isinstance(sub_pos, Point)
         result = []
-        background_noise = self.get_background_noise() + sub.self_noise()
-        logger.debug("background_noise {0}".format(background_noise))
-        for i, obj in enumerate(self.objects):
+        #background_noise = self.get_background_noise() + sub.self_noise()
+        #logger.debug("background_noise {0}".format(background_noise))
+        for idx, obj in self.objects.items():
             obj_pos = obj.get_pos()
             # skips the sub itself
             if sub_pos == obj_pos:
                 continue
             range = obj_pos.distance_to(sub_pos)
-            #if dist > 15:  # hard limit for object detection.
-            #    continue
+            # if dist > 15:  # hard limit for object detection.
+            # continue
             assert isinstance(obj.get_pos(), Point)
-            deep_in_km = 1.0 * sub.actual_deep / 3280  # 3280 feet = 1 km
             # most part of a sub self-noise is around 30 Hz
             object_bands = obj.get_bands()
             assert isinstance(object_bands, Bands)
@@ -137,12 +217,16 @@ class Sea:
                                                                                               b=object_bands))
             listened_bands = Bands()
             for freq, level in object_bands.get_freq_level():
+                range_in_meters = knots_to_meters(range)
                 level_db = db(level)
-                attenuation_per_mile = self.sound_attenuation(freq=freq,
-                                                              deep=deep_in_km) * 1.852  # in db/km * 1.8 = db/mile
-                transmission_loss = attenuation_per_mile * range  # TL
+                transmission_loss = self.sound_attenuation(freq=freq,
+                                                     deep=sub.actual_deep,
+                                                     distance=range)
+
+
+
                 received_sound = level_db / transmission_loss
-                receiving_array_gain = db(db=0)  # AG
+                receiving_array_gain = sonar.array_gain(freq)  # AG
                 received_sound += receiving_array_gain
                 listened_bands = listened_bands.add(freq, received_sound)
                 logger.debug(
@@ -155,7 +239,7 @@ class Sea:
             logger.debug("Bands: {0}".format(listened_bands))
             #if not isinstance(object_sound, Decibel):
             #    received_sound = db(received_sound)
-            signal_to_noise = total_received_sound / background_noise
+            signal_to_noise = total_received_sound
             logger.debug("{i}: signal_to_noise:{stn}".format(i=i, stn=signal_to_noise))
             if signal_to_noise.value > sonar.min_detection_stn:
 
@@ -173,7 +257,7 @@ class Sea:
                 bearing = sub_pos.bearing_to(obj_pos)
                 #bearing = obj_pos.bearing_to(sub_pos)
                 # Scan Result
-                r = ScanResult(i)
+                r = ScanResult(idx)
                 r.signal_to_noise = signal_to_noise
                 r.blades = 0
                 r.range = range + random.gauss(0, error)
@@ -198,7 +282,7 @@ class Sea:
     def debug(self):
         print('------ SEA DEBUG ------')
         print(self)
-        for obj in self.objects:
+        for obj in self.objects.values():
             print (obj)
             print ('')
         print('------ END OF SEA DEBUG ------')

@@ -49,7 +49,7 @@ def normalize_angle360(angle):
 
 def normalize_angle180(angle):
     # return the angle between -180 and + 180 (in radians)
-    while angle < -math.pi / 2:
+    while angle < -math.pi:
         angle += 2 * math.pi
     while angle >= math.pi:
         angle -= 2 * math.pi
@@ -192,6 +192,18 @@ def knots_to_yards(knots):
 def yards_to_knots(yards):
     return yards / 2025.371828521
 
+def knots_to_meters(knots):
+    return knots * 1852.0
+
+def meters_to_knots(yards):
+    return yards / 1852.0
+
+def feet_to_meters(feet):
+    return feet / 3.2808399
+
+def meters_to_feet(meters):
+    return meters * 3.2808399
+
 
 def linreg(X, Y):
     """
@@ -271,7 +283,6 @@ def ascii_gray(text, gray_level):
 
 def ascii_reset():
     return '\033[30m'
-
 
 class Alternation(object):
     def __init__(self, state=False, initial_counter=1):

@@ -12,7 +12,6 @@ from sonar import Sonar
 from game_waterfall import Waterfall
 
 
-
 """
 -2 | -2  -1  0  +1  +2 |
 -1 |         D         |
@@ -25,8 +24,9 @@ B - 180
 C - 270
 D - 0
 """
-class GameTextInterface(object):
 
+
+class GameTextInterface(object):
     def __init__(self, sea, player_sub):
         self.player_sub = player_sub
         self.sea = sea
@@ -38,7 +38,7 @@ class GameTextInterface(object):
         print(self.player_sub.nav.status())
         print(self.player_sub.sonar.status())
         print(self.player_sub)
-        #print(player_sub.weapons.status())
+        # print(player_sub.weapons.status())
 
 
     def get_text(self, text='> '):
@@ -122,8 +122,8 @@ class GameTextInterface(object):
         bands = obj.bands
         print bands
 
-        #print("".join(["{0:5}".format(i)  for i in range(1,11)]))
-        #print("".join(["{0:5.1f}".format(b) for b in bands]))
+        # print("".join(["{0:5}".format(i)  for i in range(1,11)]))
+        # print("".join(["{0:5.1f}".format(b) for b in bands]))
 
         #for prob in obj.obj_type_probs:
         #    print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
@@ -168,7 +168,7 @@ class GameTextInterface(object):
             pos = sc.estimate_pos(player_pos)
             if pos is not None:
                 x_map, y_map = double_round(pos2map(pos.x, pos.y))
-                #s = symbol_for_type(sc.obj_type)
+                # s = symbol_for_type(sc.obj_type)
                 s = '?'
                 if 0 <= x_map < mc_x_size and 0 <= y_map < mc_y_size:
                     symbols[x_map][y_map] = s
@@ -177,8 +177,8 @@ class GameTextInterface(object):
         x_map, y_map = double_round(pos2map(player_pos.x, player_pos.y))
         symbols[x_map][y_map] = "P"
 
-        #y_range = range(int(topleft.y),int(bottomright.y),-1)
-        #x_range = range(int(topleft.x), int(bottomright.x))
+        # y_range = range(int(topleft.y),int(bottomright.y),-1)
+        # x_range = range(int(topleft.x), int(bottomright.x))
 
         #line = "." * x_size
         #grid = [line for _ in xrange(y_size)]
@@ -197,8 +197,8 @@ class GameTextInterface(object):
     def show_menu(self, menu):
         while 1:
             try:
-                #for i, opt in enumerate(menu):
-                #    print ("{i} - {opt}".format(i=str(i+1), opt=opt[0]))
+                # for i, opt in enumerate(menu):
+                # print ("{i} - {opt}".format(i=str(i+1), opt=opt[0]))
                 s = ['{0}-{1}'.format(i + 1, o[0]) for i, o in enumerate(menu)]
                 s = ") (".join(s)
                 print("(" + s + ")")
@@ -366,8 +366,6 @@ class GameTextInterface(object):
             self.player_sub.set_speed(new_speed)
 
 
-
-
     def menu_navigation(self):
         MAIN_NAVIGATION = [
             ('Move to (MOV x,y)', self.move_to),
@@ -409,150 +407,153 @@ class GameTextInterface(object):
         print("\tSea salinity: {sea} ppt".format(sea=self.sea.salinity))
         print("\tSea Acidity: pH {sea}".format(sea=self.sea.ph))
         print("Sea sound absortion (50 meters deep):")
-        values = [0.1, 1, 10, 50, 100, 500, 1000, 2000, 5000, 10000, 15000, 20000]
+        values = [0.1, 1, 10, 30, 50, 100, 300, 500, 1000, 3000, 5000, 10000, 15000, 20000]
         for v in values:
-            print("\t{0}: {1}".format(int_to_hertz(v),self.sea.sound_attenuation(v,50)))
+            print("\t{0}: {1}".format(int_to_hertz(v), self.sea.sound_absortion_by_sea(v, 50,
+                                                                                       temperature=self.sea.temperature,
+                                                                                       salinity=self.sea.salinity,
+                                                                                       pH=self.sea.ph
+            )))
 
 
+        def menu_waterfall(self):
+            WATERFALL = [
+                ('Waterfall (1 minute)', self.waterfall.print_waterfall_1m),
+                ('Waterfall (30 minutes)', self.waterfall.print_waterfall_30m),
+                ('Waterfall (2 hours)', self.waterfall.print_waterfall_2h),
+                ('Adjust waterfall scale', self.adjust_watefall),
+            ]
+            print(self.player_sub.sonar.status())
+            self.print_noise_profile()
+            print(self.waterfall.print_sonar())
+            opt = self.show_menu(WATERFALL)
+            if opt:
+                opt()
 
-    def menu_waterfall(self):
-        WATERFALL = [
-            ('Waterfall (1 minute)', self.waterfall.print_waterfall_1m),
-            ('Waterfall (30 minutes)', self.waterfall.print_waterfall_30m),
-            ('Waterfall (2 hours)', self.waterfall.print_waterfall_2h),
-            ('Adjust waterfall scale', self.adjust_watefall),
+
+        def deploy_towed(self):
+            self.player_sub.sonar.deploy_towed_array()
+            print (self.player_sub.sonar.towed)
+
+        def retrieve_towed(self):
+            self.player_sub.sonar.retrieve_towed_array()
+            print (self.player_sub.sonar.towed)
+
+        def stop_towed(self):
+            self.player_sub.sonar.stop_towed_array()
+            print (self.player_sub.sonar.towed)
+
+
+        def menu_sonar(self):
+            MAIN_SONAR = [
+                ('Show near objects', self.print_near_objects),
+                ('Waterfall', self.menu_waterfall),
+                ('Sea conditions', self.sea_conditions),
+                ('Deploy Towed Array', self.deploy_towed),
+                ('Retreive Towed Array', self.retrieve_towed),
+                ('Stop Towed Array', self.stop_towed),
+
+            ]
+            print(self.player_sub.sonar.status())
+            self.print_noise_profile()
+            print(self.waterfall.print_sonar())
+            opt = self.show_menu(MAIN_SONAR)
+            if opt:
+                opt()
+
+        # TMA
+        def menu_tma(self):
+            MAIN_TMA = [
+                ('', None),
+                ('', None),
+                # ('Land', None),
+                # ('Take Off', None),
+            ]
+            print("Target Motion Analysis")
+            print(self.player_sub.tma.status())
+            opt = self.show_menu(MAIN_TMA)
+            if opt:
+                opt()
+
+
+        # Weapons
+        def menu_weapons(self):
+            MAIN_TARGET = [
+                ('Set Target', None),
+                ('Fire', None),
+                # ('Land', None),
+                # ('Take Off', None),
+            ]
+            print("Weapons")
+            print(self.player_sub.target.status())
+            opt = self.show_menu(MAIN_TARGET)
+            if opt:
+                opt()
+
+
+        def menu_comm(self):
+            # communications
+            MAIN_COMM = [
+                ('', None),
+                ('', None),
+                # ('Take Off', None),
+            ]
+            opt = self.show_menu(MAIN_COMM)
+            if opt:
+                opt()
+
+        # Main
+
+        MAIN_MENU = [
+            ('Navigation', menu_navigation),
+            ('Sonar', menu_sonar),
+            ('TMA', menu_tma),
+            ('Weapons', menu_weapons),
+            ('Communication', menu_comm),
         ]
-        print(self.player_sub.sonar.status())
-        self.print_noise_profile()
-        print(self.waterfall.print_sonar())
-        opt = self.show_menu(WATERFALL)
-        if opt:
-            opt()
 
-
-    def deploy_towed(self):
-        self.player_sub.sonar.deploy_towed_array()
-        print (self.player_sub.sonar.towed)
-
-    def retrieve_towed(self):
-        self.player_sub.sonar.retrieve_towed_array()
-        print (self.player_sub.sonar.towed)
-
-    def stop_towed(self):
-        self.player_sub.sonar.stop_towed_array()
-        print (self.player_sub.sonar.towed)
-
-
-    def menu_sonar(self):
-        MAIN_SONAR = [
-            ('Show near objects', self.print_near_objects),
-            ('Waterfall', self.menu_waterfall),
-            ('Sea conditions', self.sea_conditions),
-            ('Deploy Towed Array', self.deploy_towed),
-            ('Retreive Towed Array', self.retrieve_towed),
-            ('Stop Towed Array', self.stop_towed),
-
-        ]
-        print(self.player_sub.sonar.status())
-        self.print_noise_profile()
-        print(self.waterfall.print_sonar())
-        opt = self.show_menu(MAIN_SONAR)
-        if opt:
-            opt()
-
-    # TMA
-    def menu_tma(self):
-        MAIN_TMA = [
-            ('', None),
-            ('', None),
-            # ('Land', None),
-            # ('Take Off', None),
-        ]
-        print("Target Motion Analysis")
-        print(self.player_sub.tma.status())
-        opt = self.show_menu(MAIN_TMA)
-        if opt:
-            opt()
-
-
-    # Weapons
-    def menu_weapons(self):
-        MAIN_TARGET = [
-            ('Set Target', None),
-            ('Fire', None),
-            # ('Land', None),
-            # ('Take Off', None),
-        ]
-        print("Weapons")
-        print(self.player_sub.target.status())
-        opt = self.show_menu(MAIN_TARGET)
-        if opt:
-            opt()
-
-
-    def menu_comm(self):
-        # communications
-        MAIN_COMM = [
-            ('', None),
-            ('', None),
-            # ('Take Off', None),
-        ]
-        opt = self.show_menu(MAIN_COMM)
-        if opt:
-            opt()
-
-    # Main
-
-    MAIN_MENU = [
-        ('Navigation', menu_navigation),
-        ('Sonar', menu_sonar),
-        ('TMA', menu_tma),
-        ('Weapons', menu_weapons),
-        ('Communication', menu_comm),
-    ]
-
-    def game_loop(self, turns, time_per_turn=0.1, wait=0.01):
-        try:
-            if turns is None:
-                while 1:
-                    self.run_turn(time_per_turn)
-                    time.sleep(wait)
-            else:
-                for i in xrange(turns):
-                    time.sleep(wait)
-                    self.run_turn(time_per_turn)
-        except KeyboardInterrupt:
-            pass
-
-
-    def run_turn(self, time_per_turn):
-        self.sea.turn(time_per_turn / 3600)  # sea turn runs in hours, run_turn in seconds
-        #print(universe)
-        sys.stdout.write("\r ({sd}) {nav} deep:{deep:.0f}(set:{sdeep})".format(sd=self.sea, nav=self.player_sub.nav,
-                                                                               deep=self.player_sub.actual_deep,
-                                                                               sdeep=self.player_sub.set_deep))
-        sys.stdout.flush()
-        messages, stop = self.player_sub.get_messages()
-        if messages:
-            print("\n@{0}".format(self.sea.time))
-            for m in messages:
-                print("\t{0}".format(m))
-            time.sleep(1)
-            self.player_sub.clear_messages()
-
-
-    def run(self):
-        while 1:
+        def game_loop(self, turns, time_per_turn=0.1, wait=0.01):
             try:
-                print("Main (Time: {0})".format(self.sea.time))
-                messages, stop = self.player_sub.get_messages()
-                if messages:
-                    for m in messages:
-                        print("\t{0}".format(m))
-                opt = self.show_menu(self.MAIN_MENU)
-                if opt:
-                    opt(self)
+                if turns is None:
+                    while 1:
+                        self.run_turn(time_per_turn)
+                        time.sleep(wait)
+                else:
+                    for i in xrange(turns):
+                        time.sleep(wait)
+                        self.run_turn(time_per_turn)
             except KeyboardInterrupt:
                 pass
+
+
+        def run_turn(self, time_per_turn):
+            self.sea.turn(time_per_turn / 3600)  # sea turn runs in hours, run_turn in seconds
+            # print(universe)
+            sys.stdout.write("\r ({sd}) {nav} deep:{deep:.0f}(set:{sdeep})".format(sd=self.sea, nav=self.player_sub.nav,
+                                                                                   deep=self.player_sub.actual_deep,
+                                                                                   sdeep=self.player_sub.set_deep))
+            sys.stdout.flush()
+            messages, stop = self.player_sub.get_messages()
+            if messages:
+                print("\n@{0}".format(self.sea.time))
+                for m in messages:
+                    print("\t{0}".format(m))
+                time.sleep(1)
+                self.player_sub.clear_messages()
+
+
+        def run(self):
+            while 1:
+                try:
+                    print("Main (Time: {0})".format(self.sea.time))
+                    messages, stop = self.player_sub.get_messages()
+                    if messages:
+                        for m in messages:
+                            print("\t{0}".format(m))
+                    opt = self.show_menu(self.MAIN_MENU)
+                    if opt:
+                        opt(self)
+                except KeyboardInterrupt:
+                    pass
 
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from sub_module import SubModule
 from util import abs_angle_to_bearing, Bands, Deployable
+from linear_scale import linear_scaler, linear_scaler_with_limit
 from physic import Point
 # from sub import Submarine
 import util
@@ -103,13 +104,82 @@ class SonarContact:
         # print(self.tracking_status)
         # print(self.sources)
 
-        return u"{ident:3} ({ty})  bearing {bearing:3.0f}{bs}  range {range}  course {course}{course_symbol}  speed {speed}  stn {snt}  src:{src}  pos:{pos}\t<{status}>\t{name}". \
+        return u"{ident:3} ({ty})  BRG:{bearing:3.0f}{bs}  RNG:{range}  CRS:{course}{course_symbol}  SPD:{speed}  STN:{snt}  SRC:{src}  POS:{pos}\t<{status}>\t{name}". \
             format(ident=self.id, ty=obj_type, bearing=bearing, bs=bearing_symbol,
                    range=range_str,
                    course=course_str, course_symbol=course_symbol,
                    speed=speed_str, snt=self.stn, src=self.sources,
                    pos=self.pos, status=self.tracking_status,
                    name=name)
+
+class SphereSonarBQQ10():
+    """
+    Passive Sphere/Bow Sonar
+    """
+    def __init__(self):
+        # minimal Signal-to-Noise level dectection in DB
+        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
+        self.min_detection_stn = 1
+        self.max_range = 12000  #yards
+
+        # sensible to 300 degrees, centered in the bow
+        self.angle1 = math.radians(150)
+        self.angle2 = math.radians(-150) + 2.0 * math.pi
+        self.gain_scaler_1 = linear_scaler_with_limit([math.log10(200), math.log10(1000)], [0, 15])
+
+    def listening_angle(self, angle):
+        if self.angle2 > angle > self.angle1:
+            return False
+        return True
+
+    def array_gain(self, freq):
+        # freq in Hertz
+        # result in db
+        log_freq = math.log10(freq)
+        return self.gain_scaler_1(log_freq)
+
+
+class HullSonarBQQ10():
+    """
+    Passive Hull Sonar
+    """
+    def __init__(self):
+        # minimal Signal-to-Noise level dectection in DB
+        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
+        self.min_detection_stn = 1
+        self.max_range = 10000 #yards
+
+        self.angle1a = math.radians(30)
+        self.angle1b = math.radians(90)
+
+        self.angle2a = math.radians(-90) + 2.0 * math.pi
+        self.angle2b = math.radians(-30) + 2.0 * math.pi
+
+        self.gain_scaler_1 = linear_scaler_with_limit([math.log10(20), math.log10(40)], [0, 7])
+        self.gain_scaler_2 = linear_scaler_with_limit([math.log10(40), math.log10(1000)], [7, 20])
+
+
+    def listening_angle(self, angle):
+        if self.angle1b >= angle >= self.angle1a:
+            return True
+        elif self.angle2b >= angle >= self.angle2a:
+            return True
+        else:
+            return False
+
+    def array_gain(self, freq):
+        # freq in Hertz
+        # result in db
+        if freq <= 20:
+            return 0
+        elif freq >= 1000:
+            return 20
+        else:
+            log_freq = math.log10(freq)
+            if 20 < freq <= 40:
+                return self.gain_scaler_1(log_freq)
+            else:
+                return self.gain_scaler_2(log_freq)
 
 
 class TowedArrayTB16(Deployable):
@@ -120,45 +190,39 @@ class TowedArrayTB16(Deployable):
     and 240 feet long, towed on a 2,400 foot long cable
     0.37 inches in diameter weighing 450 pounds.
     """
-
-    def __init__(self, sea):
+    def __init__(self):
         # Size: 2400 feet
         # deploy rate: 7 feet/sec (* 3600 for feet/hour)
         Deployable.__init__(self, 2400, 7 * 3600)
-        self.sea = sea
         # minimal Signal-to-Noise level dectection in DB
         # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
-        self.min_detection_stn = 1
+        self.max_range = 15000 #yards
+
+        #
+        self.angle1 = math.radians(30)
+        self.angle2 = math.radians(-30) + 2.0 * math.pi
+
+        self.gain_scaler_1 = linear_scaler_with_limit([math.log10(2), math.log10(200)], [0, 20])
+
+    def listening_angle(self, angle):
+        if 0 < angle < self.angle1:
+            return False
+        elif 2*math.pi > angle > self.angle2:
+            return False
+        else:
+            return True
 
     def turn(self, time_elapsed):  # time in hours
         Deployable.turn(self, time_elapsed)
 
+    def array_gain(self, freq):
+        # freq in Hertz
+        # result in db
+        log_freq = math.log10(freq)
+        return self.gain_scaler_1(log_freq)
+
     def __str__(self):
         return "TB-16 {0} ({1} feet of {2} deployed)".format(self.state, self.deployed_size, self.total_size)
-
-
-class HullSonarBQQ10():
-    """
-    Passive Hull Sonar
-    """
-
-    def __init__(self, sea):
-        self.sea = sea
-        # minimal Signal-to-Noise level dectection in DB
-        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
-        self.min_detection_stn = 1
-
-
-class SphereSonarBQQ10():
-    """
-    Passive Sphere Sonar
-    """
-
-    def __init__(self, sea):
-        self.sea = sea
-        # minimal Signal-to-Noise level dectection in DB
-        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
-        self.min_detection_stn = 1
 
 
 class Sonar(SubModule):
@@ -198,7 +262,7 @@ class Sonar(SubModule):
         self.waterfall = []
 
     def return_near_objects(self):
-        return self.contacts
+        return self.contacts.values()
 
     def get_new_contact_id(self):
         self.counter += 1
@@ -248,27 +312,32 @@ class Sonar(SubModule):
 
     def passive_scan(self):
         # Sphere Array
-        spherical_scan = self.sea.passive_scan(self.sub, self.spherical)
-        hull_scan = self.sea.passive_scan(self.sub, self.hull)
+        spherical_scan_result = self.sea.passive_scan(self.sub, self.spherical)
+        hull_scan_result = self.sea.passive_scan(self.sub, self.hull)
         # if towed array is deployed more than 90%, use it
         if self.towed.percent_deployed > 0.9:
-            towed = self.sea.passive_scan(self.sub, self.towed)
+            towed_scan_result = self.sea.passive_scan(self.sub, self.towed)
         else:
-            towed = []
+            towed_scan_result = []
+
+
+        # combine all readings
+        scan_contacts = {}
+        for sr in spherical_scan_result:
+            scan_contacts[sr.object_idx] = sr
 
 
 
         for k, c in self.contacts.items():
             c.tracking_status = SonarContact.LOST
 
-        for sr in spherical_scan:  #
-            idx = sr.object_idx
+        for idx, sr in scan_contacts.items():  #
             if idx in self.contacts:
                 self.update_contact(self.contacts[idx], sr)
             else:
-                self.add_contact(sr)
+                self.add_contact(idx, sr)
 
-    def add_contact(self, scan_result):
+    def add_contact(self, idx, scan_result):
         sc = SonarContact(self.sea.time, scan_result.bearing, scan_result.signal_to_noise, Point(0, 0),
                           scan_result.range)
         sc.id = self.get_new_contact_id()
@@ -278,7 +347,7 @@ class Sonar(SubModule):
         sc.tracking_status = sc.NEW
         st = "surface" if sc.deep == 0 else "submerged"
 
-        self.contacts[scan_result.object_idx] = sc
+        self.contacts[idx] = sc
         self.add_message("Conn, Sonar: New {st} contact on sonar, bearing {br:3.0f}, designated {d}".format(
             st=st, br=util.abs_angle_to_bearing(scan_result.bearing), d=sc.id), True)
 
@@ -308,13 +377,11 @@ class Sonar(SubModule):
         sonar_contact.blade_number = scan_result.blades
         sonar_contact.bands = scan_result.bands
 
-
     def waterfall_update(self):
         s = [x.value for x in self.sonar_array(self.WATERFALL_STEPS)]
         self.waterfall.append(s)
         if len(self.waterfall) > self.MAX_WATERFALL_HISTORY_SECONDS:
             self.waterfall = self.waterfall[-self.MAX_WATERFALL_HISTORY_SECONDS]
-
 
     def pulse_scan(self):
         pass
@@ -324,7 +391,7 @@ class Sonar(SubModule):
         sea_noise = self.sea.get_background_noise()
         sub_noise = self.sub.self_noise()
         backgroung_noise = sea_noise + sub_noise
-        for k, obj in self.contacts:
+        for idx, obj in self.contacts.items():
             angle = obj.bearing
             # if from_angle <= angle <= to_angle:
         return backgroung_noise
@@ -339,7 +406,7 @@ class Sonar(SubModule):
         angles = util.angles(num_angles)
         noise = [backgroung_noise(self) for _ in xrange(num_angles)]
 
-        for k, obj in self.contacts.items():
+        for idx, obj in self.contacts.items():
             # print(obj.bearing())
             x = int(math.degrees(obj.bearing) / step)
             #print(x)
