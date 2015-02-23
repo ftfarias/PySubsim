@@ -2,32 +2,46 @@ import logging
 import random
 
 import sea
-from sea_object import Whale
+from sea_object import Whale, Buoy
 from sub import Submarine
 from physic import Point
+from util import Bands
+
+
+logger = logging.getLogger("subsim")
 
 
 class Scenario(object):
     def __init__(self):
+        logger.debug("Sceneario Init")
         self.name = 'General'
         self.sea = None
         self.player_sub = None
 
     def initialize(self):
+        logger.debug("Sceneario Initialization")
         self.sea = sea.Sea()
-        for i in xrange(2):
-            whale = self.create_whale()
-            self.sea.add_object(whale)
 
-        print("Creating Player Submarine")
+        # for i in xrange(2):
+        #     whale = self.create_whale()
+        #     self.sea.add_object(whale)
+
+        self.add_buoy(Point(3, 3), Bands({30: 100, 300: 80, 3000: 50}), deep=0)
+        self.add_buoy(Point(3, 4), Bands({30: 150, 300: 120, 3000: 100}), deep=0)
+        self.add_buoy(Point(4, 4), Bands({40: 100, 400: 80, 4000: 50}), deep=0)
+        self.add_buoy(Point(5, 5), Bands({50: 100, 500: 80, 5000: 50}), deep=0)
+        self.add_buoy(Point(7, 7), Bands({70: 100, 700: 80, 7000: 50}), deep=0)
+        self.add_buoy(Point(8, 8), Bands({80: 100, 800: 80, 8000: 50}), deep=0)
+
+        logger.info("Creating Player Submarine")
         self.player_sub = Submarine(self.sea)
         self.player_sub.pos = Point(6, 6)
         self.player_sub.deep = 120
         self.player_sub.name = "USS Sant Paul"
         self.sea.add_object(self.player_sub)
 
-        #dummy_ship = ShipFactory.create_simple_sub(sea, Point(30, 30))
-            #sea.create_smallboat(dummy_ship)
+        # dummy_ship = ShipFactory.create_simple_sub(sea, Point(30, 30))
+        # sea.create_smallboat(dummy_ship)
 
         """
         dummy_ship = ShipFactory.create_simple_ship(universe, Point(0, 1))
@@ -61,20 +75,25 @@ class Scenario(object):
         #     sub.pos = pos
         #     return sub
 
+    def add_buoy(self, pos, bands, deep=0):
+        buoy = Buoy(self.sea, pos, bands, deep)
+        self.sea.add_object(buoy)
+
+
     def create_whale(self, pos=None):
         if pos is None:
             pos = Point(random.randint(0, 10), random.randint(0, 10))
-        logging.debug("Creating a whale at {0}".format(pos))
+        logger.debug("Creating a whale at {0}".format(pos))
         whale = Whale(self.sea)
         whale.pos = pos
-        logging.debug("Whale {0}".format(whale))
+        logger.debug("Whale {0}".format(whale))
         return whale
 
         # def create_warship(self, pos=None, ship_type=None):
         # t = ['Destroyer', 'Warship']
         # if pos is None:
-        #         pos = Point(random.randint(0, 10), random.randint(0, 10))
-        #     if ship_type is None:
+        # pos = Point(random.randint(0, 10), random.randint(0, 10))
+        # if ship_type is None:
         #         ship_type = t[random.randint(0, len(t) - 1)]
         #     ship = MovableSeaObject(ship_type, pos)
         #     ship.set_destination(random.randint(0, 359), random.randint(5, 15))

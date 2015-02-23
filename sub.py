@@ -5,7 +5,6 @@ import random
 from physic import MovableNewtonObject
 from sub_module import SubModule
 from sonar import Sonar
-from sound import db
 from linear_scale import linear_scaler
 from navigation import Navigation
 
@@ -60,7 +59,22 @@ class Submarine(MovableNewtonObject):
     NOISE_RANGE1 = linear_scaler([0, 15], [40, 60])
     NOISE_RANGE2 = linear_scaler([15, 35], [60, 100])
 
-    def self_noise(self):  # returns
+    def self_noise(self, freq):  # returns
+        if self.speed <= 15:
+            noise = self.NOISE_RANGE1(self.speed)
+        else:
+            noise = self.NOISE_RANGE2(self.speed)
+
+        # cavitation doesn't occur with spd < 7
+        max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
+        cavitating = max_speed_for_deep < self.speed
+
+        self.cavitation = cavitating
+
+        return noise + (30 if cavitating else 0) + random.gauss(0, 0.4)
+
+
+    def _self_noise(self):  # returns
         #
         """
         Assumes the noise is proportional to speed

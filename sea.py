@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-from util import Bands
-from physic import Point, MovableNewtonObject
-import random
-import math
 import unittest
-import datetime
-from sound import db
-from sea_object import *
-from util import feet_to_meters, meters_to_feet, knots_to_meters, meters_to_knots
 import logging
+import datetime
 
-logger = logging.getLogger()
+from sea_object import *
+from util import feet_to_meters, knots_to_meters
+from linear_scale import linear_scaler
+import sound
+
+
+logger = logging.getLogger("subsim")
 
 """
 A novice asked the Master: “Here is a programmer that never designs,
@@ -51,6 +50,8 @@ class Sea:
         self.ids_collection = range(1000, 9999)
         random.shuffle(self.ids_collection)
         self.conditions = 'Calm'
+        # background_noise_factor should be 1 < background_noise_factor < 1.75
+        self.background_noise_factor = 1.2
         # limits below because sound absortion formula
         self.temperature = random.randint(-60, 150) / 10.0  # Celsius, -6 < T < 35
         self.salinity = float(random.randint(30, 35))  # 5 < S < 50 ppt
@@ -63,7 +64,7 @@ class Sea:
         return self.ids_collection.pop()
 
     def add_object(self, obj):
-        #self.objects.append(obj)
+        # self.objects.append(obj)
         self.objects[self.get_unique_id()] = obj
 
     def turn(self, time_elapsed):  # time_elapsed in hours
@@ -72,29 +73,49 @@ class Sea:
             obj.turn(time_elapsed)
 
 
+    # def background_noise_for_freq_min_max(self, freq):
+    # # using Wenz (1962)
+    #     # http://www.dosits.org/science/soundsinthesea/commonsounds
+    #     # Min and Max values done by linear aproximation
+    #     logfreq = math.log10(freq)
+    #
+    #     # for minimum value:
+    #     # 1 -> 10 Hz, 5 -> 10KHz
+    #     # > x = c(1,5)
+    #     # > y = c(85,20)
+    #     # > l = lm(y ~ x)
+    #     # Coefficients:
+    #     # (Intercept)            x
+    #     # 101.25       -16.25
+    #     min_value = 101.25 + (-16.25 * logfreq)
+    #
+    #     # > y_max = c(140,60)
+    #     # > l = lm(y_max ~ x)
+    #     # Coefficients:
+    #     # (Intercept)            x
+    #     # 160          -20
+    #     max_value = 160.0 + (-20.0 * logfreq)
+    #     return min_value, max_value
+
+
+    background_noise_scaler = linear_scaler([0, 4], [80, 20])
+
     def background_noise_for_freq(self, freq):
         # using Wenz (1962)
         # http://www.dosits.org/science/soundsinthesea/commonsounds
         # Min and Max values done by linear aproximation
         logfreq = math.log10(freq)
+        base_value = self.background_noise_scaler(logfreq)
 
-        # for minimum value:
-        # > x = c(1,5)
-        # > y = c(85,20)
-        # > l = lm(y ~ x)
-        # Coefficients:
-        # (Intercept)            x
-        # 101.25       -16.25
-        min_value = 101.25 + (-16.25 * logfreq)
+        # background_noise_factor should be 1 < background_noise_factor < 1.75
 
-        # > y_max = c(140,60)
-        # > l = lm(y_max ~ x)
-        # Coefficients:
-        # (Intercept)            x
-        # 160          -20
+        value = (base_value * self.background_noise_factor) + random.gauss(0, 2)
 
-        max_value = 160.0 + (-20.0 * logfreq)
-        return min_value, max_value
+        return value
+
+    def get_background_noise(self):
+        return self.background_noise_for_freq(50)
+        #return [self.background_noise_for_freq(i) for i in sound.REFERENCE_FREQS]
 
     # def get_background_noise(self):
     # return db(random.gauss(80, 2))
@@ -127,7 +148,7 @@ class Sea:
         deep = feet_to_meters(deep) / 1000.0  # convert feet to km
 
         # kelvin = 273.1  # for converting to Kelvin (273.15)  # Measured ambient temp
-        #t_kel = kelvin + temperature
+        # t_kel = kelvin + temperature
 
         # Boric acid contribution
         a1 = 0.106 * math.exp((pH - 8.0) / 0.56);
@@ -172,83 +193,73 @@ class Sea:
         return 10 * math.log10(dist)  # decibels
 
 
-    def sound_attenuation(self, freq, deep, distance):
-        # distance in meters
-        # deep in feet
-        # freq in Hertz
-
-        # TODO: mix spherical and cylindrical losses
-        spreading_loss = self.spherical_spreading_loss(distance)
-
-        absorption = self.sound_absortion_by_sea(float(freq), float(deep),
-                                                 temperature=self.temperature,
-                                                 salinity=self.salinity,
-                                                 pH=self.ph) * distance / 1000
-        return spreading_loss + absorption
-
-    def passive_sonar_scan(self, sub, sonar):
-        logger.debug("--- Passive sonar scan ---")
-        sub_pos = sub.get_pos()
-        assert isinstance(sub_pos, Point)
-        result = []  # list of ScanResult
+    # def passive_sonar_scan(self, sub, sonar):
+    # logger.debug("--- Passive sonar scan ---")
+    # sub_pos = sub.get_pos()
+    #     assert isinstance(sub_pos, Point)
+    #     result = []  # list of ScanResult
 
 
     def passive_scan(self, sub, sonar):
         logger.debug("--- Passive scan ---")
+        logger.debug("Sub: {0}".format(sub))
+        logger.debug("Sonar: {0}".format(sonar))
         sub_pos = sub.get_pos()
         assert isinstance(sub_pos, Point)
-        result = []
-        #background_noise = self.get_background_noise() + sub.self_noise()
+        result = {}
+        # background_noise = self.get_background_noise() + sub.self_noise()
         #logger.debug("background_noise {0}".format(background_noise))
         for idx, obj in self.objects.items():
             obj_pos = obj.get_pos()
             # skips the sub itself
             if sub_pos == obj_pos:
                 continue
-            range = obj_pos.distance_to(sub_pos)
-            # if dist > 15:  # hard limit for object detection.
-            # continue
+            range_in_knots = obj_pos.distance_to(sub_pos)  # in knots/miles
+            # if range > 15:  # hard limit for object detection.
+            #     continue
             assert isinstance(obj.get_pos(), Point)
-            # most part of a sub self-noise is around 30 Hz
             object_bands = obj.get_bands()
             assert isinstance(object_bands, Bands)
-            logger.debug("{i}: dist:{dist:5.2f}  obj:{obj}  type:{ty}  obj bands: {b}".format(i=i, dist=range, obj=obj,
-                                                                                              ty=type(obj),
-                                                                                              b=object_bands))
-            listened_bands = Bands()
-            for freq, level in object_bands.get_freq_level():
-                range_in_meters = knots_to_meters(range)
-                level_db = db(level)
-                transmission_loss = self.sound_attenuation(freq=freq,
-                                                     deep=sub.actual_deep,
-                                                     distance=range)
+            logger.debug("** Examining: {i}: dist:{dist:5.2f}  obj:{obj}  type:{ty}"
+                         "  obj bands: {b}".format(i=idx, dist=range_in_knots,
+                                                   obj=obj,
+                                                   ty=type(obj),
+                                                   b=object_bands))
 
+            received_bands = self.calculate_dectect_frequences(sub, sonar, obj, range_in_knots)
+            logger.debug("received_bands: {0}".format(received_bands))
 
+            # total_received_sound = sum([i[1] for i in received_bands])
+            # total_received_noise = sum([i[2] for i in received_bands])
+            # signal_to_noise = total_received_sound - total_received_noise
+            # logger.debug("total_received_sound : {0}".format(total_received_sound))
+            # logger.debug("total_received_noise : {0}".format(total_received_noise))
+            # logger.debug("signal_to_noise : {0}".format(signal_to_noise))
 
-                received_sound = level_db / transmission_loss
-                receiving_array_gain = sonar.array_gain(freq)  # AG
-                received_sound += receiving_array_gain
-                listened_bands = listened_bands.add(freq, received_sound)
-                logger.debug(
-                    "{i}: freq:{f} source level:{sl}  deep_in_km:{deep}  attenuation:{at}/nm * dist = {tat} received_sound={rs}".format(
-                        i=i, f=freq, sl=object_bands.total_level(), deep=deep_in_km,
-                        at=attenuation_per_mile,
-                        tat=transmission_loss, rs=received_sound))
+            # consolidate bands in a total detected signal-to-noise value
+            total_detected_signal_to_noise = 0
+            detected_bands = {}
+            for band in received_bands:
+                freq = band[0]
+                signal = band[1]
+                noise = band[2]
+                stn = signal - noise - sonar.detection_threshold
+                if stn > 0:
+                    total_detected_signal_to_noise += stn
+                    detected_bands[freq] = stn
 
-            total_received_sound = listened_bands.total_level()
-            logger.debug("Bands: {0}".format(listened_bands))
+            logger.debug("total_detected_signal_to_noise : {0}".format(total_detected_signal_to_noise))
+
             #if not isinstance(object_sound, Decibel):
             #    received_sound = db(received_sound)
-            signal_to_noise = total_received_sound
-            logger.debug("{i}: signal_to_noise:{stn}".format(i=i, stn=signal_to_noise))
-            if signal_to_noise.value > sonar.min_detection_stn:
-
+            # logger.debug("{i}: signal_to_noise:{stn}".format(i=i, stn=signal_to_noise))
+            if total_detected_signal_to_noise > 0:
                 # error: greater the signal_to_noise, less the error
-                if signal_to_noise > 10:
+                if total_detected_signal_to_noise > 10 + sonar.detection_threshold:
                     error = 0.0001  # means 0.1% in measure
                 else:
                     # the error moves from 5% to 1% in a exponencial decay
-                    error = 0.0001 + 0.0004 * math.exp(-0.5 * signal_to_noise.value)
+                    error = 0.0001 + 0.0004 * math.exp(-0.5 * total_detected_signal_to_noise)
                 # it's divided by 3 because in a gaussian 99% of time we are inside 3 sigmas...
                 # so the error is "max" error for 99% of measures
                 error /= 3
@@ -258,16 +269,78 @@ class Sea:
                 #bearing = obj_pos.bearing_to(sub_pos)
                 # Scan Result
                 r = ScanResult(idx)
-                r.signal_to_noise = signal_to_noise
+                r.signal_to_noise = total_detected_signal_to_noise
                 r.blades = 0
-                r.range = range + random.gauss(0, error)
-                r.bearing = bearing + random.gauss(0, error)
-                r.deep = deep
-                r.bands = listened_bands
+                r.distance = range_in_knots * random.gauss(1, error)
+                r.bearing = bearing * random.gauss(1, error)
+                r.deep = deep * random.gauss(1, error)
+                r.bands = detected_bands
                 logger.debug("scan_result: {0}".format(r))
-                logger.debug("")
-                result.append(r)
-        return result
+                # result.append(r)
+                result[idx] = r
+        return result  # def passive_scan(self, sub, sonar):
+
+
+    def calculate_dectect_frequences(self, sub, sonar, obj, range_in_knots):
+        received_bands = []
+        for freq, source_level in obj.get_bands().get_freq_level():
+            range_in_meters = knots_to_meters(range_in_knots)
+            deep = sub.actual_deep
+
+            ocean_deep = 2000  # in meters
+            half_ocean_deep = ocean_deep / 2
+            if range_in_meters < half_ocean_deep:
+                spreading_loss = self.spherical_spreading_loss(range_in_meters)
+            else:
+                # mix of spherical and cylindrical losses
+                # spherical losses up to half_ocean_deep + cylindrical
+                # http://www.dosits.org/science/advancedtopics/spreading/
+                # http://www.fas.org/man/dod-101/navy/docs/es310/SNR_PROP/snr_prop.htm
+                spreading_loss = (10 * math.log10(range_in_meters)) + (10 * math.log10(half_ocean_deep))
+
+            absorption = self.sound_absortion_by_sea(float(freq), float(deep),
+                                                     temperature=self.temperature,
+                                                     salinity=self.salinity,
+                                                     pH=self.ph) * range_in_meters / 1000
+
+            transmission_loss = spreading_loss + absorption
+            sub_noise_level = sub.self_noise(freq)
+            sea_noise_level = self.background_noise_for_freq(freq)
+            total_noise = sound.sum_of_decibels([sub_noise_level, sea_noise_level])
+            receiving_array_gain = sonar.array_gain(freq)  # AG
+            adicional_losses = 0
+
+            received_sound = source_level - transmission_loss \
+                             + receiving_array_gain - adicional_losses
+
+            stn = received_sound - total_noise
+
+            received_bands.append((freq, received_sound, total_noise))
+            #received_bands = received_bands.add(freq, received_sound)
+
+
+            logger.debug(
+                "* freq:{f}  source level:{sl}  deep:{deep}".format(
+                    f=freq, deep=deep,
+                    sl=source_level))
+            logger.debug(
+                "spreading_loss:{spl} absorption:{at} sea_noise:{sean} sub_noise:{subn}".format(
+                    at=absorption,
+                    sean=sea_noise_level,
+                    subn=sub_noise_level,
+                    spl=spreading_loss))
+
+            logger.debug(
+                "receiving_array_gain:{gain}  transmission_loss:{tl}".format(
+                    gain=receiving_array_gain,
+                    tl=transmission_loss))
+
+            logger.debug(
+                "total_noise:{tn}  received_sound:{rs} stn:{stn}".format(
+                    tn=total_noise,
+                    rs=received_sound,
+                    stn=stn))
+        return received_bands
 
     def pulse(self, ship):
         pass

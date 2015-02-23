@@ -5,95 +5,13 @@ from itertools import count
 import unittest
 from linear_scale import linear_scaler
 
-class Decibel(object):
-    def __init__(self, db=0, ratio=1):
-        self.value = float(db) + (10 * math.log10(ratio))
-
-    def __add__(self, other):
-        if isinstance(other, Decibel):
-            return Decibel(ratio=abs(self) + abs(other))
-        else:
-            return other * abs(self)
-
-    def __sub__(self, other):
-        if isinstance(other, Decibel):
-            return Decibel(ratio=abs(self) - abs(other))
-        else:
-            return other / abs(self)
-
-    def __rsub__(self, other):
-        if isinstance(other, Decibel):
-            return Decibel(ratio=abs(self) - abs(other))
-        else:
-            return other / abs(self)
-
-    # def __mul__(self, other):
-    #     if isinstance(other, Decibel):
-    #         return Decibel(ratio=abs(self) * abs(other))
-    #     else:
-    #         return Decibel(ratio=abs(self) * other)
-    #
-    # __rmul__ = __mul__
-    #
-    # def __div__(self, other):
-    #     if isinstance(other, Decibel):
-    #         return Decibel(ratio=abs(self) / abs(other))
-    #     else:
-    #         return Decibel(ratio=abs(self) / other)
-
-    def __abs__(self):
-        return self.abs()
-
-    def abs(self):
-        return 10 ** (self.value / 10)
-
-    def __lt__(self, other):
-        if isinstance(other, Decibel):
-            return self.value < other.value
-        else:
-            return self.value < other
-
-    def __le__(self, other):
-        if isinstance(other, Decibel):
-            return self.value <= other.value
-        else:
-            return self.value <= other
-
-    def __eq__(self, other):
-        if isinstance(other, Decibel):
-            return self.value == other.value
-        else:
-            return self.value == other
-
-    def __ne__(self, other):
-        if isinstance(other, Decibel):
-            return self.value != other.value
-        else:
-            return self.value != other
-
-    def __ge__(self, other):
-        if isinstance(other, Decibel):
-            return self.value >= other.value
-        else:
-            return self.value >= other
-
-    def __gt__(self, other):
-        if isinstance(other, Decibel):
-            return self.value > other.value
-        else:
-            return self.value > other
-
-    def add_noise(self, noise_level_db):
-        return self + db(random.gauss(0, noise_level_db))
-
-    def __str__(self):
-        return "{0:3.3f}db".format(self.value)
-
-    __repr__ = __str__
+REFERENCE_FREQS = [0.1, 1, 10, 30, 50, 100, 300, 500, 1000, 3000, 5000, 10000, 15000, 20000]
 
 
-def db(db=0, ratio=1):
-    return Decibel(db=db, ratio=ratio)
+def sum_of_decibels(db_lists):
+    powers = [10 ** (db/10) for db in db_lists ]
+    total_power = sum(powers)
+    return 10 * math.log10(total_power)
 
 
 def nextpow2(i):
@@ -197,49 +115,5 @@ def sine_wave_array(size, frequency=440.0, framerate=44000, amplitude=1):
 def white_noise(amplitude=0.5):
     return (float(amplitude) * random.uniform(-1, 1) for _ in count(0))
 
-#sound_absortion_freq = [0, 500, 1000, 2000, 5000, 10000, 20000]
-#sound_absortion_att = [0, 0.03, 0.07, 0.14, 0.41, 1.3, 4.6]
-_simple_sound_absortion_1 = linear_scaler([0,2000],[0,0.14])
-_simple_sound_absortion_2 = linear_scaler([2000,5000],[0.14,0.41])
-_simple_sound_absortion_3 = linear_scaler([5000,10000],[0.41,1.3])
-_simple_sound_absortion_4 = linear_scaler([10000,20000],[1.3,4.6])
-_simple_sound_absortion_5 = linear_scaler([20000,100000],[4.6,1000])
-def simple_sound_absortion_by_sea(freq, deep):
-    if freq <= 2000:
-        return _simple_sound_absortion_1(freq)
-    elif freq <= 5000:
-        return _simple_sound_absortion_2(freq)
-    elif freq <= 10000:
-        return _simple_sound_absortion_3(freq)
-    elif freq <= 20000:
-        return _simple_sound_absortion_4(freq)
-    elif freq <= 100000:
-        return _simple_sound_absortion_5(freq)
-    else:
-        return 1000
 
 
-class TestUtil(unittest.TestCase):
-    def test_decibels(self):
-        self.assertAlmostEqual(abs(db(db=3.01029995664)), abs(db(ratio=2)))
-
-        self.assertAlmostEqual(abs(db(db=10)), abs(db(ratio=10)))
-        self.assertAlmostEqual(abs(db(db=20)), abs(db(ratio=100)))
-        self.assertAlmostEqual(abs(db(db=30)), abs(db(ratio=1000)))
-
-        self.assertAlmostEqual(abs(db(db=13.0103)), abs(db(ratio=20)), 3)
-        self.assertAlmostEqual(abs(db(db=14.771212547196624)), abs(db(ratio=30)), 3)
-        self.assertAlmostEqual(abs(db(db=16.9897)), abs(db(ratio=50)), 3)
-        self.assertAlmostEqual(abs(db(db=19.54242509439325)), abs(db(ratio=90)), 3)
-
-    def test_decibels_sum(self):
-        self.assertAlmostEqual(db(60) + db(60), db(63.01029995664), 5)
-        self.assertAlmostEqual(db(50) + db(50), db(53.01029995664), 5)
-
-    def test_decibels_abs(self):
-        self.assertAlmostEqual(abs(db(db=0)), 1)
-        self.assertAlmostEqual(abs(db(db=10)), 10)
-        self.assertAlmostEqual(abs(db(db=20)), 100)
-
-if __name__ == '__main__':
-    unittest.main()

@@ -4,13 +4,13 @@ import logging
 import scenario
 from game_text_interface import GameTextInterface
 
-logger = logging.getLogger()
+logger = logging.getLogger("subsim")
 logger.setLevel(logging.DEBUG)
 
 # create debug file handler and set level to debug
 handler = logging.FileHandler("sub.log", "w")
 # handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(message)s")
+formatter = logging.Formatter("%(asctime)s %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 

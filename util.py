@@ -2,9 +2,8 @@
 import collections
 import math
 import random
-from sound import db
 import unittest
-from sound import Decibel
+from sound import sum_of_decibels
 import copy
 
 def angles(num_angles):
@@ -95,8 +94,6 @@ class Bands():
         self.bands = bands.copy()
 
     def add(self, freq, level):
-        if isinstance(level,Decibel):
-            level = level.value
         self.bands[freq] = level
         return Bands(self.bands)
 
@@ -115,10 +112,7 @@ class Bands():
         return self.bands.copy().items()
 
     def total_level(self):
-        total = db(0)
-        for f,l in self.bands.items():
-            total += db(l)
-        return total
+        return sum_of_decibels(self.bands.values())
 
     def filter(self, min_level):
         for k, v in self.bands.items():

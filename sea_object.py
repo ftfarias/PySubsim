@@ -87,6 +87,13 @@ class SnappingShrimp(SeaObject):
         else:
             return Bands()  # Silence
 
+class Buoy(SeaObject):
+    def __init__(self, sea, pos, bands, deep=0):
+        SeaObject.__init__(self, sea)
+        self.bands = bands
+        self.pos = pos
+        self.deep = deep
+
 
 class MovableSeaObject(SeaObject, MovableNewtonObject):
     def __init__(self, sea, max_speed = 40, max_turn_rate_hour = math.radians(360)*60):  # max 360 degrees per minute
