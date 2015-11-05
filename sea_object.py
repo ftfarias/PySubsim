@@ -114,6 +114,8 @@ class MovableSeaObject(SeaObject, MovableNewtonObject):
     def __str__(self):
         return MovableNewtonObject.__str__(self)
 
+
+
 class Whale(MovableSeaObject):
     # f = 12 Hz - @2-5 kHz for “whale songs”, SL up to 188 dB
     # Swimming: 10 - 20 Hz, 60 to 80 DB
@@ -213,3 +215,51 @@ class ComputerSubmarine(MovableSeaObject):
         MovableSeaObject.turn(self, time_elapsed)
 
 
+class MovableSeaObject(SeaObject, MovableNewtonObject):
+    def __init__(self, sea, max_speed = 40, max_turn_rate_hour = math.radians(360)*60):  # max 360 degrees per minute
+        SeaObject.__init__(self, sea)
+        MovableNewtonObject.__init__(self, max_speed, max_turn_rate_hour)
+
+    def get_pos(self):
+        return self.pos
+
+    def turn(self, time_elapsed):
+        MovableNewtonObject.turn(self, time_elapsed)
+
+        # def set_destination(self, course, speed):
+        # self.vel = Point(1,1)  # just to initialize the vector
+        #     self.speed = speed
+        #     self.course = course
+
+    def __str__(self):
+        return MovableNewtonObject.__str__(self)
+
+
+class Torpedo(MovableSeaObject):
+    def __init__(self, sea):
+        MovableSeaObject.__init__(self, sea, max_speed=42, max_turn_rate_hour=math.radians(720)*60)
+        self.navigation = Navigation(self)
+        self.deep = 100
+        self.armed = False
+        self.fuel = 100 * 40 # seconds at 40 knots
+
+    def launch(self, pos, speed = 40):
+        self.navigation.set_destination(pos)
+        self.speed = speed
+
+    def get_deep(self):
+        return self.deep
+
+    def get_fuel_consumption(self, time_elapsed):
+        # 1 fuel unit per second per knot
+        return 1.0 * time_elapsed * self.navigation.get_actual_speed()
+
+    def turn(self, time_elapsed):
+        MovableSeaObject.turn(self, time_elapsed)
+        self.fuel -= self.get_fuel_consumption(time_elapsed)
+        if self.fuel <= 0:
+            self.navigation.MAX_SPEED = 0
+            self.MAX_SPEED = 0
+
+    def explode(self):
+        self.sea.report_explosion(self.get_pos())

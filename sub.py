@@ -56,8 +56,8 @@ class Submarine(MovableNewtonObject):
     # for 0 < speed < 15 :  linear from 40 to 60
     # for speed > 15 : linear with factor of 2db for each knot
     # ref: http://fas.org/man/dod-101/navy/docs/es310/uw_acous/uw_acous.htm
-    NOISE_RANGE1 = linear_scaler([0, 15], [40, 60])
-    NOISE_RANGE2 = linear_scaler([15, 35], [60, 100])
+    NOISE_RANGE1 = linear_scaler([0, 15], [50, 60])
+    NOISE_RANGE2 = linear_scaler([15, 35], [60, 120])
 
     def self_noise(self, freq):  # returns
         if self.speed <= 15:
@@ -97,7 +97,6 @@ class Submarine(MovableNewtonObject):
         You can get the exact chart at the Marauders' website. (url's at the end of
           the document)
 
-
         :return: sound in in decibels
         """
         if self.speed <= 15:
@@ -114,7 +113,7 @@ class Submarine(MovableNewtonObject):
 
         self.cavitation = cavitating
 
-        return db(noise + (100 if cavitating else 0) + random.gauss(0, 0.4))
+        return noise + (100 if cavitating else 0) + random.gauss(0, 0.4)
 
 
     def turn(self, time_elapsed):
@@ -205,8 +204,6 @@ Los-Angles class submarine, not the 688I (improved Los-Angles class).
 Judging from acoustic signatures, the most modern Chinese nuclear
 submarines are comparabile to 1970s and 1980s US and Soviet
 designs shown on the chart below.
-
-
 
 
 DEEP:

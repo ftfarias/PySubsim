@@ -435,18 +435,18 @@ class Sonar(SubModule):
         pass
 
 
-    def noise_by_angle(self, from_angle, to_angle):
-        sea_noise = self.sea.get_background_noise()
-        sub_noise = self.sub.self_noise()
-        backgroung_noise = sea_noise + sub_noise
-        for idx, obj in self.contacts.items():
-            angle = obj.bearing
-            # if from_angle <= angle <= to_angle:
-        return backgroung_noise
+    # def noise_by_angle(self, from_angle, to_angle):
+    #     sea_noise = self.sea.background_noise_for_freq(50)
+    #     sub_noise = self.sub.self_noise(50)
+    #     backgroung_noise = sea_noise + sub_noise
+    #     for idx, obj in self.contacts.items():
+    #         angle = obj.bearing
+    #         # if from_angle <= angle <= to_angle:
+    #     return backgroung_noise
 
     def sonar_array(self, num_angles):
         def backgroung_noise(self):
-            sea_noise = self.sea.get_background_noise()
+            sea_noise = self.sea.background_noise_for_freq(50)
             sub_noise = self.sub.self_noise(50)
             return sea_noise + sub_noise
 

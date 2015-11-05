@@ -113,13 +113,6 @@ class Sea:
 
         return value
 
-    def get_background_noise(self):
-        return self.background_noise_for_freq(50)
-        #return [self.background_noise_for_freq(i) for i in sound.REFERENCE_FREQS]
-
-    # def get_background_noise(self):
-    # return db(random.gauss(80, 2))
-
     def sound_absortion_by_sea(self, freq, deep, temperature, salinity, pH):
         """
         freq in Hertz
