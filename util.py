@@ -293,6 +293,7 @@ class Alternation(object):
                 self.state = True
                 self.counter = random.gauss(8, 5)+random.gauss(12, 5)
 
+
 class Deployable(object):
     STOP = "Stopped"
     DEPLOY = 'Deploying'

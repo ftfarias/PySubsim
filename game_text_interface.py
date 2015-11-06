@@ -28,7 +28,6 @@ class GameTextInterface(object):
         self.sea = sea
         self.selected_object_detail = None
         self.waterfall = Waterfall(player_sub.sonar)
-        self.sonar_items = {}
 
     def print_status(self):
         print('* Status *')
@@ -57,20 +56,16 @@ class GameTextInterface(object):
 
     def print_near_objects(self):
         objs = self.player_sub.sonar.return_near_objects()
-        self.sonar_items = {}
         if not objs:
             print("<no contacts>")
         else:
-            for i, obj in enumerate(objs):
+            for i,obj in enumerate(objs):
                 print u"{0:3d}: {1}".format(i, obj)
-                self.sonar_items[i] = obj.idx
-
 
 
     def obj_change_name(self):
-        new_name = self.get_text("Name for contact {0}: ".format(selected_object_detail.id))
-        if new_name:
-            selected_object_detail.name = new_name
+        new_name = self.get_text("Name for contact {0}: ".format(selected_object_detail.ident))
+        selected_object_detail.name = new_name
 
 
     OBJECT_DETAIL_MENU = [
@@ -83,42 +78,6 @@ class GameTextInterface(object):
 
 
     def show_object_details(self, n):
-        if n not in self.player_sub.sonar.contacts:
-            print("Unknown track " + str(n))
-            print("Valid tracks: ")
-            for k, v in self.player_sub.sonar.contacts.items():
-                print(k)
-            return
-
-        def f(value, str_format=u"{0}"):
-            if value is None:
-                return "?"
-            return str_format.format(value)
-
-        obj = self.player_sub.sonar.contacts[n]
-        print (u'{0}'.format(obj))
-
-        # print (u"Propeller: blades:{b}  freq: {f}  KPT:{kpt}  est.speed:{s}".format(b=f(obj.blade_number),
-        #                                                                             f=f(obj.blade_frequence),
-        #                                                                             kpt=obj.knots_per_turn,
-        #                                                                             s=f(obj.propeller_speed())))
-
-        for freq in sorted(obj.bands.keys()):
-            valor = obj.bands[freq]
-            print("{0}\t: {1:3.2f}".format(int_to_hertz(freq),valor))
-
-        # print("".join(["{0:5}".format(i)  for i in range(1,11)]))
-        # print("".join(["{0:5.1f}".format(b) for b in bands]))
-
-        # for prob in obj.obj_type_probs:
-        #    print("Ref:{0:20}  Prob:{1:3.3f}".format(prob[1], prob[0]))
-        global selected_object_detail
-        selected_object_detail = obj
-        opt = self.show_menu(self.OBJECT_DETAIL_MENU)
-        if opt:
-            opt()
-
-    def show_object_details_OLD(self, n):
         if n not in self.player_sub.sonar.contacts:
             print("Unknown track " + str(n))
             print("Valid tracks: ")
@@ -170,6 +129,7 @@ class GameTextInterface(object):
         if opt:
             opt()
 
+
     def print_map(self):
         h = ["P - Player Sub",
              "^ - Warship",
@@ -179,8 +139,8 @@ class GameTextInterface(object):
         def double_round(x):
             return int(round(x[0])), int(round(x[1]))
 
-        # all variables with map coordinates begins with "mc_"
-        # all variables with game coordinates begins with "gc_"
+        # all variables with (M)ap (C)oordinates begins with "mc_"
+        # all variables with (G)ame (C)oordinates begins with "gc_"
         mc_x_size = 12  # from 0 to 11
         mc_y_size = 12  # from 0 to 11
         x_range = range(mc_x_size)
@@ -429,22 +389,22 @@ class GameTextInterface(object):
 
 
     def print_noise_profile(self):
-        sea_noise = self.sea.background_noise_for_freq(50)
+        sea_noise = self.sea.get_background_noise()
         sub_noise = self.player_sub.self_noise(50)
-        print("Sea background noise: {sea:5.1f} (50Hz)  Sub noise:{sub:5.1f} (50Hz)   total:{t:5.1f}".format(
-            sea=sea_noise, sub=sub_noise, t=sound.sum_of_decibels([sea_noise,sub_noise])))
+        print("Sea background noise: {sea:5.1f}   Sub noise:{sub:5.1f}   total:{t:5.1}".format(
+            sea=sea_noise, sub=sub_noise, t=sea_noise + sub_noise))
 
 
     def sea_conditions(self):
         print("Sea Conditions:")
         print("\tSea conditions: {sea}".format(sea=self.sea.conditions))
-        print("\tSea noise (@50Hz): {sea}".format(sea=self.sea.background_noise_for_freq(50)))
+        print("\tSea noise: {sea}".format(sea=self.sea.get_background_noise()))
         print("\tSea temperature: {sea} Celsius".format(sea=self.sea.temperature))
         print("\tSea salinity: {sea} ppt".format(sea=self.sea.salinity))
         print("\tSea Acidity: pH {sea}".format(sea=self.sea.ph))
         print("Sea sound absortion (50 meters deep):")
         for v in sound.REFERENCE_FREQS:
-            print("\t{0}: {1:3.2f}".format(int_to_hertz(v), self.sea.sound_absortion_by_sea(v, 50,
+            print("\t{0}: {1}".format(int_to_hertz(v), self.sea.sound_absortion_by_sea(v, 50,
                                                                                        temperature=self.sea.temperature,
                                                                                        salinity=self.sea.salinity,
                                                                                        pH=self.sea.ph
@@ -511,28 +471,16 @@ class GameTextInterface(object):
             opt()
 
 
-    MAIN_TORPEDO_TUBE = [
-        ('Set target', torpedo_tube1),
-        ('Float tube', None),
-        ('Open Muzzle Door', None),
-        ('Fire', None),
-        # ('Land', None),
-        # ('Take Off', None),
-    ]
-
-    def torpedo_tube1(self):
-
-
     # Weapons
     def menu_weapons(self):
         MAIN_TARGET = [
-            ('Torpedo Tube 1', torpedo_tube1),
+            ('Set Target', None),
             ('Fire', None),
             # ('Land', None),
             # ('Take Off', None),
         ]
         print("Weapons")
-        #print(self.player_sub.target.status())
+        print(self.player_sub.target.status())
         opt = self.show_menu(MAIN_TARGET)
         if opt:
             opt()
@@ -574,7 +522,6 @@ class GameTextInterface(object):
 
 
     def run_turn(self, time_per_turn):
-        self.sea.turn(time_per_turn / 3600)  # sea turn runs in hours, run_turn in seconds
         # print(universe)
         sys.stdout.write("\r ({sd}) {nav} deep:{deep:.0f}(set:{sdeep})".format(sd=self.sea, nav=self.player_sub.nav,
                                                                                deep=self.player_sub.actual_deep,
