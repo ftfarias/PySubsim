@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import math
+import cmath as math
 import random
 
 from physic import MovableNewtonObject
@@ -7,6 +7,7 @@ from sub_module import SubModule
 from sonar import Sonar
 from linear_scale import linear_scaler
 from navigation import Navigation
+from sound.sound import sum_of_decibels
 
 class Submarine(MovableNewtonObject):
     MAX_TURN_RATE_HOUR = math.radians(35) * 60  # max 35 degrees per minute
@@ -33,8 +34,6 @@ class Submarine(MovableNewtonObject):
         self.sonar = Sonar(self)
         self.weapon = Weapon(self)
 
-
-
     # "stop" means the turn just stop because requeres pilot atention
     def add_message(self, module, msg, stop=False):
         self.messages.append("{0}: {1}".format(module, msg))
@@ -60,22 +59,28 @@ class Submarine(MovableNewtonObject):
     NOISE_RANGE1 = linear_scaler([0, 15], [40, 60])
     NOISE_RANGE2 = linear_scaler([15, 35], [60, 100])
 
-    def self_noise(self, freq):  # returns
-        if self.speed <= 15:
-            noise = self.NOISE_RANGE1(self.speed)
-        else:
-            noise = self.NOISE_RANGE2(self.speed)
+    # def self_noise(self, freq):  # returns
+    #     # if self.speed <= 15:
+    #     #     noise = self.NOISE_RANGE1(self.speed)
+    #     # else:
+    #     #     noise = self.NOISE_RANGE2(self.speed)
+    #
+    #     # cavitation doesn't occur with spd < 7
+    #     # max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
+    #     # cavitating = max_speed_for_deep < self.speed
+    #
+    #     return noise + (30 if self.cavitation else 0) + random.gauss(0, 0.4)
+    #
+    #     '''
+    #     Above 10-20 kts, flow noise becomes the dominant factor and significantly increases
+    #     with speed (@1.5-2 dB/KT)
+    #     '''
+    #
+    #
+    #     return noise + (30 if cavitating else 0) + random.gauss(0, 0.4)
 
-        # cavitation doesn't occur with spd < 7
-        max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
-        cavitating = max_speed_for_deep < self.speed
 
-        self.cavitation = cavitating
-
-        return noise + (30 if cavitating else 0) + random.gauss(0, 0.4)
-
-
-    def _self_noise(self):  # returns
+    def self_noise(self,freq):  # returns
         #
         """
         Assumes the noise is proportional to speed
@@ -106,16 +111,27 @@ class Submarine(MovableNewtonObject):
         else:
             noise = self.NOISE_RANGE2(self.speed)
 
-        # cavitation doesn't occur with spd < 7
-        max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
-        cavitating = max_speed_for_deep < self.speed
+        # # cavitation doesn't occur with spd < 7
+        # max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
+        # cavitating = max_speed_for_deep < self.speed
+        #
+        # if cavitating and not self.cavitation:
+        #     self.add_message("SONAR", "COMM, SONAR: CAVITATING !!!", True)
+        #
+        # self.cavitation = cavitating
+        #
+        # return db(noise + (100 if cavitating else 0) + random.gauss(0, 0.4))
 
-        if cavitating and not self.cavitation:
-            self.add_message("SONAR", "COMM, SONAR: CAVITATING !!!", True)
+        logfreq = math.log10(freq)
+        base = []
 
-        self.cavitation = cavitating
+        if freq <= 100:
+            base.append(noise)
 
-        return db(noise + (100 if cavitating else 0) + random.gauss(0, 0.4))
+        if freq > 100:
+            base.append(noise - 20 * math.log10(freq/100))
+
+        return sum_of_decibels(base) + random.gauss(0, 1)
 
 
     def turn(self, time_elapsed):

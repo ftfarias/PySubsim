@@ -3,7 +3,7 @@ import collections
 import math
 import random
 import unittest
-from sound import sum_of_decibels
+from sound.sound import sum_of_decibels
 import copy
 
 def angles(num_angles):

@@ -10,7 +10,6 @@ class Reading(object):
         self.stn = stn
         self.sources = sources
 
-
 class Contact:
     NEW = 'New'
     TRACKING = 'Tracking'

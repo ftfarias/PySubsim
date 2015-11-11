@@ -3,7 +3,7 @@ import curses
 import locale
 import time
 import sys
-
+from util import angles_to_unicode
 
 
 
@@ -13,7 +13,7 @@ class GameCoursesInterface(object):
     def __init__(self, sea, player_sub):
         self.player_sub = player_sub
         self.sea = sea
-        self.time_rate = 10  # 10 times faster
+        self.time_rate = 1  # 1 time(s) faster
         self.update_rate = 0.1  # updates every 0.1 second
         self.display_screen = ''
 
@@ -49,25 +49,14 @@ class GameCoursesInterface(object):
         self.screen.addstr(8, 0, text)
         self.screen.clrtoeol()
 
-    def draw_screen(self):
-        s = self.screen
-        nav = self.player_sub.nav
-
-        if self.display_screen == 'n':
-            self.screen.addstr(3, 0, 'Current position: {}'.format(nav))
-        else:
-            self.screen.addstr(3, 0, 'n - navigation')
-            self.screen.addstr(4, 0, 's - sonar')
-            self.screen.addstr(5, 0, 'r - radar')
-            self.screen.addstr(6, 0, 'w - weapons')
-
-        # s.border(0)
 
     def update_time(self):
         self.sea.turn(self.time_rate * self.update_rate / 3600)  # sea turn runs in hours
 
     def update_screen(self):
         s = self.screen
+        nav = self.player_sub.nav
+
         s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
         s.clrtoeol()
 
@@ -75,7 +64,18 @@ class GameCoursesInterface(object):
                                                                         deep=self.player_sub.actual_deep,
                                                                         sdeep=self.player_sub.set_deep))
         s.clrtoeol()
-        self.draw_screen()
+
+        if self.display_screen == 'n':
+            self.screen.addstr(3, 0, 'Current position: {}'.format(nav))
+            self.screen.addstr(3, 0, 'Current position: {}'.format(nav))
+
+            angles_to_unicode
+        else:
+            self.screen.addstr(3, 0, 'n - navigation')
+            self.screen.addstr(4, 0, 's - sonar')
+            self.screen.addstr(5, 0, 'r - radar')
+            self.screen.addstr(6, 0, 'w - weapons')
+
         s.refresh()
 
     def parse_coordinates(self, text):
@@ -130,7 +130,7 @@ class GameCoursesInterface(object):
             k = s.getch()
             if k != curses.ERR:
                 # curses.flash()
-                s.addstr(0, 0, chr(k))
+                # s.addstr(0, 0, chr(k))
                 if k == ord('q'):
                     break
                 elif k == ord(' '):
@@ -159,7 +159,7 @@ class GameCoursesInterface(object):
         # ends and closes interface
         curses.nocbreak()
         s.keypad(0)
-        curses.echo()
+        curses.echo(1)
         curses.endwin()
 
 

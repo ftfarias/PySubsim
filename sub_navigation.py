@@ -15,6 +15,9 @@ class Navigation(SubModule):
         self.MAX_SPEED = MAX_SPEED
 
 
+    def set_manual(self):
+        self.destination = None
+
     def stop_all(self):
         self.set_speed(0)
 
@@ -99,12 +102,12 @@ class Navigation(SubModule):
 
             sub.set_sub_rudder(angle_difference*60 * 2)
 
-            dist_to_destination = current_pos.distance_to(self.destination)
-            if dist_to_destination < 0.01:
-                self.add_message("Destination arrived at "+str(self.destination))
-                if not self.waypoints.empty():
-                    self.destination = self.waypoints.get()
-                    self.waypoints.task_done()
-                else:
-                    self.destination = None
-                    self.speed = 0
+            # dist_to_destination = current_pos.distance_to(self.destination)
+            # if dist_to_destination < 0.01:
+            #     self.add_message("Destination arrived at "+str(self.destination))
+            #     if not self.waypoints.empty():
+            #         self.destination = self.waypoints.get()
+            #         self.waypoints.task_done()
+            #     else:
+            #         self.destination = None
+            #         self.speed = 0

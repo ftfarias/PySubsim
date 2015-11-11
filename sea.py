@@ -2,11 +2,11 @@
 import unittest
 import logging
 import datetime
+import cmath as math
 
 from sea_object import *
 from util import feet_to_meters, knots_to_meters
-from linear_scale import linear_scaler
-import sound
+from sound import sound
 
 
 logger = logging.getLogger("subsim")
@@ -49,16 +49,44 @@ class Sea:
         self.objects = {}
         self.ids_collection = range(1000, 9999)
         random.shuffle(self.ids_collection)
-        self.conditions = 'Calm'
-        # background_noise_factor should be 1 < background_noise_factor < 1.75
-        self.background_noise_factor = 1.2
+
         # limits below because sound absortion formula
-        self.temperature = random.randint(-60, 150) / 10.0  # Celsius, -6 < T < 35
+        self.temperature = random.randint(-60, 150) / 10.0  # Celsius, -6.0 < T < 15.0
         self.salinity = float(random.randint(30, 35))  # 5 < S < 50 ppt
         self.ph = 1.0 * random.randint(77, 83) / 10  # 7.7 < pH < 8.3
 
+        self.sea_state = random.randrange(0, 7)  # 0 to 6, based in Beaufort Force table
+        self.shipping_state_noise = random.randrange(65, 90)  # reference value in DB for shipping noise
+
+
     def initialize(self):
         pass
+
+    def sea_state_description(self):
+        # http://www.usna.edu/Users/physics/ejtuchol/documents/SP411/Chapter11.pdf
+        description = {
+            0: 'Calm',
+            1: 'Light Air',
+            2: 'Light Breeze',
+            3: 'Gentle Breeze',
+            4: 'Moderate Breeze',
+            5: 'Fresh Breeze',
+            6: 'Strong Breeze'
+        }
+        return description[self.sea_state]
+
+    def sea_state_noise_level_1k(self):
+        # http://www.usna.edu/Users/physics/ejtuchol/documents/SP411/Chapter11.pdf
+        db_1k = {
+            0: 44.5,
+            1: 50.0,
+            2: 55.0,
+            3: 61.5,
+            4: 64.5,
+            5: 66.5,
+            6: 68.5
+        }
+        return db_1k[self.sea_state]
 
     def get_unique_id(self):
         return self.ids_collection.pop()
@@ -75,7 +103,7 @@ class Sea:
 
     # def background_noise_for_freq_min_max(self, freq):
     # # using Wenz (1962)
-    #     # http://www.dosits.org/science/soundsinthesea/commonsounds
+    # # http://www.dosits.org/science/soundsinthesea/commonsounds
     #     # Min and Max values done by linear aproximation
     #     logfreq = math.log10(freq)
     #
@@ -98,20 +126,106 @@ class Sea:
     #     return min_value, max_value
 
 
-    background_noise_scaler = linear_scaler([0, 4], [80, 20])
 
     def background_noise_for_freq(self, freq):
         # using Wenz (1962)
         # http://www.dosits.org/science/soundsinthesea/commonsounds
         # Min and Max values done by linear aproximation
+        # see also
         logfreq = math.log10(freq)
-        base_value = self.background_noise_scaler(logfreq)
+        base = []
 
-        # background_noise_factor should be 1 < background_noise_factor < 1.75
+        '''
+        All curves ajusted in the ipython notebook sound_sea.ipynb
 
-        value = (base_value * self.background_noise_factor) + random.gauss(0, 2)
+        logfreq = 0 = 1 Hz        = 1 Hz
+        logfreq = 1 = 10 Hz       = 10 Hz
+        logfreq = 2 = 100 Hz      = 100 Hz
+        logfreq = 3 = 1.000 Hz    = 1 kHz
+        logfreq = 4 = 10.000 Hz   = 10 kHz
+        logfreq = 5 = 100.000 Hz  = 100 kHz
+
+        ############################################################################
+
+        < 10 Hz:
+
+        The starting frequency of 10 Hz is motivated more by
+        simplicity and need to limit the scope of this discussion. The
+        infrasonic band of < 10 Hz is also more strongly influenced
+        by shallow water waveguide effects that establish a cutoff fre-
+        quency for effective sound propagation. 1 However, it is
+        worth noting here that in pelagic, open waters, the general
+        trend for frequency dependence and spectral level within the
+        nominal 1–10-Hz band is reasonably described by the Holu
+        Spectrum (observed to apply between 0.4 Hz and 6 Hz), from
+        the Hawaiian word for deep ocean, 13 and which is shown for
+        reference in Fig. 2. Ambient noise in this spectral band is
+        associated with the dynamics of ocean surface waves. Shorter
+        wavelength ocean waves exhibit a saturation beyond which
+        they no longer increase in waveheight, and this is mirrored in
+        the Holu Spectrum insofar as the spectral density remains
+        roughly constant for a given frequency.
+
+        ############################################################################
+        '''
+        if freq < 50:
+            base.append(120 - 60 * logfreq)
+
+        '''
+        100-1000 Hz – Noise in this band is dominated by shipping (decreasing intensity with frequency
+        increases). A significant contribution is also from sea surface agitation. Urick (1986) developed
+        a model for predicting this shipping noise:
+        '''
+        a = 20.0
+        h = 1.5  # centre of the parabole, and max value of the curve
+        if 1 < freq < 10000:
+            v = self.shipping_state_noise - (a * ((logfreq - h) ** 2))
+            base.append(v)
+
+        '''
+        1-100 kHz – Sea surface agitiation is now the dominant factor, unless marine mammals or rain is
+        present. Knudsen (1948) presented a model to predict this contribution:
+
+        Rain - TO DO
+                Rain drops impacting sea surface and implosion of air bubbles caused by rain, f =
+                1-100 kHz, max SL @ 20 kHz, SL can be up to 30 dB above sea surface noise
+        '''
+        a = 50.0
+        h = 2.7  # centre of the parabole, and max value of the curve
+        if 50 < freq <= 1000:  # 100 - 1000
+            v = self.sea_state_noise_level_1k() - (a * ((logfreq - h) ** 2))
+            base.append(v)
+
+        if 1000 < freq < 1000000:  # 100 - 1000
+            noise_1khz = self.sea_state_noise_level_1k() - (a * ((3 - h) ** 2)) # extends the parabole, with the same value
+            base.append(noise_1khz - (17.0 * (logfreq-3)))
+
+        '''
+        > 100 kHz:
+
+        The ending frequency of 100,000 Hz (100 kHz) is large-
+        ly set by thermal noise generated by the random motion of
+        water molecules. Thermal noise ultimately establishes the
+        lower limit of measurability of pressure fluctuations associat-
+        ed with truly propagating sound waves, and is also shown for
+        reference in Fig. 2.
+
+        '''
+
+        if freq > 1000:
+            base.append(-75 + 20 * logfreq)
+
+        '''
+            Shalow x Deep Water - TO DO
+        '''
+        value = sound.sum_of_decibels(base) + random.gauss(0, 1)
 
         return value
+
+    # #################################################################################################################
+    #
+    # http://www.usna.edu/Users/physics/ejtuchol/documents/SP411/Chapter11.pdf
+    # #################################################################################################################
 
     def sound_absortion_by_sea(self, freq, deep, temperature, salinity, pH):
         """
@@ -237,9 +351,9 @@ class Sea:
                 signal = band[1]
                 noise = band[2]
                 stn = signal - noise - sonar.detection_threshold
-                if stn > 0:
-                    total_detected_signal_to_noise += stn
-                    detected_bands[freq] = stn
+                # if stn > 0:
+                #     total_detected_signal_to_noise += stn
+                #     detected_bands[freq] = stn
 
             logger.debug("total_detected_signal_to_noise : {0}".format(total_detected_signal_to_noise))
 
