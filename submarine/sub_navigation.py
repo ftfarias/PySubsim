@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from sub_module import SubModule
-from util import abs_angle_to_bearing, normalize_angle360, limits
 import math
 import Queue
+
+from submarine.sub_module import SubModule
+from util import abs_angle_to_bearing, normalize_angle360, limits
+
 
 class Navigation(SubModule):
     def __init__(self, sub, MAX_SPEED=30):

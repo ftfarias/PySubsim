@@ -1,4 +1,14 @@
-class Reading(object):
+import math
+from sub_module import SubModule
+from .physic import Point
+from .util import abs_angle_to_bearing
+
+tma_sources = {
+    "sonar":{ "name":"Sonar" },
+    "radar":{ "name":"Radar" }
+}
+
+class TmaReading(object):
     def __init__(self, time, bearing, distance, pos, course, speed, deep, stn, sources):
         self.time = time
         self.bearing = bearing
@@ -102,3 +112,9 @@ class Contact:
             format(ident=self.id, ty=obj_type, bearing=bearing, range=range_str,
                    course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
                    snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
+
+
+class TMA(SubModule):
+    def __init__(self, sub):
+        SubModule.__init__(self, sub)
+        self.module_name = "TMA"

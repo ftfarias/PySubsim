@@ -66,10 +66,9 @@ class GameCoursesInterface(object):
         s.clrtoeol()
 
         if self.display_screen == 'n':
-            self.screen.addstr(3, 0, 'Current position: {}'.format(nav))
-            self.screen.addstr(3, 0, 'Current position: {}'.format(nav))
-
-            angles_to_unicode
+            self.screen.addstr(3, 0, 'Current position: {nav}{nav1}'.format(nav=nav.pos, nav1=angles_to_unicode(nav.course)))
+            self.screen.addstr(4, 0, 'Current course  : {}'.format(nav.get))
+            self.screen.addstr(5, 0, 'Current speed   : {}'.format(nav))
         else:
             self.screen.addstr(3, 0, 'n - navigation')
             self.screen.addstr(4, 0, 's - sonar')

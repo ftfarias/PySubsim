@@ -1,183 +1,22 @@
 # -*- coding: utf-8 -*-
 import math
-from util import normalize_angle360, abs_angle_to_bearing, limits
 import random
 import unittest
+from point import Point
 
-
-class Point(object):
-    """ Point class represents and manipulates x,y coords. """
-
-    def __init__(self, x=0, y=0):
-        """ Create a new point at x, y """
-        self.x = float(x)
-        self.y = float(y)
-
-    def __str__(self):
-        return "({0:.3f}, {1:.3f})".format(self.x, self.y)
-
-    def __repr__(self):
-        return "Point(x={0}, y={1})".format(self.x, self.y)
-
-    def format(self, format_string="({x:.3f}, {y:.3f})"):
-        return format_string.format(x=self.x, y=self.y)
-
-    def __add__(a, b):
-        if isinstance(b, Point):
-            return Point(a.x + b.x, a.y + b.y)
-        elif hasattr(b, "__getitem__"):
-            return Point(a.x + b[0], a.y + b[1])
-        else:
-            return Point(a.x + b, a.y + b)
-
-    def __sub__(a, b):
-        if isinstance(b, Point):
-            return Point(a.x - b.x, a.y - b.y)
-        elif hasattr(b, "__getitem__"):
-            return Point(a.x - b[0], a.y - b[1])
-        else:
-            return Point(a.x - b, a.y - b)
-
-    def __mul__(a, b):
-        if isinstance(b, Point):
-            return Point(a.x * b.x, a.y * b.y)
-        elif hasattr(b, "__getitem__"):
-            return Point(a.x * b[0], a.y * b[1])
-        else:
-            return Point(a.x * b, a.y * b)
-
-    __rmul__ = __mul__
-
-    def __imul__(self, b):
-        if isinstance(b, Point):
-            self.x *= b.x
-            self.y *= b.y
-        elif (hasattr(b, "__getitem__")):
-            self.x *= b[0]
-            self.y *= b[1]
-        else:
-            self.x *= b
-            self.y *= b
-        return self
-
-
-    def __div__(a, b):
-        if isinstance(b, Point):
-            return Point(a.x / b.x, a.y / b.y)
-        else:
-            return Point(a.x / b, a.y / b)
-
-    def __eq__(a,b):
-        return a.x == b.x and a.y == b.y
-
-    def distance_to(self, other):
-        """ Compute my distance """
-        p = self - other
-        return math.hypot(p.x, p.y)
-
-    def distance2_to(self, other):
-        """
-        Distance using only x and y
-        :param other:
-        :return: Distance using only x and y
-        """
-        p = self - other
-        return math.hypot(p.x, p.y)
-
-    def add_gaussian_noise(self, x, y=None):
-        if y is None:
-            y = x
-        n_x = self.x + random.gauss(0, x)
-        n_y = self.y + random.gauss(0, y)
-        return Point(n_x, n_y)
-
-    def movement_to(self, other):
-        angle = other.angle_to(self)
-        return Point(math.cos(angle),math.sin(angle))
-
-    def get_length_sqrd(self):
-        return self.x**2 + self.y**2
-
-    def get_length(self):
-        return math.sqrt(self.x**2 + self.y**2)
-
-    def set_length(self, value):
-        length = self.get_length()
-        if length == 0:
-            self.x = value
-            self.y = 0
-        else:
-            self.x *= value/length
-            self.y *= value/length
-
-    length = property(get_length, set_length, None, "gets or sets the magnitude of the vector")
-
-    def rotate(self, radians):
-        cos = math.cos(radians)
-        sin = math.sin(radians)
-        x = self.x*cos - self.y*sin
-        y = self.x*sin + self.y*cos
-        self.x = x
-        self.y = y
-
-    def rotated(self, radians):
-        cos = math.cos(radians)
-        sin = math.sin(radians)
-        x = self.x*cos - self.y*sin
-        y = self.x*sin + self.y*cos
-        return Point(x, y)
-
-    def angle_to(self, other):
-        p = other - self
-        if p.get_length_sqrd() == 0:
-            return 0
-        return math.atan2(p.y, p.x)
-
-
-    def bearing_to(self, other):
-        p = other - self
-        if p.get_length_sqrd() == 0:
-            return 0
-        return normalize_angle360(math.atan2(1.0*p.y, p.x)+(math.pi/2))
-        #return round(math.degrees(normalize_angle360(math.atan2(p.y, p.x)+(math.pi/2))))
-
-    def get_angle(self):
-        if self.get_length_sqrd() == 0:
-            return 0
-        return math.atan2(self.y, self.x)
-
-    def _setangle(self, radians):
-        self.x = self.length
-        self.y = 0
-        self.rotate(radians)
-
-    angle = property(get_angle, _setangle, None, "gets or sets the angle of a vector")
-
-    def dot(self, other):
-        return float(self.x*other[0] + self.y*other[1])
-
-    def __getstate__(self):
-        return [self.x, self.y]
-
-    def __setstate__(self, dict):
-        self.x, self.y = dict
-
+from util import normalize_angle360, abs_angle_to_bearing, limits
 
 class MovableNewtonObject(object):
-    def __init__(self, max_speed, max_turn_rate_hour):
+    def __init__(self):
         self.pos = Point(0, 0)
         self.vel = Point(0, 0)
         self.accel = Point(0, 0)
         self.friction = 0
-        self._rudder = 0  # rudder in radians por minute
-        self.MAX_TURN_RATE_HOUR = max_turn_rate_hour
-        self.MAX_SPEED = max_speed
 
     def get_speed(self):
         return self.vel.length
 
     def _set_speed(self, value):
-        value = limits(value, -self.MAX_SPEED, self.MAX_SPEED)
         self.vel.length = value
 
     speed = property(get_speed, _set_speed, None, "Speed")
@@ -194,7 +33,7 @@ class MovableNewtonObject(object):
         return self.vel.angle
 
     def new_course(self, angle):
-        self.vel.angle = normalize_angle360(angle)
+        self.vel.angle = angle
         self.accel.angle = self.vel.angle  # assumes the rotation also changes the acceleration
 
     course = property(get_course, new_course, "Course")
@@ -202,38 +41,17 @@ class MovableNewtonObject(object):
     def set_speed(self, new_speed):
         self.nav.speed = new_speed
 
-    def get_rudder(self):
-        return self._rudder
-
-    def set_rudder(self, angle):
-        angle = limits(angle, -self.MAX_TURN_RATE_HOUR, self.MAX_TURN_RATE_HOUR)
-        self._rudder = angle
-
-    rudder = property(get_rudder, set_rudder, "Rudder")
-
-    def rudder_right(self):
-        self.rudder = self.MAX_TURN_RATE_HOUR
-
-    def rudder_left(self):
-        self.rudder = -self.MAX_TURN_RATE_HOUR
-
-    def rudder_center(self):
-        self.rudder = 0
-
     # Destination
 
-    def set_destination(self, dest, speed):
-        assert isinstance(dest, Point)
-        self.vel = self.pos.movement_to(dest) * speed
+    def set_destination(self, destination, speed):
+        assert isinstance(destination, Point)
+        self.vel = self.pos.movement_to(destination) * speed
 
     def set_destination(self, dest):
         self.set_destination(dest, self.speed)
 
     def rotate(self, angle):
-        #print(self.course)
         self.course = normalize_angle360(self.course + angle)
-        #print(self.course)
-        #self.vel.rotate(self.course)
 
     def get_pos(self):
         return self.pos
@@ -246,85 +64,85 @@ class MovableNewtonObject(object):
         self.pos += self.vel * time_elapsed
 
     def __str__(self):
-        return "pos:{p}  vel:{v}(r={vt:.1f};{va:.0f}˚)  accel:{a}(r={at:.1f};{aa:.0f}˚)  course:{c:.1f}, rudder:{rudder}".format(p=self.pos,
-                                                                v=self.vel,
-                                                                vt=self.speed,
-                                                                va=abs_angle_to_bearing(self.vel.angle),
-                                                                a=self.accel,
-                                                                at=self.acceleration,
-                                                                aa=abs_angle_to_bearing(self.accel.angle),
-                                                                c=abs_angle_to_bearing(self.course),
-                                                                rudder=abs_angle_to_bearing(self.rudder))
+        return "pos:{p}  vel:{v}(r={vt:.1f};{va:.0f}˚)  accel:{a}(r={at:.1f};{aa:.0f}˚)  course:{c:.1f}, rudder:{rudder}".format(
+            p=self.pos,
+            v=self.vel,
+            vt=self.speed,
+            va=abs_angle_to_bearing(self.vel.angle),
+            a=self.accel,
+            at=self.acceleration,
+            aa=abs_angle_to_bearing(self.accel.angle),
+            c=abs_angle_to_bearing(self.course),
+            rudder=abs_angle_to_bearing(self.rudder))
 
 
 class TestUtil(unittest.TestCase):
-
     def setUp(self):
         self.p1 = Point(1, 2)
         self.p2 = Point(3, 4)
 
     def test_equal(self):
-        self.assertEqual(Point(4,6), Point(4,6))
+        self.assertEqual(Point(4, 6), Point(4, 6))
 
     def test_equal2(self):
         self.assertEqual(Point(4.0, 6.0), Point(4, 6))
 
     def test_add(self):
-        self.assertEqual(self.p1+self.p2, Point(4,6))
+        self.assertEqual(self.p1 + self.p2, Point(4, 6))
 
     def test_sub(self):
-        self.assertEqual(self.p1-self.p2, Point(-2,-2))
+        self.assertEqual(self.p1 - self.p2, Point(-2, -2))
 
     def test_mul(self):
-        self.assertEqual(self.p1 * 10, Point(10,20))
-        self.assertEqual(self.p2 * 10, Point(30,40))
+        self.assertEqual(self.p1 * 10, Point(10, 20))
+        self.assertEqual(self.p2 * 10, Point(30, 40))
 
     def test_mu2(self):
-        self.assertEqual(self.p1 * Point(3,5), Point(3,10))
-        self.assertEqual(self.p2 * Point(5,3), Point(15,12))
+        self.assertEqual(self.p1 * Point(3, 5), Point(3, 10))
+        self.assertEqual(self.p2 * Point(5, 3), Point(15, 12))
 
     def test_distance(self):
-        self.assertEqual(Point(0,0).distance_to(Point(3,4)), 5)
-        self.assertEqual(Point(4,3).distance_to(Point(0,0)), 5)
+        self.assertEqual(Point(0, 0).distance_to(Point(3, 4)), 5)
+        self.assertEqual(Point(4, 3).distance_to(Point(0, 0)), 5)
 
     def test_angle_to(self):
-        p1 = Point(0,0)
-        p2 = Point(-5,0) # Left
+        p1 = Point(0, 0)
+        p2 = Point(-5, 0)  # Left
         self.assertEqual(p1.angle_to(p2), 0)
 
-        p1 = Point(0,0)
-        p2 = Point(0,-1) # top
-        self.assertEqual(p1.angle_to(p2), math.pi/2)
+        p1 = Point(0, 0)
+        p2 = Point(0, -1)  # top
+        self.assertEqual(p1.angle_to(p2), math.pi / 2)
 
-        p1 = Point(0,0)
-        p2 = Point(5,0) # right
+        p1 = Point(0, 0)
+        p2 = Point(5, 0)  # right
         self.assertEqual(p1.angle_to(p2), math.pi)
 
-        p1 = Point(0,0)
-        p2 = Point(0,1) # bottom
-        self.assertEqual(p1.angle_to(p2), -1.0*math.pi/2)
+        p1 = Point(0, 0)
+        p2 = Point(0, 1)  # bottom
+        self.assertEqual(p1.angle_to(p2), -1.0 * math.pi / 2)
 
     def test_movement_to1(self):
-        p1 = Point(0,0)
-        p2 = Point(-5,0)
+        p1 = Point(0, 0)
+        p2 = Point(-5, 0)
         self.assertAlmostEqual(p1.movement_to(p2).x, -1.000)
         self.assertAlmostEqual(p1.movement_to(p2).y, 0.000)
 
     def test_movement_to2(self):
-        p1 = Point(0,0)
-        p2 = Point(5,0)
+        p1 = Point(0, 0)
+        p2 = Point(5, 0)
         self.assertAlmostEqual(p1.movement_to(p2).x, 1.000)
         self.assertAlmostEqual(p1.movement_to(p2).y, 0.000)
 
     def test_movement_to3(self):
-        p1 = Point(1,1)
-        p2 = Point(1,5)
+        p1 = Point(1, 1)
+        p2 = Point(1, 5)
         self.assertAlmostEqual(p1.movement_to(p2).x, 0.000)
         self.assertAlmostEqual(p1.movement_to(p2).y, 1.000)
 
     def test_movement_to4(self):
-        p1 = Point(10,10)
-        p2 = Point(10,5)
+        p1 = Point(10, 10)
+        p2 = Point(10, 5)
         self.assertAlmostEqual(p1.movement_to(p2).x, 0.000)
         self.assertAlmostEqual(p1.movement_to(p2).y, -1.000)
 
@@ -365,6 +183,7 @@ class TestUtil(unittest.TestCase):
         m1 = MovableNewtonObject()
         m1.vel = Point(6, 8)
         self.assertEqual(m1.speed, 10)
+
 
 if __name__ == '__main__':
     unittest.main()

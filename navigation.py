@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from sub_module import SubModule
-from util import abs_angle_to_bearing, normalize_angle360, limits
 import math
-from physic import MovableNewtonObject
 import Queue
+
+from submarine.sub_module import SubModule
+from util import abs_angle_to_bearing, normalize_angle360, limits
+from physic import MovableNewtonObject
+
 
 class Navigation(object):
     def __init__(self, movable, MAX_SPEED=30):
@@ -16,7 +18,7 @@ class Navigation(object):
         self.waypoints = Queue.Queue()
         self.MAX_SPEED = MAX_SPEED
 
-    def stop_all(self):
+    def all_stop(self):
         self.set_speed(0)
 
     def set_destination(self, destination):

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from sub_module import SubModule
+from submarine.sub_module import SubModule
 from util import abs_angle_to_bearing, Bands, Deployable
 from linear_scale import linear_scaler_with_limit
 from physic import Point
 # from sub import Submarine
 import util
 import math
-import sound
 # class SonarReading(object):
 # def __init__(self, time, bearing, distance, pos, course, speed, deep, stn, sources):
 

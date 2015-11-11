@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-import cmath as math
+import math
 import random
 
 from physic import MovableNewtonObject
-from sub_module import SubModule
+from submarine.sub_module import SubModule
 from sonar import Sonar
 from linear_scale import linear_scaler
 from navigation import Navigation
 from sound.sound import sum_of_decibels
+
 
 class Submarine(MovableNewtonObject):
     MAX_TURN_RATE_HOUR = math.radians(35) * 60  # max 35 degrees per minute
@@ -15,7 +16,7 @@ class Submarine(MovableNewtonObject):
     MAX_SPEED = 35
 
     def __init__(self, sea):
-        MovableNewtonObject.__init__(self, self.MAX_SPEED, self.MAX_TURN_RATE_HOUR)
+        MovableNewtonObject.__init__(self)
         self.kind = '688'
         self.messages = []
         self.sea = sea
@@ -25,7 +26,6 @@ class Submarine(MovableNewtonObject):
         self.actual_deep = 60  # feet
         self.set_deep = 60  # feet
         self.message_stop = False
-        self.cavitation = False
 
         # build ship
         self.nav = Navigation(self)
@@ -42,12 +42,49 @@ class Submarine(MovableNewtonObject):
     def get_messages(self):
         return self.messages, self.message_stop
 
+    def is_cavitating(self):
+        """
+        Assumes the noise is proportional to speed
+
+        Cavitation:
+
+        Cavitation occurs when the propeller is spinning so fast water bubbles at
+        the blades' edges. If you want to go faster, go deeper first. Water
+        pressure at deeper depth reduces/eliminates cavitation.
+
+        If you have the improved propeller upgrade, you can go about 25% faster
+        without causing cavitation.
+
+        Rule of thumb: number of feet down, divide by 10, subtract 1, is the
+        fastest speed you can go without cavitation.
+
+        For example, at 150 feet, you can go 14 knots without causing cavitation.
+        150/10 = 15, 15-1 = 14.
+
+        You can get the exact chart at the Marauders' website. (url's at the end of
+          the document)
+
+        # cavitation doesn't occur with spd < 7
+        max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
+        cavitating = max_speed_for_deep < self.speed
+
+        if cavitating and not self.cavitation:
+            self.add_message("SONAR", "COMM, SONAR: CAVITATING !!!", True)
+
+        self.cavitation = cavitating
+
+        :return: sound in in decibels
+
+        """
+        max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
+        return max_speed_for_deep < self.speed
+
     def clear_messages(self):
         self.messages = []
         self.message_stop = False
 
-    def stop_moving(self):
-        self.nav.stop_all()
+    def all_stop(self):
+        self.nav.all_stop()
 
     def periscope_deep(self):
         self.set_deep(60)
@@ -80,50 +117,23 @@ class Submarine(MovableNewtonObject):
     #     return noise + (30 if cavitating else 0) + random.gauss(0, 0.4)
 
 
-    def self_noise(self,freq):  # returns
-        #
+    def self_noise(self, freq):  # returns
         """
-        Assumes the noise is proportional to speed
-
-        Cavitation:
-
-        Cavitation occurs when the propeller is spinning so fast water bubbles at
-        the blades' edges. If you want to go faster, go deeper first. Water
-        pressure at deeper depth reduces/eliminates cavitation.
-
-        If you have the improved propeller upgrade, you can go about 25% faster
-        without causing cavitation.
-
-        Rule of thumb: number of feet down, divide by 10, subtract 1, is the
-        fastest speed you can go without cavitation.
-
-        For example, at 150 feet, you can go 14 knots without causing cavitation.
-        150/10 = 15, 15-1 = 14.
-
-        You can get the exact chart at the Marauders' website. (url's at the end of
-          the document)
-
-
         :return: sound in in decibels
         """
+
         if self.speed <= 15:
             noise = self.NOISE_RANGE1(self.speed)
         else:
             noise = self.NOISE_RANGE2(self.speed)
 
-        # # cavitation doesn't occur with spd < 7
-        # max_speed_for_deep = max((self.actual_deep / 10) - 1, 7)
-        # cavitating = max_speed_for_deep < self.speed
-        #
-        # if cavitating and not self.cavitation:
-        #     self.add_message("SONAR", "COMM, SONAR: CAVITATING !!!", True)
-        #
-        # self.cavitation = cavitating
-        #
-        # return db(noise + (100 if cavitating else 0) + random.gauss(0, 0.4))
 
         logfreq = math.log10(freq)
-        base = []
+        if self.is_cavitating():
+            base = [0]
+        else:
+            base = [150]
+
 
         if freq <= 100:
             base.append(noise)
@@ -151,12 +161,6 @@ class Submarine(MovableNewtonObject):
     def __str__(self):
         return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status=MovableNewtonObject.__str__(self),
                                                                       deep=self.actual_deep, sdeep=self.set_deep)
-
-
-class TMA(SubModule):
-    def __init__(self, sub):
-        SubModule.__init__(self, sub)
-        self.module_name = "TMA"
 
 
 class Weapon(SubModule):

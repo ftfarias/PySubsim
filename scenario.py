@@ -3,7 +3,7 @@ import random
 
 import sea
 from sea_object import Whale, Buoy
-from sub import Submarine
+from submarine.sub import Submarine
 from physic import Point
 from util import Bands
 

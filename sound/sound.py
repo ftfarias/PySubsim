@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import cmath as math
+import math
 import random
 from itertools import count
 import unittest
