@@ -37,8 +37,8 @@ def angles_to_unicode(angle):
 def shift(l, n):
     return l[n:] + l[:n]
 
-def normalize_angle360(angle):
-    # return the angle between 0 and 360 (in radians)
+def normalize_angle_2pi(angle):
+    # return the angle between 0 and 2*pi (in radians)
     while angle < 0:
         angle += 2 * math.pi
     while angle >= 2 * math.pi:
@@ -58,7 +58,7 @@ def normalize_angle180(angle):
 def abs_angle_to_bearing(angle):
     # return round(math.degrees(normalize_angle360(angle - (math.pi/2))))
     #return round(math.degrees(angle))
-    return round(math.degrees(normalize_angle360(angle)))
+    return round(math.degrees(normalize_angle_2pi(angle)))
 
 
 def limits(value, min, max):

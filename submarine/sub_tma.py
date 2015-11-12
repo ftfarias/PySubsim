@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 import math
+
 from sub_module import SubModule
-from .physic import Point
-from .util import abs_angle_to_bearing
+from util.physic import Point
 
 tma_sources = {
     "sonar":{ "name":"Sonar" },
@@ -37,7 +38,7 @@ class Contact:
         self.blade_number = None  # Number of blades in the propeller
         self.blade_frequence = None  # Turns for second of the propeller
         self.knots_per_turn = 0
-        self.bands = Bands()
+        #self.bands = Bands()
 
     def last_reading(self):
         return self.history[-1]
@@ -98,20 +99,20 @@ class Contact:
 
         self.stn_history.append(stn)
 
-    def __str__(self):
-        obj_type = self.obj_type if self.obj_type is not None else '<unknown>'
-        course = abs_angle_to_bearing(self.course()) if self.course() is not None else '-'
-        course_symbol = util.angles_to_unicode(
-            abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
-        range_str = round(self.range(), 1) if self.range() is not None else '-'
-        speed = round(self.speed()) if self.speed() is not None else '-'
-        name = self.name if self.name else '<no name>'
-        bearing = abs_angle_to_bearing(self.bearing())
-        bearing_symbol = util.angles_to_unicode(bearing)
-        return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>\t{name}". \
-            format(ident=self.id, ty=obj_type, bearing=bearing, range=range_str,
-                   course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
-                   snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
+    # def __str__(self):
+    #     obj_type = self.obj_type if self.obj_type is not None else '<unknown>'
+    #     course = abs_angle_to_bearing(self.course()) if self.course() is not None else '-'
+    #     course_symbol = util.angles_to_unicode(
+    #         abs_angle_to_bearing(self.course())) if self.course() is not None else '*'
+    #     range_str = round(self.range(), 1) if self.range() is not None else '-'
+    #     speed = round(self.speed()) if self.speed() is not None else '-'
+    #     name = self.name if self.name else '<no name>'
+    #     bearing = abs_angle_to_bearing(self.bearing())
+    #     bearing_symbol = util.angles_to_unicode(bearing)
+    #     return u"{ident:3} ({ty}) bearing {bearing:3.0f}{bs}  range {range:5.1f}  course {course:3.0f}{arrow}  speed {speed:4.1f}   stn {snt} \tpos:{pos}\t<{status}>\t{name}". \
+    #         format(ident=self.id, ty=obj_type, bearing=bearing, range=range_str,
+    #                course=course, speed=speed, pos=self.pos(), status=self.tracking_status,
+    #                snt=self.stn(), arrow=course_symbol, bs=bearing_symbol, name=name)
 
 
 class TMA(SubModule):

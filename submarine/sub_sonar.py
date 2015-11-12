@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from submarine.sub_module import SubModule
-from util import abs_angle_to_bearing, Bands, Deployable
+from util.util import abs_angle_to_bearing, Bands, Deployable
 from linear_scale import linear_scaler_with_limit
-from physic import Point
+from util.physic import Point
+from sub_module import SubModule
 # from sub import Submarine
-import util
 import math
 # class SonarReading(object):
 # def __init__(self, time, bearing, distance, pos, course, speed, deep, stn, sources):
@@ -235,7 +234,6 @@ class TowedArrayTB16(Deployable):
     def __str__(self):
         return "TB-16 {state}, {l} feet of {t} deployed ({perc:.0f}%)".format(
             state=self.state, l=self.deployed_size, t=self.total_size, perc=self.percent_deployed()*100)
-
 
 class Sonar(SubModule):
     MAX_WATERFALL_HISTORY_SECONDS = 2 * 3600  # two hours

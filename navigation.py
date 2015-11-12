@@ -2,9 +2,8 @@
 import math
 import Queue
 
-from submarine.sub_module import SubModule
-from util import abs_angle_to_bearing, normalize_angle360, limits
-from physic import MovableNewtonObject
+from util.util import normalize_angle_2pi, limits
+from util.physic import MovableNewtonObject
 
 
 class Navigation(object):
@@ -36,7 +35,7 @@ class Navigation(object):
         return self._course
 
     def _set_course(self, new_course):
-        self._course = normalize_angle360(new_course)
+        self._course = normalize_angle_2pi(new_course)
 
     course = property(get_course, _set_course, None, "gets or sets the desired course in radians")
 
@@ -56,8 +55,8 @@ class Navigation(object):
         return self.movable.get_pos()
 
     def status(self):
-        set_course = abs_angle_to_bearing(self.course)
-        actual_course = abs_angle_to_bearing(self.get_actual_course())
+        set_course = self.course.bearing
+        actual_course = (self.get_actual_course())
         set_speed = self.speed
         actual_speed = self.get_actual_speed()
         rudder_str = math.degrees(self.movable.rudder/60)

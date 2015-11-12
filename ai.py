@@ -1,6 +1,8 @@
 #from sub_navigation import Navigation
-from physic import Point
 import random
+
+from util.physic import Point
+
 
 class ArtificialInteligence(object):
     def __init__(self, sea_object):

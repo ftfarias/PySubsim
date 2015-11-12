@@ -5,7 +5,7 @@ import datetime
 import cmath as math
 
 from sea_object import *
-from util import feet_to_meters, knots_to_meters
+from util.util import feet_to_meters, knots_to_meters
 from sound import sound
 
 

@@ -2,19 +2,18 @@
 import math
 import Queue
 
-from submarine.sub_module import SubModule
-from util import abs_angle_to_bearing, normalize_angle360, limits
+from sub_module import SubModule
+from util.util import abs_angle_to_bearing, normalize_angle_2pi, limits
 
 
 class Navigation(SubModule):
-    def __init__(self, sub, MAX_SPEED=30):
+    def __init__(self, sub):
         self.module_name = "NAV"
         self.sub = sub
         self.destination = None
         self._speed = 0
         self._course = 0
         self.waypoints = Queue.Queue()
-        self.MAX_SPEED = MAX_SPEED
 
 
     def set_manual(self):
@@ -38,7 +37,7 @@ class Navigation(SubModule):
         return self._course
 
     def _set_course(self, new_course):
-        self._course = normalize_angle360(new_course)
+        self._course = normalize_angle_2pi(new_course)
 
     course = property(get_course, _set_course, None, "gets or sets the desired course")
 

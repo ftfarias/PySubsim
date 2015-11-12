@@ -140,7 +140,7 @@ class Point(object):
 
         return p.bearing()
 
-    def bearing(self):
+    def get_bearing(self):
         """Returns the angle in degrees from 0 to 359 and zero been (0,1) / "north" / 0 degrees bearing
         :param other: other object
         :returns: angle in radians
@@ -148,6 +148,8 @@ class Point(object):
         angle_deg = math.degrees(self.get_angle())
         # bearing1 = (angle_deg + 360) % 360
         return (90 - angle_deg) % 360
+
+    bearing = property(get_bearing, None, None, "gets or sets the bearing")
 
     def rotate(self, radians):
         cos = math.cos(radians)

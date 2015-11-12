@@ -2,21 +2,22 @@
 import math
 import random
 
-from physic import MovableNewtonObject
-from submarine.sub_module import SubModule
-from sonar import Sonar
+from ship import Ship
+from sub_sonar import Sonar
 from linear_scale import linear_scaler
-from navigation import Navigation
 from sound.sound import sum_of_decibels
+from sub_module import SubModule
+from sub_tma import TMA
+from sub_navigation import Navigation
 
 
-class Submarine(MovableNewtonObject):
+class Submarine(Ship):
     MAX_TURN_RATE_HOUR = math.radians(35) * 60  # max 35 degrees per minute
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
     MAX_SPEED = 35
 
     def __init__(self, sea):
-        MovableNewtonObject.__init__(self)
+        Ship.__init__(self, self.MAX_TURN_RATE_HOUR)
         self.kind = '688'
         self.messages = []
         self.sea = sea
@@ -145,7 +146,7 @@ class Submarine(MovableNewtonObject):
 
 
     def turn(self, time_elapsed):
-        MovableNewtonObject.turn(self, time_elapsed)
+        Ship.turn(self, time_elapsed)
         # deep
         deep_diff = self.set_deep - self.actual_deep
         if abs(deep_diff) > 0.1:
@@ -154,13 +155,16 @@ class Submarine(MovableNewtonObject):
 
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
-        self.sonar.turn(time_elapsed)
+        #self.sonar.turn(time_elapsed)
         self.tma.turn(time_elapsed)
         self.weapon.turn(time_elapsed)
 
     def __str__(self):
-        return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status=MovableNewtonObject.__str__(self),
+        return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status='',
                                                                       deep=self.actual_deep, sdeep=self.set_deep)
+
+
+
 
 
 class Weapon(SubModule):

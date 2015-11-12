@@ -1,8 +1,8 @@
-#from sub import Submarine
+
 
 class SubModule(object):
     def __init__(self, sub):
-        assert isinstance(sub, Submarine)
+        # assert isinstance(sub, Submarine)
         self.module_name = "<None>"
         self.sub = sub
 
@@ -14,5 +14,3 @@ class SubModule(object):
 
     def get_status(self):
         return "OK"
-
-

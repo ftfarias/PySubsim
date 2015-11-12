@@ -1,3 +1,4 @@
+from sub_module import SubModule
 
 class TorpedoTube(object):
     EMPTY = "empty"

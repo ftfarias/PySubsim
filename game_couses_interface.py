@@ -2,12 +2,10 @@
 import curses
 import locale
 import time
-import sys
-from util import angles_to_unicode
 
+from util.util import angles_to_unicode
+from util.physic import Point
 
-
-from physic import Point
 
 class GameCoursesInterface(object):
     def __init__(self, sea, player_sub):

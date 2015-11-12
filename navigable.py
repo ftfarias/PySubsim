@@ -1,5 +1,4 @@
-import math
-import physic
+from util import physic
 import util
 
 class navigable(object):

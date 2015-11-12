@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import random
-from util import Bands
-from physic import Point, MovableNewtonObject
-from navigation import Navigation
 import math
+
+from util.util import Bands
+from util.physic import Point, MovableNewtonObject
+from navigation import Navigation
 
 
 class SeaObject(object):
