@@ -9,15 +9,20 @@ from sound.sound import sum_of_decibels
 from sub_module import SubModule
 from sub_tma import TMA
 from sub_navigation import Navigation
+from sub_turbines import Turbine
 
 
 class Submarine(Ship):
     MAX_TURN_RATE_HOUR = math.radians(35) * 60  # max 35 degrees per minute
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
-    MAX_SPEED = 35
+    MAX_SPEED = 36.0 # Knots or nautical mile per hour
+    MAX_ACCELERATION = 2.0 * 3600 # max acceleraton 2 Knots / second
+    DRAG_FACTOR =  1.0 * MAX_ACCELERATION / (MAX_SPEED**2)
+    # DRAG_FACTOR = 0.000771604938272
+
 
     def __init__(self, sea):
-        Ship.__init__(self, self.MAX_TURN_RATE_HOUR)
+        Ship.__init__(self, self.DRAG_FACTOR, self.MAX_TURN_RATE_HOUR)
         self.kind = '688'
         self.messages = []
         self.sea = sea
@@ -29,11 +34,15 @@ class Submarine(Ship):
         self.message_stop = False
 
         # build ship
+
+        # turbines 35,000 hp (26 MW), 1 auxiliary motor 325 hp (242 kW)
+        self.turbine = Turbine(self, self.MAX_ACCELERATION)
         self.nav = Navigation(self)
         self.comm = Communication(self)
         self.tma = TMA(self)
         self.sonar = Sonar(self)
         self.weapon = Weapon(self)
+
 
     # "stop" means the turn just stop because requeres pilot atention
     def add_message(self, module, msg, stop=False):
@@ -144,14 +153,27 @@ class Submarine(Ship):
 
         return sum_of_decibels(base) + random.gauss(0, 1)
 
+    def drag_acceleration(self):
+        return self.DRAG_FACTOR * self._velocity.squared()
 
     def turn(self, time_elapsed):
+        self.turbine.turn(time_elapsed)
+        turbine_acceleration = self.turbine.get_acceleration()
+        ### -> self._velocity.unit() precisa ser a direção do ship
+        
+        self._acceleration = (self._velocity.unit() * turbine_acceleration) - self.drag_acceleration()
+
         Ship.turn(self, time_elapsed)
+
+        # self.speed = self.speed - ( self.drag_acceleration() * time_elapsed)
+
         # deep
         deep_diff = self.set_deep - self.actual_deep
         if abs(deep_diff) > 0.1:
             dive_rate = min(deep_diff, self.MAX_DEEP_RATE_FEET)
             self.actual_deep += dive_rate * time_elapsed * 3600
+
+
 
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
+import math
 
 from util.point import Point
 from util.util import limits
@@ -7,10 +8,11 @@ from util.physic import MovableNewtonObject
 
 
 class Ship(MovableNewtonObject):
-    def __init__(self, max_turn_per_hour):
+    def __init__(self, drag_factor,  max_turn_per_hour):
         super(Ship, self).__init__()
         self._rudder = 0
         self.max_turn_per_hour = max_turn_per_hour
+        self.drag_factor = drag_factor
 
     def get_rudder(self):
         return self._rudder
@@ -20,6 +22,10 @@ class Ship(MovableNewtonObject):
         self._rudder = angle
 
     rudder = property(get_rudder, set_rudder, "Rudder")
+
+    def get_rubber_bearing(self):
+        angle_deg = -1 * math.degrees(self.get_rudder())
+        return (90 - angle_deg) % 360
 
     def rudder_right(self):
         self.rudder = self.max_turn_per_hour
@@ -31,6 +37,7 @@ class Ship(MovableNewtonObject):
         self.rudder = 0
 
     def turn(self, time_elapsed):  # time in seconds
+
         if self.rudder != 0:
             self.rotate(self.rudder * time_elapsed)
         super(Ship, self).turn(time_elapsed)

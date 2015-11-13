@@ -110,12 +110,22 @@ class Point(object):
 
     def set_length(self, value):
         length = abs(self.v)
-        if length == 0:
+        if length <= 0.0001:
             self.v = complex(value, 0)
         else:
             self.v = self.v * (1.0 * value / length)
 
     length = property(get_length, set_length, None, "gets or sets the magnitude of the vector")
+
+    def unit(self):
+        if abs(self.v) == 0:
+            return Point(1,0)
+        else:
+            return Point(self.v / abs(self.v))
+
+
+    def squared(self):
+        return Point(self.v.real**2, self.v.imag**2)
 
 
     def angle_to(self, other):

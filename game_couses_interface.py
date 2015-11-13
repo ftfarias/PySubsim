@@ -2,8 +2,9 @@
 import curses
 import locale
 import time
+import sys
 
-from util.util import angles_to_unicode
+
 from util.physic import Point
 
 
@@ -17,7 +18,8 @@ class GameCoursesInterface(object):
 
         # setlocale enables UTF chars
         # see: https://docs.python.org/2/library/curses.html
-        locale.setlocale(locale.LC_ALL, '')
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        self.strcode = locale.getpreferredencoding()
         screen = curses.initscr()
         self.screen = screen
         screen.nodelay(1)
@@ -27,6 +29,29 @@ class GameCoursesInterface(object):
 
         curses.start_color()
         curses.use_default_colors()
+
+    def angles_to_unicode(self, angle):
+        def interval(a, direction):
+            return direction-22.5 <= a < direction+22.5
+
+        if angle is None:
+            return u'\u2219'.encode(self.strcode)
+        elif interval(angle, 45):
+            return u'\u2197'.encode(self.strcode)
+        elif interval(angle, 90):
+            return u'\u2192'.encode(self.strcode)
+        elif interval(angle, 135):
+            return u'\u2198'.encode(self.strcode)
+        elif interval(angle, 180):
+            return u'\u2193'.encode(self.strcode)
+        elif interval(angle, 225):
+            return u'\u2199'.encode(self.strcode)
+        elif interval(angle, 270):
+            return u'\u2190'.encode(self.strcode)
+        elif interval(angle, 315):
+            return u'\u2196'.encode(self.strcode)
+        else:
+            return u'\u2191'.encode(self.strcode)
 
     def speed_up(self):
         s = self.time_rate
@@ -53,7 +78,8 @@ class GameCoursesInterface(object):
 
     def update_screen(self):
         s = self.screen
-        nav = self.player_sub.nav
+        s.clear()
+        sub = self.player_sub
 
         s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
         s.clrtoeol()
@@ -64,9 +90,19 @@ class GameCoursesInterface(object):
         s.clrtoeol()
 
         if self.display_screen == 'n':
-            self.screen.addstr(3, 0, 'Current position: {nav}{nav1}'.format(nav=nav.pos, nav1=angles_to_unicode(nav.course)))
-            self.screen.addstr(4, 0, 'Current course  : {}'.format(nav.get))
-            self.screen.addstr(5, 0, 'Current speed   : {}'.format(nav))
+            self.screen.addstr(3, 0, '          Current')
+            self.screen.addstr(4, 0, 'Position: {pos}'.format(pos=sub.position))
+            self.screen.addstr(5, 0, 'Course  : {:03}{}'.format(sub.bearing, self.angles_to_unicode(sub.bearing)))  # angles_to_unicode(sub.bearing)
+            self.screen.addstr(6, 0, 'Speed   : {:2.1f} knots'.format(sub.speed))
+            self.screen.addstr(7, 0, 'Rudder  : {:03}'.format(sub.rudder))
+
+        elif self.display_screen == 'N':
+            self.screen.addstr(3, 00, 'Turbine acc: {:2.4f} Knots/s'.format(sub.turbine.get_acceleration()/3600))
+            self.screen.addstr(3, 40, 'Drag acc   : {} Knots/s'.format(sub.drag_acceleration()/-3600.0))
+            self.screen.addstr(4, 00, 'Drag factor: {:2.2f}'.format(sub.DRAG_FACTOR))
+            self.screen.addstr(5, 00, 'Speed      : {} => {}'.format(sub._velocity, sub.speed ))
+            self.screen.addstr(6, 00, 'Accel.     : {} => {}'.format(sub._acceleration, abs(sub._acceleration) ))
+
         else:
             self.screen.addstr(3, 0, 'n - navigation')
             self.screen.addstr(4, 0, 's - sonar')
@@ -101,6 +137,7 @@ class GameCoursesInterface(object):
 
     def command(self):
         c = self.get_command()
+        sub = self.player_sub
         if c.strip() == '':
             return
 
@@ -109,7 +146,7 @@ class GameCoursesInterface(object):
         if opt[0] == 'mov':
             dest = self.parse_coordinates(opt[1])
             if dest:
-                self.player_sub.nav.set_destination(dest)
+                sub.nav.set_destination(dest)
                 self.msg("Aye, aye! Destination set to {0}, captain!".format(self.player_sub.nav.destination))
             else:
                 self.msg("Invalid input")
@@ -117,8 +154,13 @@ class GameCoursesInterface(object):
         if opt[0] == 'spd':
             if len(opt) == 2:
                 n = int(opt[1])
-                self.player_sub.nav.speed = n
-                self.msg("Changing speed to {0}".format(self.player_sub.nav.destination))
+                sub.nav.speed = n
+                self.msg("Changing speed to {0}".format(sub.nav.speed))
+
+        if opt[0] == 'turbine' and len(opt) == 2:
+            n = int(opt[1])
+            sub.turbine.level = n
+            self.msg("Changing turbine to {0}".format(sub.turbine.level))
 
 
     def run(self):
@@ -140,8 +182,10 @@ class GameCoursesInterface(object):
                     self.speed_down()
 
                 # screens
-                elif k == ord('n') or k == ord('N'):
+                elif k == ord('n'):
                     self.display_screen = 'n'
+                elif k == ord('N'):
+                    self.display_screen = 'N'
                 elif k == ord('r') or k == ord('R'):
                     self.display_screen = 'r'
                 elif k == ord('s') or k == ord('S'):

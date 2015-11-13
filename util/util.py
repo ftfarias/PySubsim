@@ -16,7 +16,7 @@ def angles_to_unicode(angle):
         return direction-22.5 <= a < direction+22.5
 
     if angle is None:
-        return u'\u2219'
+        return u'\u2219'.encode(self.strcode)
     elif interval(angle, 45):
         return u'\u2197'
     elif interval(angle, 90):

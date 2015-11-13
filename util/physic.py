@@ -53,6 +53,9 @@ class MovableNewtonObject(object):
     def get_bearing(self):
         return self._velocity.bearing
 
+    bearing = property(get_bearing, None, "Bearing")
+
+
     # def set_speed(self, new_speed):
     #     self.nav.speed = new_speed
 
