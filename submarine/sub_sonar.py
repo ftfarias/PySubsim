@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from util.util import abs_angle_to_bearing, Bands, Deployable
+from util.util import angle_to_bearing, Bands, Deployable
 from linear_scale import linear_scaler_with_limit
 from util.physic import Point
 from sub_module import SubModule
@@ -85,16 +85,16 @@ class SonarContact:
     def __str__(self):
         obj_type = self.obj_type if self.obj_type is not None else '<unknown>'
         if self.course is not None:
-            course_str = '{0:3.0f}'.format(abs_angle_to_bearing(self.course))
+            course_str = '{0:3.0f}'.format(angle_to_bearing(self.course))
             course_symbol = util.angles_to_unicode(
-                abs_angle_to_bearing(self.course))
+                angle_to_bearing(self.course))
         else:
             course_str = ' - '
             course_symbol = ' '
         range_str = round(self.range, 1) if self.range is not None else '-'
         speed_str = '{0:2.1f}'.format(self.speed) if self.speed is not None else ' - '
         name = self.name if self.name else '<no name>'
-        bearing = abs_angle_to_bearing(self.bearing)
+        bearing = angle_to_bearing(self.bearing)
         bearing_symbol = util.angles_to_unicode(bearing)
         # print(bearing)
         # print(range_str)
@@ -394,7 +394,7 @@ class Sonar(SubModule):
 
         self.contacts[idx] = sc
         self.add_message("Conn, Sonar: New {st} contact on sonar, bearing {br:3.0f}, designated {d}".format(
-            st=st, br=util.abs_angle_to_bearing(bearing), d=sc.id), True)
+            st=st, br=util.angle_to_bearing(bearing), d=sc.id), True)
 
     def update_contact(self, sonar_contact, bearing, signal_to_noise, distance, deep, bands, sources):
         sonar_contact.tracking_status = sonar_contact.TRACKING

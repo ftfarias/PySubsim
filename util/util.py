@@ -41,12 +41,10 @@ def normalize_angle_2pi(angle):
     # return the angle between 0 and 2*pi (in radians)
     while angle < 0:
         angle += 2 * math.pi
-    while angle >= 2 * math.pi:
-        angle -= 2 * math.pi
-    return angle
+    return angle % (math.pi * 2)
 
 
-def normalize_angle180(angle):
+def normalize_angle_pi(angle):
     # return the angle between -180 and + 180 (in radians)
     while angle < -math.pi:
         angle += 2 * math.pi
@@ -55,10 +53,13 @@ def normalize_angle180(angle):
     return angle
 
 
-def abs_angle_to_bearing(angle):
-    # return round(math.degrees(normalize_angle360(angle - (math.pi/2))))
-    #return round(math.degrees(angle))
-    return round(math.degrees(normalize_angle_2pi(angle)))
+def angle_to_bearing(angle):
+    angle_deg = math.degrees(angle)
+    return (90.0 - angle_deg) % 360
+
+def bearing_to_angle(bearing):
+    angle_rad = math.radians(90 - bearing)
+    return normalize_angle_pi(angle_rad)
 
 
 def limits(value, min, max):

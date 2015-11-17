@@ -9,11 +9,10 @@ from sound.sound import sum_of_decibels
 from sub_module import SubModule
 from sub_tma import TMA
 from sub_navigation import Navigation
-from sub_turbines import Turbine
 
 
 class Submarine(Ship):
-    MAX_TURN_RATE_HOUR = math.radians(35) * 60  # max 35 degrees per minute
+    MAX_TURN_RATE_HOUR = math.radians(120) * 60  # max 120 degrees per minute, 360 in 3 minutes
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
     MAX_SPEED = 36.0 # Knots or nautical mile per hour
     MAX_ACCELERATION = 2.0 * 3600 # max acceleraton 2 Knots / second
@@ -22,7 +21,8 @@ class Submarine(Ship):
 
 
     def __init__(self, sea):
-        Ship.__init__(self, self.DRAG_FACTOR, self.MAX_TURN_RATE_HOUR)
+        # turbines 35,000 hp (26 MW), 1 auxiliary motor 325 hp (242 kW)
+        Ship.__init__(self, self.DRAG_FACTOR, self.MAX_TURN_RATE_HOUR, self.MAX_ACCELERATION)
         self.kind = '688'
         self.messages = []
         self.sea = sea
@@ -35,8 +35,6 @@ class Submarine(Ship):
 
         # build ship
 
-        # turbines 35,000 hp (26 MW), 1 auxiliary motor 325 hp (242 kW)
-        self.turbine = Turbine(self, self.MAX_ACCELERATION)
         self.nav = Navigation(self)
         self.comm = Communication(self)
         self.tma = TMA(self)
@@ -153,15 +151,7 @@ class Submarine(Ship):
 
         return sum_of_decibels(base) + random.gauss(0, 1)
 
-    def drag_acceleration(self):
-        return self.DRAG_FACTOR * self._velocity.squared()
-
     def turn(self, time_elapsed):
-        self.turbine.turn(time_elapsed)
-        turbine_acceleration = self.turbine.get_acceleration()
-        ### -> self._velocity.unit() precisa ser a direção do ship
-        
-        self._acceleration = (self._velocity.unit() * turbine_acceleration) - self.drag_acceleration()
 
         Ship.turn(self, time_elapsed)
 

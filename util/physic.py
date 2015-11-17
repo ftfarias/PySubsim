@@ -27,7 +27,6 @@ class MovableNewtonObject(object):
 
     position = property(get_position, _set_position, None, "Position")
 
-
     def get_acceleration(self):
         return self._acceleration.length
 
@@ -35,25 +34,6 @@ class MovableNewtonObject(object):
         self._acceleration.length = value
 
     acceleration = property(get_acceleration, _set_acceleration, None, "Acceleration")
-
-    def get_course(self):
-        return self._velocity.angle
-
-    def set_course(self, angle):
-        '''
-        :param angle: new angle in radians
-        :return: none
-        '''
-        angle = normalize_angle_2pi(angle)
-        self._velocity.angle = angle
-        self._acceleration.angle = self._velocity.angle  # assumes the rotation also changes the acceleration
-
-    course = property(get_course, set_course, "Course")
-
-    def get_bearing(self):
-        return self._velocity.bearing
-
-    bearing = property(get_bearing, None, "Bearing")
 
 
     # def set_speed(self, new_speed):
@@ -68,8 +48,8 @@ class MovableNewtonObject(object):
     # def set_destination(self, dest):
     #     self.set_destination(dest, self.speed)
     #
-    def rotate(self, angle):  # in radians
-        self.course = self.course + angle
+    # def rotate(self, angle):  # in radians
+    #     self.course = self.course + angle
 
     def turn(self, time_elapsed):  # time in seconds
         self._velocity += self._acceleration * time_elapsed
