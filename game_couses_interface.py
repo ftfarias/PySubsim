@@ -70,7 +70,7 @@ class GameCoursesInterface(object):
 
     def msg(self, text):
         # self.screen.addstr(8, 0, " "*30)
-        self.screen.addstr(12, 0, text)
+        self.screen.addstr(11, 0, text)
         # self.screen.clrtoeol()
 
 
@@ -85,7 +85,7 @@ class GameCoursesInterface(object):
 
     def update_screen(self):
         s = self.screen
-        for i in range(3,10):
+        for i in range(3,11):
             s.move(i,0)
             s.clrtoeol()
         #s.clear()
@@ -182,7 +182,7 @@ class GameCoursesInterface(object):
             return None
 
     def get_command(self):
-        line = 10
+        line = 11
         s = self.screen
         s.addstr(line, 0, " " * 30)
         s.nodelay(0)
