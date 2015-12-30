@@ -112,7 +112,7 @@ class GameCoursesInterface(object):
 
             self.screen.addstr(5, 00, 'Course  : {:03.1f}{}'.format(sub.bearing, self.angles_to_unicode(sub.bearing)))  # angles_to_unicode(sub.bearing)
             if sub.nav.destination is not None:
-                self.screen.addstr(5, 40, '{:03.1f}{} deg'.format(angle_to_bearing(sub.nav.angle_to_destination), self.angles_to_unicode(sub.nav.angle_to_destination)))
+                self.screen.addstr(5, 40, '{:03.1f}{} deg'.format(angle_to_bearing(sub.nav.angle_to_destination), self.angles_to_unicode(angle_to_bearing(sub.nav.angle_to_destination))))
 
             self.screen.addstr(6, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.speed, sub.turbine.level))
 
@@ -128,8 +128,11 @@ class GameCoursesInterface(object):
             # self.screen.addstr(6, 30, 'Speed   : {:2.1f} knots'.format(sub.speed))
             self.screen.addstr(7, 00, 'Rudder  : {:0.0f} deg/min'.format(math.degrees(sub.rudder/60)))
 
+        elif self.display_screen == 's':
+            self.screen.addstr(3, 00, 'Passive Sonar')
 
-        elif self.display_screen == 'S':
+
+        elif self.display_screen == 'M':
             self.screen.addstr(3, 00, 'Turbine power: {:3.1f}%'.format(sub.turbine.level))
             self.screen.addstr(3, 30, 'Turbine acc  : {} -> {:2.3f} Knots/s'.format(sub.turbine_acceleration/3600,sub.turbine_acceleration.length/3600))
 
@@ -188,6 +191,7 @@ class GameCoursesInterface(object):
         s.nodelay(0)
         curses.echo()
         s.addstr(line, 0, "->")
+        s.clrtoeol()
         command = s.getstr(line, 3)
         curses.noecho()
         s.nodelay(1)
