@@ -24,7 +24,7 @@ class Navigation(SubModule):
         return (self.destination != None)
 
     def set_manual(self):
-        self.destination = None
+        self._destination = None
 
     def stop_all(self):
         self.set_speed(0)
@@ -93,14 +93,17 @@ class Navigation(SubModule):
             self.turbine_level_needed = 100.0 * self.acceleration_needed / sub.turbine.max_acceleration
             # adjust turbines
             diff = self.speed - sub.speed
+            diff_turbine = self.turbine.level - self.turbine_level_needed
             if diff > 5:
-                sub.turbine.level = 100
+                sub.turbine.increase(2)
             elif diff > 0:
-                sub.turbine.level = self.turbine_level_needed + (diff * (100 - self.turbine_level_needed))
+                sub.turbine.level = min(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), 50)
+                # sub.turbine.increase(1)
             elif diff < -5:
-                sub.turbine.level = -50
+                sub.turbine.decrease(1)
             elif diff < 0:
-                sub.turbine.level = max(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), -10)
+                sub.turbine.level = max(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), -20)
+                # sub.turbine.decrease(2)
 
         if self.destination:
             self.angle_to_destination = sub.position.angle_to(self.destination)
@@ -112,7 +115,7 @@ class Navigation(SubModule):
             # if self.angle_difference > math.pi:
             #     self.angle_difference -= 2*math.pi
 
-            sub.rudder = self.angle_difference *  -30.0
+            sub.rudder = self.angle_difference * -30.0
 
 
 

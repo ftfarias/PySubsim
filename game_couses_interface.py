@@ -227,10 +227,10 @@ class GameCoursesInterface(object):
             self.msg("Changing turbine level to {0}%".format(sub.turbine.level))
 
         if opt[0] == 'rudder' and len(opt) == 2:
-            n = int(opt[1])
-            sub.rudder = math.radians(n)*60
-            sub.nav.destination = None
-            self.msg("Changing rudder to {0}".format(math.degrees(sub.rudder)))
+            n = int(opt[1]) # degrees per minute
+            sub.nav.set_manual()
+            sub.rudder = math.radians(n)*60 # *60 because rudder is in degrees per hour
+            self.msg("Changing rudder to {0} degrees per minute".format(math.degrees(sub.rudder)/60))
 
         if opt[0] == 'deep' and len(opt) == 2:
             n = int(opt[1])
@@ -267,7 +267,10 @@ class GameCoursesInterface(object):
                 # elif k == ord('w') or k == ord('W'):
                 #     self.display_screen = 'w'
                 else:
-                    self.display_screen = chr(k)
+                    try:
+                        self.display_screen = chr(k)
+                    except:
+                        pass
 
             time.sleep(self.update_rate)
             self.update_time()
