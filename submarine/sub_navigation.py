@@ -93,16 +93,27 @@ class Navigation(SubModule):
             self.turbine_level_needed = 100.0 * self.acceleration_needed / sub.turbine.max_acceleration
             # adjust turbines
             diff = self.speed - sub.speed
-            diff_turbine = self.turbine.level - self.turbine_level_needed
-            if diff > 5:
-                sub.turbine.increase(2)
-            elif diff > 0:
-                sub.turbine.level = min(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), 50)
-                # sub.turbine.increase(1)
-            elif diff < -5:
-                sub.turbine.decrease(1)
-            elif diff < 0:
-                sub.turbine.level = max(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), -20)
+            diff_turbine = sub.turbine.level - self.turbine_level_needed
+            sub.turbine.level  = self.turbine_level_needed + (diff * 10)
+
+            # if diff > 5:
+            #     sub.turbine.increase(2)
+            # elif diff > 0:
+            #     if diff_turbine > 10:
+            #         sub.turbine.increase(1)
+            #     else:
+            #         sub.turbine.decrease(1)
+            #
+            #     # sub.turbine.level = min(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), 50)
+            #     # sub.turbine.increase(0)
+            # elif diff < -5:
+            #     sub.turbine.decrease(1)
+            # elif diff < 0:
+            #     if diff_turbine > 0:
+            #         sub.turbine.increase(1)
+            #     else:
+            #         sub.turbine.decrease(1)
+                # sub.turbine.level = max(self.turbine_level_needed + (diff * (100 - self.turbine_level_needed)), -20)
                 # sub.turbine.decrease(2)
 
         if self.destination:

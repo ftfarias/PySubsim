@@ -2,28 +2,136 @@
 import math
 import random
 from itertools import count
-import unittest
-from linear_scale import linear_scaler
+# from linear_scale import linear_scaler
 
-REFERENCE_FREQS = [0.1, 1, 10, 30, 50, 100, 300, 500, 1000, 3000, 5000, 10000, 15000, 20000]
+# REFERENCE_FREQS = [0.1, 1, 10, 30, 50, 100, 300, 500, 1000, 3000, 5000, 10000, 15000, 20000]
+
 
 '''
 Reference bands:
 
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000
 
 
 
 NL - noise level
 
 
-
-
 '''
 
+
+def db_to_power(db):
+    return 10 ** (db / 10.0)
+
+
+def power_to_db(power):
+    return 10.0 * math.log10(power)
+
+
 def sum_of_decibels(db_lists):
-    powers = [10 ** (db/10) for db in db_lists ]
+    powers = [10 ** (db / 10) for db in db_lists]
     total_power = sum(powers)
     return 10 * math.log10(total_power)
+
+
+def total_broadband_level(mean, freq_low, freq_high):
+    """
+    :param mean: average intensity in DB
+    :param freq_low: lower band frequency
+    :param freq_high: higher band frequency
+    :return: the total DBS for the band level
+    """
+    return mean + ( 10 * math.log10(freq_high - freq_low))
+
+
+class Sound(object):
+    REFERENCE_BANDS = []
+    for i in range(1, 10):
+        REFERENCE_BANDS.append(i)
+    for i in range(1, 10):
+        REFERENCE_BANDS.append(i * 10)
+    for i in range(1, 11):
+        REFERENCE_BANDS.append(i * 100)
+
+    # for i in range(1,1000):
+    #         REFERENCE_BANDS.append(i)
+
+    NUM_BANDS = len(REFERENCE_BANDS) - 1
+
+    REFERENCE_BANDS_CENTRAL_FREQ = []
+    for i in range(NUM_BANDS):
+        REFERENCE_BANDS_CENTRAL_FREQ.append(math.sqrt(REFERENCE_BANDS[i] * REFERENCE_BANDS[i + 1]))
+
+    REFERENCE_BANDS_BANDWIDTH = []
+    for i in range(NUM_BANDS):
+        REFERENCE_BANDS_BANDWIDTH.append(REFERENCE_BANDS[i + 1] - REFERENCE_BANDS[i])
+
+
+    def __init__(self):
+        # assert isinstance(sub, Submarine)
+        self.values = [-100.0] * self.NUM_BANDS
+
+
+    def total_band(self, band_index):
+        # total_power = db_to_power( self.values[band_index] ) * self.REFERENCE_BANDS_BANDWIDTH[band_index]
+        # return power_to_db(total_power)
+        return self.values[band_index] + (10 * math.log10(self.REFERENCE_BANDS_BANDWIDTH[band_index]))
+
+
+    def total_decibels(self):
+        p = [self.total_band(i) for i in range(self.NUM_BANDS)]
+        return sum_of_decibels(p)
+
+    def get_bands(self):
+        result = {}
+        for i in range(self.NUM_BANDS):
+            freq = self.REFERENCE_BANDS_CENTRAL_FREQ[i]
+            value = self.values[i]
+            result[freq] = value
+        return result
+
+
+    def filter(self, filter_function):
+        # def filter(frequence, value): return new_value
+        for i in range(self.NUM_BANDS):
+            freq = self.REFERENCE_BANDS_CENTRAL_FREQ[i]
+            current_value = self.values[i]
+            self.values[i] = filter_function(freq, current_value)
+
+
+    def logdecay(self, start_db, start_freq, stop_db, stop_freq):
+        start_freq_log = math.log10(start_freq)
+        frequence_span = math.log10(stop_freq) - start_freq_log
+        decibel_span = stop_db - start_db
+        scale_factor = float(decibel_span) / float(frequence_span)
+        for i in range(self.NUM_BANDS):
+            if self.REFERENCE_BANDS[i] >= start_freq and self.REFERENCE_BANDS[i] <= stop_freq:
+                freq = math.log10(self.REFERENCE_BANDS_CENTRAL_FREQ[i])
+                v = start_db + (freq - start_freq_log) * scale_factor
+                self.values[i] = v
+
+
+    def print_values(self):
+        for i in range(self.NUM_BANDS):
+            print(
+                "[{}] {:2,} - {:2,}: \t Center: {:.2f} \t 1 Hz Power: {:.2f} db \t Total band power: {:.2f} db".format(
+                    i,
+                    self.REFERENCE_BANDS[i],
+                    self.REFERENCE_BANDS[i + 1],
+                    self.REFERENCE_BANDS_CENTRAL_FREQ[i],
+                    self.values[i],
+                    self.total_band(i)
+                ))
+
+        print("Total DB: {:,}".format(self.total_decibels()))
+
+
+# s = Sound()
+# # s.values[2] = 80
+# # s.values[8] = 80
+# # s.values[18] = 60
+# s.logdecay(140,50,120,500)
+# s.print_values()
 
 
 def nextpow2(i):

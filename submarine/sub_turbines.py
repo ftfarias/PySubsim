@@ -31,7 +31,7 @@ class Turbine(SubModule):
         return self.max_acceleration * self._level / 100.0
 
     def increase(self, increment):
-        self._set_level(self.get_level + increment)
+        self._set_level(self.get_level() + increment)
 
     def decrease(self, decrement):
-        self._set_level(self.get_level - decrement)
+        self._set_level(self.get_level() - decrement)

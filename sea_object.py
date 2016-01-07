@@ -5,11 +5,12 @@ import math
 from util.util import Bands
 from util.physic import Point, MovableNewtonObject
 from navigation import Navigation
+from sound.sound import Sound
 
 
 class SeaObject(object):
     def __init__(self, sea):
-        self.bands = Bands()
+        self.sound = Sound()
         self.pos = Point(0, 0)
         self.sea = sea
         self.deep = 0
@@ -23,9 +24,13 @@ class SeaObject(object):
     def get_deep(self):
         return self.deep;
 
-    def get_bands(self):
-        return self.bands
-        # return db(db=self.noise + random.gauss(0,2))
+    def get_broadband(self):
+        return self.sound.total_decibels()
+
+
+    def get_narrowband(self):
+        return self.sound.get_bands()
+
 
     def __str__(self):
         #return self.kind
@@ -89,12 +94,20 @@ class SnappingShrimp(SeaObject):
             return Bands()  # Silence
 
 class Buoy(SeaObject):
-    def __init__(self, sea, pos, bands, deep=0):
+    def __init__(self, sea, pos, sound, deep=0):
         SeaObject.__init__(self, sea)
-        self.bands = bands
+        self.sound = sound
         self.pos = pos
         self.deep = deep
 
+class SonarBuoy(SeaObject):
+    def __init__(self, sea, pos, freq, db, deep=0):
+        SeaObject.__init__(self, sea)
+        s = Sound()
+        s.values[5] = db
+        self.sound = s
+        self.pos = pos
+        self.deep = deep
 
 class MovableSeaObject(SeaObject, MovableNewtonObject):
     def __init__(self, sea, max_speed = 40, max_turn_rate_hour = math.radians(360)*60):  # max 360 degrees per minute
