@@ -3,7 +3,7 @@ import logging
 import random
 
 import sea
-from sea_object import Whale, Buoy
+import sea_object
 from submarine.sub import Submarine
 from util.physic import Point
 
@@ -22,8 +22,10 @@ class Scenario(object):
         logger.debug("Sceneario Initialization")
         self.sea = sea.Sea()
 
+
+    def scenary_test_sonar(self):
         # for i in xrange(2):
-        #     whale = self.create_whale()
+        # whale = self.create_whale()
         #     self.sea.add_object(whale)
 
         # self.add_buoy(Point(3, 3), Bands({30: 100, 300: 80, 3000: 50}), deep=0)
@@ -35,10 +37,13 @@ class Scenario(object):
 
         logger.info("Creating Player Submarine")
         self.player_sub = Submarine(self.sea)
-        self.player_sub.pos = Point(6, 6)
+        self.player_sub.pos = Point(5, 5)
         self.player_sub.deep = 120
         self.player_sub.name = "USS Sant Paul"
         self.sea.add_object(self.player_sub)
+
+        buoy = sea_object.SonarBuoy(self.sea, Point(1, 1), 100, 140, deep=0)
+        self.sea.add_object(buoy)
 
         # dummy_ship = ShipFactory.create_simple_sub(sea, Point(30, 30))
         # sea.create_smallboat(dummy_ship)
@@ -75,10 +80,6 @@ class Scenario(object):
         #     sub.pos = pos
         #     return sub
 
-    def add_buoy(self, pos, bands, deep=0):
-        buoy = Buoy(self.sea, pos, bands, deep)
-        self.sea.add_object(buoy)
-
 
     def create_whale(self, pos=None):
         if pos is None:
@@ -94,7 +95,7 @@ class Scenario(object):
         # if pos is None:
         # pos = Point(random.randint(0, 10), random.randint(0, 10))
         # if ship_type is None:
-        #         ship_type = t[random.randint(0, len(t) - 1)]
+        # ship_type = t[random.randint(0, len(t) - 1)]
         #     ship = MovableSeaObject(ship_type, pos)
         #     ship.set_destination(random.randint(0, 359), random.randint(5, 15))
         #     self.objects.append(ship)

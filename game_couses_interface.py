@@ -164,12 +164,21 @@ class GameCoursesInterface(object):
             self.screen.addstr(6, 40, 'Angle difference : {:2.3f} deg'.format(math.degrees(sub.nav.angle_difference)))
 
 
+        elif self.display_screen == 'e':
+            self_noise = self.player_sub.get_self_noise()
+            sea_noise =  self.sea.get
+
+            self.screen.addstr(3, 00, 'Submarine self noise : {} db'.format(self_noise.total_decibels()))
+            self.screen.addstr(4, 00, 'Sea background noise : {} db'.format(self_noise.total_decibels()))
+
+
 
         else:
             self.screen.addstr(3, 0, 'n - navigation')
             self.screen.addstr(4, 0, 's - sonar')
             self.screen.addstr(5, 0, 'r - radar')
             self.screen.addstr(6, 0, 'w - weapons')
+            self.screen.addstr(7, 0, 'e - enviroment')
 
         s.refresh()
 

@@ -17,12 +17,12 @@ logger.addHandler(handler)
 if __name__ == "__main__":
     scenario = scenario.Scenario()
     scenario.initialize()
+    scenario.scenary_test_sonar()
     sea = scenario.sea
     player_sub = scenario.player_sub
     interface = GameCoursesInterface(sea, player_sub)
     sea.turn(0.1)
     interface.run()
-
 
 
 # def init_colors(s):

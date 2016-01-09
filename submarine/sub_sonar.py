@@ -289,18 +289,20 @@ class Sonar(SubModule):
 
     def turn(self, time_elapsed):  # time in hours
         self.towed.turn(time_elapsed)
-        if self.time_for_next_update <= 0.0:
-            # passive scan
-            self.passive_scan()
-            self.time_for_next_update = 10.0 / 3600  # every 10 seconds
-        else:
-            self.time_for_next_update -= time_elapsed
 
-        if self.time_for_next_waterfall <= 0.0:
-            # self.waterfall_update()
-            self.time_for_next_waterfall = 1.0 / 3600  # every second
-        else:
-            self.time_for_next_waterfall -= time_elapsed
+
+        # if self.time_for_next_update <= 0.0:
+        #     # passive scan
+        #     self.passive_scan()
+        #     self.time_for_next_update = 10.0 / 3600  # every 10 seconds
+        # else:
+        #     self.time_for_next_update -= time_elapsed
+        #
+        # if self.time_for_next_waterfall <= 0.0:
+        #     # self.waterfall_update()
+        #     self.time_for_next_waterfall = 1.0 / 3600  # every second
+        # else:
+        #     self.time_for_next_waterfall -= time_elapsed
 
 
             # if self.mode == self.ACTIVE_SCAN:
@@ -326,6 +328,7 @@ class Sonar(SubModule):
         # Sphere Array
         spherical_scan_result = self.sea.passive_scan(self.sub, self.spherical)
         hull_scan_result = self.sea.passive_scan(self.sub, self.hull)
+
         # if towed array is deployed more than 90%, use it!
         if self.towed.percent_deployed() > 0.9:
             towed_scan_result = self.sea.passive_scan(self.sub, self.towed)

@@ -3,6 +3,8 @@ import math
 import random
 from itertools import count
 # from linear_scale import linear_scaler
+import logging
+logger = logging.getLogger("subsim.sound")
 
 # REFERENCE_FREQS = [0.1, 1, 10, 30, 50, 100, 300, 500, 1000, 3000, 5000, 10000, 15000, 20000]
 
@@ -82,6 +84,7 @@ class Sound(object):
         p = [self.total_band(i) for i in range(self.NUM_BANDS)]
         return sum_of_decibels(p)
 
+
     def get_bands(self):
         result = {}
         for i in range(self.NUM_BANDS):
@@ -111,28 +114,88 @@ class Sound(object):
                 self.values[i] = v
 
 
+    def set_frequency(self,freq, value):
+        freq_index = None
+        for i in range(self.NUM_BANDS):
+            if self.REFERENCE_BANDS[i] == freq:
+                freq_index = i
+                break
+
+        if freq_index == None:
+            logger.warning("band not found at sound.set_frequency({},{})".format(freq,value))
+        else:
+            self.values[freq_index] = value
+
+        return self
+
+
+    def add_direct(self, other_sound):
+        for i in range(self.NUM_BANDS):
+            self.values[i] += other_sound.values[i]
+
+
     def print_values(self):
         for i in range(self.NUM_BANDS):
-            print(
-                "[{}] {:2,} - {:2,}: \t Center: {:.2f} \t 1 Hz Power: {:.2f} db \t Total band power: {:.2f} db".format(
-                    i,
-                    self.REFERENCE_BANDS[i],
-                    self.REFERENCE_BANDS[i + 1],
-                    self.REFERENCE_BANDS_CENTRAL_FREQ[i],
-                    self.values[i],
-                    self.total_band(i)
-                ))
+            if self.values[i] > 0:
+                print(
+                    "[{}] {:2,} - {:2,}: \t Center: {:.2f} \t 1 Hz Power: {:.2f} db \t Total band power: {:.2f} db".format(
+                        i,
+                        self.REFERENCE_BANDS[i],
+                        self.REFERENCE_BANDS[i + 1],
+                        self.REFERENCE_BANDS_CENTRAL_FREQ[i],
+                        self.values[i],
+                        self.total_band(i)
+                    ))
 
         print("Total DB: {:,}".format(self.total_decibels()))
 
+    def print_symbol(self):
+        s = []
+        for i in range(self.NUM_BANDS):
+            value = self.values[i]
+            if value < 0:
+                s.append(".")
+            elif value <= 40:
+                s.append(":")
+            elif value <= 80:
+                s.append(";")
+            elif value <= 120:
+                s.append("!")
+            elif value <= 140:
+                s.append("|")
+            elif value <= 200:
+                s.append("$")
+            else:
+                s.append("#")
 
-# s = Sound()
-# # s.values[2] = 80
-# # s.values[8] = 80
-# # s.values[18] = 60
-# s.logdecay(140,50,120,500)
+        return "".join(s)
+
+
+s = Sound()
+s.logdecay(140,50,120,500)
+s = Sound().set_frequency(10,20).set_frequency(50,100)
+s.print_values()
+# def f(freq, value):
+#     return value / freq
+# s.filter(f)
 # s.print_values()
+print(s.print_symbol())
 
+
+
+
+##############################
+
+# s1 = Sound()
+# s1.set_frequency(10,60)
+# s1.set_frequency(20,50)
+# s1.set_frequency(30,40)
+# s2 = Sound()
+# s2.set_frequency(20,0)
+# s2.set_frequency(30,30)
+# s2.set_frequency(40,35)
+# s1.add_direct(s2)
+# s1.print_values()
 
 def nextpow2(i):
     """

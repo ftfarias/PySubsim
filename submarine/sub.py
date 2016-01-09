@@ -9,9 +9,10 @@ from sound.sound import sum_of_decibels
 from sub_module import SubModule
 from sub_tma import TMA
 from sub_navigation import Navigation
+from sea_object import SeaObject
+from sound.sound import Sound
 
-
-class Submarine(Ship):
+class Submarine(Ship, SeaObject):
     MAX_TURN_RATE_HOUR = math.radians(120) * 60  # max 120 degrees per minute, 360 in 3 minutes
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
     MAX_SPEED = 36.0 # Knots or nautical mile per hour
@@ -125,31 +126,35 @@ class Submarine(Ship):
     #     return noise + (30 if cavitating else 0) + random.gauss(0, 0.4)
 
 
-    def self_noise(self, freq):  # returns
+    def get_self_noise(self, freq):  # returns
         """
-        :return: sound in in decibels
         """
+        s = Sound()
 
-        if self.speed <= 15:
-            noise = self.NOISE_RANGE1(self.speed)
-        else:
-            noise = self.NOISE_RANGE2(self.speed)
+        s.logdecay(120,30,100,300)  # 120db @ 30Hz - 100db @ 300 db
 
+        return s
 
-        logfreq = math.log10(freq)
-        if self.is_cavitating():
-            base = [0]
-        else:
-            base = [150]
+        # if self.speed <= 15:
+        #     noise = self.NOISE_RANGE1(self.speed)
+        # else:
+        #     noise = self.NOISE_RANGE2(self.speed)
 
 
-        if freq <= 100:
-            base.append(noise)
+        # logfreq = math.log10(freq)
+        # if self.is_cavitating():
+        #     base = [0]
+        # else:
+        #     base = [150]
+        #
+        #
+        # if freq <= 100:
+        #     base.append(noise)
+        #
+        # if freq > 100:
+        #     base.append(noise - 20 * math.log10(freq/100))
 
-        if freq > 100:
-            base.append(noise - 20 * math.log10(freq/100))
-
-        return sum_of_decibels(base) + random.gauss(0, 1)
+        # return sum_of_decibels(base) + random.gauss(0, 1)
 
     def turn(self, time_elapsed):
 
@@ -167,7 +172,7 @@ class Submarine(Ship):
 
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
-        #self.sonar.turn(time_elapsed)
+        self.sonar.turn(time_elapsed)
         self.tma.turn(time_elapsed)
         self.weapon.turn(time_elapsed)
 

@@ -10,6 +10,7 @@ from sound.sound import Sound
 
 class SeaObject(object):
     def __init__(self, sea):
+        self.id = None
         self.sound = Sound()
         self.pos = Point(0, 0)
         self.sea = sea
@@ -18,19 +19,23 @@ class SeaObject(object):
     def turn(self, time_elapsed):
         pass
 
+    def get_id(self):
+        return self.id
+
+    def get_sound(self):
+        return self.sound
+
     def get_pos(self):
         return self.pos
 
     def get_deep(self):
         return self.deep;
 
-    def get_broadband(self):
-        return self.sound.total_decibels()
-
-
-    def get_narrowband(self):
-        return self.sound.get_bands()
-
+    # def get_broadband(self):
+    #     return self.sound.total_decibels()
+    #
+    # def get_narrowband(self):
+    #     return self.sound.get_bands()
 
     def __str__(self):
         #return self.kind
@@ -104,7 +109,7 @@ class SonarBuoy(SeaObject):
     def __init__(self, sea, pos, freq, db, deep=0):
         SeaObject.__init__(self, sea)
         s = Sound()
-        s.values[5] = db
+        s.set_frequency(freq,db)
         self.sound = s
         self.pos = pos
         self.deep = deep
@@ -127,7 +132,6 @@ class MovableSeaObject(SeaObject, MovableNewtonObject):
 
     def __str__(self):
         return MovableNewtonObject.__str__(self)
-
 
 
 class Whale(MovableSeaObject):
@@ -212,8 +216,6 @@ class Ship(MovableSeaObject):
     def add_waypoint(self, dest):
         self.navigation.add_waypoint(dest)
 
-    def __str__(self):
-        return "Ship {0}, swim:{swim}, sing:{sing}, counter:counter".format(MovableSeaObject.__str__(self), )
 
 
 class ComputerSubmarine(MovableSeaObject):
@@ -229,24 +231,6 @@ class ComputerSubmarine(MovableSeaObject):
         MovableSeaObject.turn(self, time_elapsed)
 
 
-class MovableSeaObject(SeaObject, MovableNewtonObject):
-    def __init__(self, sea, max_speed = 40, max_turn_rate_hour = math.radians(360)*60):  # max 360 degrees per minute
-        SeaObject.__init__(self, sea)
-        MovableNewtonObject.__init__(self, max_speed, max_turn_rate_hour)
-
-    def get_pos(self):
-        return self.pos
-
-    def turn(self, time_elapsed):
-        MovableNewtonObject.turn(self, time_elapsed)
-
-        # def set_destination(self, course, speed):
-        # self.vel = Point(1,1)  # just to initialize the vector
-        #     self.speed = speed
-        #     self.course = course
-
-    def __str__(self):
-        return MovableNewtonObject.__str__(self)
 
 
 class Torpedo(MovableSeaObject):
