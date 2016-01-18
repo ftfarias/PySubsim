@@ -3,7 +3,7 @@ import time
 import sys
 
 from util.physic import Point
-from linear_scale import linear_scaler, linear_scaler2d
+from util.linear_scale import linear_scaler, linear_scaler2d
 from util import abs_angle_to_bearing, time_length_to_str, int_to_hertz
 from game_waterfall import Waterfall
 import sound

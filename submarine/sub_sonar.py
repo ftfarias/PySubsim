@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from util.util import angle_to_bearing, Bands, Deployable
-from linear_scale import linear_scaler_with_limit
+from util.linear_scale import linear_scaler_with_limit
 from util.physic import Point
 from sub_module import SubModule
 # from sub import Submarine

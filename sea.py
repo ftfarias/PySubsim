@@ -57,6 +57,7 @@ class Sea:
 
         self.sea_state = random.randrange(0, 7)  # 0 to 6, based in Beaufort Force table
         self.shipping_state_noise = random.randrange(65, 90)  # reference value in DB for shipping noise
+        self.raining = random.random() > 0.8
 
 
     def initialize(self):
@@ -127,22 +128,16 @@ class Sea:
     #     max_value = 160.0 + (-20.0 * logfreq)
     #     return min_value, max_value
 
+    SEA_NOISE_CACHE = None
+    def get_sea_noise(self, deep):
+        if self.SEA_NOISE_CACHE is None:
+            self.SEA_NOISE_CACHE = self.calc_sea_noise(deep)
+        return self.SEA_NOISE_CACHE.add_noise(0.5)
 
-    def get_sea_noise(self):
-        s = Sound()
-
-        s.logdecay(120,30,100,300)  # 120db @ 30Hz - 100db @ 300 db
-
-        return s
-
-    def background_noise_for_freq(self, freq):
+    def calc_sea_noise(self, deep):
         # using Wenz (1962)
         # http://www.dosits.org/science/soundsinthesea/commonsounds
-        # Min and Max values done by linear aproximation
-        # see also
-        logfreq = math.log10(freq)
-        base = []
-
+        s = Sound()
         '''
         All curves ajusted in the ipython notebook sound_sea.ipynb
 
@@ -174,21 +169,24 @@ class Sea:
         the Holu Spectrum insofar as the spectral density remains
         roughly constant for a given frequency.
 
+          1 Hz -> 120 - 60 * 0 = 120 db
+         10 hz -> 120 - 60 * 1 = 60 db
+        100 hz -> 120 - 60 * 2 = 0 db
+
         ############################################################################
         '''
-        if freq < 50:
-            base.append(120 - 60 * logfreq)
+        s.add_logdecay(120,1,0,100)  # 120db @ 30Hz - 100db @ 300 db
 
         '''
         100-1000 Hz – Noise in this band is dominated by shipping (decreasing intensity with frequency
         increases). A significant contribution is also from sea surface agitation. Urick (1986) developed
         a model for predicting this shipping noise:
         '''
-        a = 20.0
-        h = 1.5  # centre of the parabole, and max value of the curve
-        if 1 < freq < 10000:
-            v = self.shipping_state_noise - (a * ((logfreq - h) ** 2))
-            base.append(v)
+        central_freq = 100
+        central_db = 80
+
+        s.add_cosine(60,10, central_db ,central_freq)
+        s.add_cosine(central_db ,central_freq, 30, 1000)
 
         '''
         1-100 kHz – Sea surface agitiation is now the dominant factor, unless marine mammals or rain is
@@ -198,6 +196,15 @@ class Sea:
                 Rain drops impacting sea surface and implosion of air bubbles caused by rain, f =
                 1-100 kHz, max SL @ 20 kHz, SL can be up to 30 dB above sea surface noise
         '''
+        noise_1k = self.sea_state_noise_level_1k()
+
+        s.add_cosine(noise_1k-40,10, noise_1k ,1000)
+
+        return s
+
+    def background_noise_for_freq(senlf, freq):
+
+
         a = 50.0
         h = 2.7  # centre of the parabole, and max value of the curve
         if 50 < freq <= 1000:  # 100 - 1000

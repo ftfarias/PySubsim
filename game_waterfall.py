@@ -1,6 +1,6 @@
-from linear_scale import linear_scaler, linear_scaler2d, AsciiLinearScale, linear_scaler_with_limit
-from util import abs_angle_to_bearing, time_length_to_str, angles_to_unicode, shift, ascii_gray, ascii_reset, \
-    int_to_hertz
+from util.linear_scale import linear_scaler_with_limit
+from util import angles_to_unicode, shift, ascii_gray, ascii_reset
+
 
 class Waterfall(object):
     def __init__(self, sonar):

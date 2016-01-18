@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 import math
-import random
 
 from ship import Ship
 from sub_sonar import Sonar
-from linear_scale import linear_scaler
-from sound.sound import sum_of_decibels
+from util.linear_scale import linear_scaler
 from sub_module import SubModule
 from sub_tma import TMA
 from sub_navigation import Navigation
 from sea_object import SeaObject
 from sound.sound import Sound
 
+
 class Submarine(Ship, SeaObject):
     MAX_TURN_RATE_HOUR = math.radians(120) * 60  # max 120 degrees per minute, 360 in 3 minutes
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
-    MAX_SPEED = 36.0 # Knots or nautical mile per hour
-    MAX_ACCELERATION = 2.0 * 3600 # max acceleraton 2 Knots / second
-    DRAG_FACTOR =  1.0 * MAX_ACCELERATION / (MAX_SPEED**2)
+    MAX_SPEED = 36.0  # Knots or nautical mile per hour
+    MAX_ACCELERATION = 2.0 * 3600  # max acceleraton 2 Knots / second
+    DRAG_FACTOR = 1.0 * MAX_ACCELERATION / (MAX_SPEED ** 2)
     # DRAG_FACTOR = 0.000771604938272
 
 
@@ -42,6 +41,8 @@ class Submarine(Ship, SeaObject):
         self.sonar = Sonar(self)
         self.weapon = Weapon(self)
 
+    def get_deep(self):
+        return self.actual_deep;
 
     # "stop" means the turn just stop because requeres pilot atention
     def add_message(self, module, msg, stop=False):
@@ -106,7 +107,7 @@ class Submarine(Ship, SeaObject):
     NOISE_RANGE2 = linear_scaler([15, 35], [60, 100])
 
     # def self_noise(self, freq):  # returns
-    #     # if self.speed <= 15:
+    # # if self.speed <= 15:
     #     #     noise = self.NOISE_RANGE1(self.speed)
     #     # else:
     #     #     noise = self.NOISE_RANGE2(self.speed)
@@ -125,15 +126,42 @@ class Submarine(Ship, SeaObject):
     #
     #     return noise + (30 if cavitating else 0) + random.gauss(0, 0.4)
 
+    ACUSTIC_PROFILE = {
+        2: 112.0,
+        4: 108.0,
+        5: 115.0,
+        8: 110.0
+    }
 
-    def get_self_noise(self, freq):  # returns
+    def get_self_noise(self):  # returns
         """
         """
         s = Sound()
 
-        s.logdecay(120,30,100,300)  # 120db @ 30Hz - 100db @ 300 db
+        s.add_frequencs(self.ACUSTIC_PROFILE)
 
-        return s
+        base_sound_level = 100  # db - "Very quite submarine"
+        s.add_logdecay(base_sound_level, 1, base_sound_level, 100)
+        s.add_logdecay(base_sound_level, 100, base_sound_level - 20, 1000)
+
+
+        # machine noise
+        # 5 - 400Hz, proportional to turbine level
+        turbine_noise = 75 + math.log10((abs(self.turbine.get_level())+0.01)) * 40
+
+        s.add_logdecay(turbine_noise, 1, turbine_noise - 10, 400)
+
+        # flow noise
+        flow_nose = (abs(self.get_speed()) * 6.0)
+
+        # s.add_logdecay(noise_30hz,5,noise_30hz,30)  # 120db @ 30Hz - 100db @ 300 db
+        s.add_logdecay(flow_nose, 100, flow_nose-20, 1000)  # 120db @ 30Hz - 100db @ 300 db
+
+        return s.add_noise(0.5)
+
+
+    def get_sea_noise(self):  # returns
+        return self.sea.get_sea_noise(self.actual_deep)
 
         # if self.speed <= 15:
         #     noise = self.NOISE_RANGE1(self.speed)
@@ -157,7 +185,6 @@ class Submarine(Ship, SeaObject):
         # return sum_of_decibels(base) + random.gauss(0, 1)
 
     def turn(self, time_elapsed):
-
         Ship.turn(self, time_elapsed)
 
         # self.speed = self.speed - ( self.drag_acceleration() * time_elapsed)
@@ -168,8 +195,6 @@ class Submarine(Ship, SeaObject):
             dive_rate = min(deep_diff, self.MAX_DEEP_RATE_FEET)
             self.actual_deep += dive_rate * time_elapsed * 3600
 
-
-
         self.nav.turn(time_elapsed)
         self.comm.turn(time_elapsed)
         self.sonar.turn(time_elapsed)
@@ -179,9 +204,6 @@ class Submarine(Ship, SeaObject):
     def __str__(self):
         return "Submarine: {status}  deep:{deep:.0f}({sdeep})".format(status='',
                                                                       deep=self.actual_deep, sdeep=self.set_deep)
-
-
-
 
 
 class Weapon(SubModule):

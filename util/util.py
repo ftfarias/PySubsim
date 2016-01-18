@@ -342,6 +342,12 @@ class Deployable(object):
     def __str__(self):
         return "{0} ({1})".format(self.state, self.deployed_size)
 
+
+def cosine_interpolate(y1, y2, m):
+    mu2 = (1.0-math.cos(m*math.pi))/2.0
+    return (y1*(1-mu2)+y2*mu2)
+
+
 class TestUtil(unittest.TestCase):
     pass
 

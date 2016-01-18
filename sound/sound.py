@@ -2,8 +2,10 @@
 import math
 import random
 from itertools import count
-# from linear_scale import linear_scaler
 import logging
+
+from util.linear_scale import linear_scaler
+
 logger = logging.getLogger("subsim.sound")
 
 # REFERENCE_FREQS = [0.1, 1, 10, 30, 50, 100, 300, 500, 1000, 3000, 5000, 10000, 15000, 20000]
@@ -56,7 +58,7 @@ class Sound(object):
         REFERENCE_BANDS.append(i * 100)
 
     # for i in range(1,1000):
-    #         REFERENCE_BANDS.append(i)
+    # REFERENCE_BANDS.append(i)
 
     NUM_BANDS = len(REFERENCE_BANDS) - 1
 
@@ -113,8 +115,34 @@ class Sound(object):
                 v = start_db + (freq - start_freq_log) * scale_factor
                 self.values[i] = v
 
+    def add_logdecay(self, start_db, start_freq, stop_db, stop_freq):
+        start_freq_log = math.log10(start_freq)
+        frequence_span = math.log10(stop_freq) - start_freq_log
+        decibel_span = stop_db - start_db
+        scale_factor = float(decibel_span) / float(frequence_span)
+        for i in range(self.NUM_BANDS):
+            if self.REFERENCE_BANDS[i] >= start_freq and self.REFERENCE_BANDS[i] <= stop_freq:
+                freq = math.log10(self.REFERENCE_BANDS_CENTRAL_FREQ[i])
+                v = start_db + (freq - start_freq_log) * scale_factor
+                self.values[i] = sum_of_decibels([self.values[i], v])
 
-    def set_frequency(self,freq, value):
+
+    def add_cosine(self, start_db, start_freq, stop_db, stop_freq):
+        # add a sound using a cosine interpolator
+        start_freq_log = math.log10(start_freq)
+        frequence_span = math.log10(stop_freq) - start_freq_log
+        decibel_span = stop_db - start_db
+        scale_factor = float(decibel_span) / float(frequence_span)
+        for i in range(self.NUM_BANDS):
+            if self.REFERENCE_BANDS[i] >= start_freq and self.REFERENCE_BANDS[i] <= stop_freq:
+                freq = math.log10(self.REFERENCE_BANDS_CENTRAL_FREQ[i])
+                m = (freq - start_freq_log) / frequence_span  # 0 > m > 1 -> linear between start_freq and stop_freq
+                mu2 = (1.0 - math.cos(m * math.pi)) / 2.0 # cosine interpolator
+                v = (start_db * (1 - mu2) + stop_db * mu2)  # value in DB
+                self.values[i] = sum_of_decibels([self.values[i], v])
+
+
+    def set_frequency(self, freq, value):
         freq_index = None
         for i in range(self.NUM_BANDS):
             if self.REFERENCE_BANDS[i] == freq:
@@ -122,10 +150,16 @@ class Sound(object):
                 break
 
         if freq_index == None:
-            logger.warning("band not found at sound.set_frequency({},{})".format(freq,value))
+            logger.warning("band not found at sound.set_frequency({},{})".format(freq, value))
         else:
             self.values[freq_index] = value
+        return self
 
+    def add_frequencs(self, freqs_dict):
+        for i in range(self.NUM_BANDS):
+            freq = self.REFERENCE_BANDS[i]
+            if freq in freqs_dict.keys():
+                self.values[freq] = sum_of_decibels([freqs_dict[freq], self.values[freq]])
         return self
 
 
@@ -149,40 +183,108 @@ class Sound(object):
 
         print("Total DB: {:,}".format(self.total_decibels()))
 
-    def print_symbol(self):
+    def min_max_band_values(self):
+        max = 0
+        min = 10000
+        for i in range(self.NUM_BANDS):
+            v = self.values[i]
+            if v > 0 and v > max:
+                max = v
+            if v > 0 and v < min:
+                min = v
+        return min, max
+
+    def v_to_unicode(self,value):
+        if value <= 0:
+            s = u"_".encode("UTF8")
+        elif value <= 1:
+            s = u"\u2581".encode("UTF8")
+        elif value <= 2:
+            s = u"\u2582".encode("UTF8")
+        elif value <= 3:
+            s = u"\u2583".encode("UTF8")
+        elif value <= 4:
+            s = u"\u2584".encode("UTF8")
+        elif value <= 5:
+            s = u"\u2585".encode("UTF8")
+        elif value <= 6:
+            s = u"\u2586".encode("UTF8")
+        elif value <= 7:
+            s = u"\u2587".encode("UTF8")
+        else: # value > 7
+            s = u"\u2588".encode("UTF8")
+        return s
+
+    DEFAULT_LINEAR_ASCII = linear_scaler([50, 140], [0, 8])
+
+    def ascii(self, linear_scale=None):
+        if linear_scale is None:
+            min,max = self.min_max_band_values()
+            linear_scale = linear_scaler([min, max], [0, 8])
         s = []
         for i in range(self.NUM_BANDS):
-            value = self.values[i]
-            if value < 0:
-                s.append(".")
-            elif value <= 40:
-                s.append(":")
-            elif value <= 80:
-                s.append(";")
-            elif value <= 120:
-                s.append("!")
-            elif value <= 140:
-                s.append("|")
-            elif value <= 200:
-                s.append("$")
-            else:
-                s.append("#")
+            value = linear_scale(self.values[i])
+            s.append(self.v_to_unicode(value))
 
         return "".join(s)
 
+    DEFAULT_LINEAR_ASCII_2_LINES = linear_scaler([50, 140], [0, 16])
+    # <=  0 -> _ or " "
+    # <=  1 -> 1/8
+    # <=  2 -> 2/8
+    # <=  3 -> 3/8
+    # <=  4 -> 4/8
+    # <=  5 -> 5/8
+    # <=  6 -> 6/8
+    # <=  7 -> 7/8
+    # <=  8 -> 8/8
+    # <=  9 -> 8/8 + 1/8
+    # <= 10 -> 8/8 + 2/8
+    # <= 11 -> 8/8 + 3/8
+    # <= 12 -> 8/8 + 4/8
+    # <= 13 -> 8/8 + 5/8
+    # <= 14 -> 8/8 + 6/8
+    # <= 15 -> 8/8 + 7/8
+    # <= 16 -> 8/8 + 8/8
 
-s = Sound()
-s.logdecay(140,50,120,500)
-s = Sound().set_frequency(10,20).set_frequency(50,100)
-s.print_values()
+
+    def ascii2lines(self, linear_scale=DEFAULT_LINEAR_ASCII_2_LINES):
+        l1 = []
+        l2 = []
+        for i in range(self.NUM_BANDS):
+            value = linear_scale(self.values[i])
+            if value >= 8:
+                l1.append(u"\u2588".encode("UTF8"))
+                l2.append(self.v_to_unicode(value-8))
+            else:
+                l1.append(self.v_to_unicode(value))
+                l2.append(" ")
+
+        return ("".join(l1), "".join(l2))
+
+    def add_noise(self, stddev):
+        # stddev = standard deviation
+        s = Sound()
+        for i in range(self.NUM_BANDS):
+            s.values[i] = self.values[i] + random.gauss(0,stddev)
+        return s
+
+
+#
+# s = Sound()
+# s.logdecay(140,50,120,500)
+# s = Sound().set_frequency(10,20).set_frequency(50,100)
+# s.print_values()
 # def f(freq, value):
-#     return value / freq
+# return value / freq
 # s.filter(f)
 # s.print_values()
-print(s.print_symbol())
+# print(s.print_symbol())
 
-
-
+#
+# s = Sound()
+# s.logdecay(140,1,50,1000)
+# print(s.ascii2lines)
 
 ##############################
 

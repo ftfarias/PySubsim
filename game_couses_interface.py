@@ -5,11 +5,13 @@ import time
 import math
 import sys
 from util.util import bearing_to_angle, angle_to_bearing
-
+from util.linear_scale import linear_scaler
 from util.point import Point
 
 
 class GameCoursesInterface(object):
+    COMMAND_LINE = 12
+
     def __init__(self, sea, player_sub):
         self.player_sub = player_sub
         self.sea = sea
@@ -22,6 +24,7 @@ class GameCoursesInterface(object):
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         self.strcode = locale.getpreferredencoding()
         screen = curses.initscr()
+
         self.screen = screen
         screen.nodelay(1)
         curses.noecho()
@@ -132,6 +135,11 @@ class GameCoursesInterface(object):
             self.screen.addstr(3, 00, 'Passive Sonar')
 
 
+        elif self.display_screen == 'k':
+            for i in range(3,12):
+                self.screen.addstr(i, 00, 'line '+str(i))
+
+
         elif self.display_screen == 'M':
             self.screen.addstr(3, 00, 'Turbine power: {:3.1f}%'.format(sub.turbine.level))
             self.screen.addstr(3, 30, 'Turbine acc  : {} -> {:2.3f} Knots/s'.format(sub.turbine_acceleration/3600,sub.turbine_acceleration.length/3600))
@@ -166,12 +174,20 @@ class GameCoursesInterface(object):
 
         elif self.display_screen == 'e':
             self_noise = self.player_sub.get_self_noise()
-            sea_noise =  self.sea.get
+            sea_noise =  self.player_sub.get_sea_noise()
 
-            self.screen.addstr(3, 00, 'Submarine self noise : {} db'.format(self_noise.total_decibels()))
-            self.screen.addstr(4, 00, 'Sea background noise : {} db'.format(self_noise.total_decibels()))
+            # l1, l2 = sea_noise.ascii2lines(linear_scaler([0,160],[0,16]))
+
+            self.screen.addstr(3, 00, 'Sea conditions            : {}, {}   '.format( self.sea.sea_state_description(), "raining" if self.sea.raining else "no rain" ))
+            self.screen.addstr(4, 00, 'Sea noise at {:3.0f} feet deep: {:.1f} db'.format(self.player_sub.actual_deep,sea_noise.total_decibels()))
+            self.screen.addstr(4, 60, '{}'.format(sea_noise.ascii()))
+
+            # self.screen.addstr(6, 60, '{}'.format(l2))
+            # self.screen.addstr(7, 60, '{}'.format(l1))
 
 
+            self.screen.addstr(9, 00, 'Submarine self noise : {:.1f} db'.format(self_noise.total_decibels()))
+            self.screen.addstr(9, 60, '{}'.format(self_noise.ascii()))
 
         else:
             self.screen.addstr(3, 0, 'n - navigation')
@@ -194,17 +210,16 @@ class GameCoursesInterface(object):
             return None
 
     def get_command(self):
-        line = 11
         s = self.screen
-        s.addstr(line, 0, " " * 30)
+        s.addstr(self.COMMAND_LINE, 0, " " * 30)
         s.nodelay(0)
         curses.echo()
-        s.addstr(line, 0, "->")
+        s.addstr(self.COMMAND_LINE, 0, "->")
         s.clrtoeol()
-        command = s.getstr(line, 3)
+        command = s.getstr(self.COMMAND_LINE, 3)
         curses.noecho()
         s.nodelay(1)
-        s.addstr(line, 0, " " * 30)
+        s.addstr(self.COMMAND_LINE, 0, " " * 30)
         return command
 
     def command(self):
@@ -248,6 +263,7 @@ class GameCoursesInterface(object):
 
     def run(self):
         s = self.screen
+
         while 1:
             k = s.getch()
             if k != curses.ERR:
