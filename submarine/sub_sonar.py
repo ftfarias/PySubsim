@@ -235,6 +235,66 @@ class TowedArrayTB16(Deployable):
         return "TB-16 {state}, {l} feet of {t} deployed ({perc:.0f}%)".format(
             state=self.state, l=self.deployed_size, t=self.total_size, perc=self.percent_deployed()*100)
 
+class TowedArrayTB23(Deployable):
+    """
+    TB-23 Thin Line Towed Array (688)
+    TB-23F PERFORMANCE
+    Number of Apertures 3
+    Maximum Aperture Length 225 ft. (68.6 m)
+    Frequency Response 10 to 2,400 Hz
+    Number of Acoustic Channels 96
+    Heading Sensor Accuracy: 0.5°
+    Depth Sensor Accuracy: 3.28 ft. (1.0 m)
+    Temperature Sensor Accuracy: 0.5 °C
+    Operational Limits In excess of 1,000 ft. (305 m); Seawater temperature: -2.5 °C to +30 °C
+    Survival Limits In excess of 4,000 ft. (1,219 m)
+    Storage Limits Temperature: -30 °C to +65 °C
+    Reeling Limits Temperature: -10 °C to +40 °C
+    Deployment Time < 40 minutes
+    Retrieval Time < 20 minutes
+    Operational Speeds 3 to 12 knots
+    Handling System Level wind
+
+
+    """
+
+    def __init__(self):
+        # Size: 2400 feet
+        # deploy rate: 7 feet/sec (* 3600 for feet/hour)
+        Deployable.__init__(self, 2400, 7 * 3600)
+        # minimal Signal-to-Noise level dectection in DB
+        # Ex: 1 mean the signal must be 1db higher than noise to be distinguable
+        self.detection_threshold = -15
+        self.max_range = 15000  #yards
+
+        #
+        self.angle1 = math.radians(30)
+        self.angle2 = math.radians(-30) + 2.0 * math.pi
+
+        self.gain_scaler_1 = linear_scaler_with_limit([math.log10(2), math.log10(200)], [0, 20])
+
+    def listening_angle(self, angle):
+        if 0 < angle < self.angle1:
+            return False
+        elif 2 * math.pi > angle > self.angle2:
+            return False
+        else:
+            return True
+
+    def turn(self, time_elapsed):  # time in hours
+        Deployable.turn(self, time_elapsed)
+
+    def array_gain(self, freq):
+        # freq in Hertz
+        # result in db
+        log_freq = math.log10(freq)
+        return self.gain_scaler_1(log_freq)
+
+    def __str__(self):
+        return "TB-16 {state}, {l} feet of {t} deployed ({perc:.0f}%)".format(
+            state=self.state, l=self.deployed_size, t=self.total_size, perc=self.percent_deployed()*100)
+
+
 class Sonar(SubModule):
     MAX_WATERFALL_HISTORY_SECONDS = 2 * 3600  # two hours
     WATERFALL_STEPS = 120
