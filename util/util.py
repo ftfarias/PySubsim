@@ -3,36 +3,12 @@ import collections
 import math
 import random
 import unittest
-from sound.sound import sum_of_decibels
+# from sound.sound import sum_of_decibels
 import copy
 
 def angles(num_angles):
     step = 360 / num_angles
-    return [(a*step, (a+1)*step) for a in xrange(num_angles)]
-
-
-def angles_to_unicode(angle):
-    def interval(a, direction):
-        return direction-22.5 <= a < direction+22.5
-
-    if angle is None:
-        return u'\u2219'.encode(self.strcode)
-    elif interval(angle, 45):
-        return u'\u2197'
-    elif interval(angle, 90):
-        return u'\u2192'
-    elif interval(angle, 135):
-        return u'\u2198'
-    elif interval(angle, 180):
-        return u'\u2193'
-    elif interval(angle, 225):
-        return u'\u2199'
-    elif interval(angle, 270):
-        return u'\u2190'
-    elif interval(angle, 315):
-        return u'\u2196'
-    else:
-        return u'\u2191'
+    return [(a*step, (a+1)*step) for a in range(num_angles)]
 
 def shift(l, n):
     return l[n:] + l[:n]
@@ -100,7 +76,7 @@ class Bands():
 
     def add_random(self, freq_interval, level_interval, times=1):
         result = Bands(bands=self.bands)
-        for _ in xrange(times):
+        for _ in range(times):
             level = random.randint(level_interval[0], level_interval[1])
             freq = random.randint(freq_interval[0], freq_interval[1])
             result = result.add(freq, level)
@@ -112,8 +88,8 @@ class Bands():
     def get_freq_level(self):
         return self.bands.copy().items()
 
-    def total_level(self):
-        return sum_of_decibels(self.bands.values())
+    # def total_level(self):
+    #     return sum_of_decibels(self.bands.values())
 
     def filter(self, min_level):
         for k, v in self.bands.items():
@@ -225,7 +201,7 @@ def linreg(X, Y):
     """
     from math import sqrt
 
-    if len(X) != len(Y):  raise ValueError, 'unequal length'
+    if len(X) != len(Y):  raise (ValueError, 'unequal length')
 
     N = len(X)
     Sx = Sy = Sxx = Syy = Sxy = 0.0
@@ -246,12 +222,12 @@ def linreg(X, Y):
     ss = residual / (N - 2)
     Var_a, Var_b = ss * N / det, ss * Sxx / det
 
-    print "y=ax+b"
-    print "N= %d" % N
-    print "a= %g \\pm t_{%d;\\alpha/2} %g" % (a, N - 2, sqrt(Var_a))
-    print "b= %g \\pm t_{%d;\\alpha/2} %g" % (b, N - 2, sqrt(Var_b))
-    print "R^2= %g" % RR
-    print "s^2= %g" % ss
+    print("y=ax+b")
+    print( "N= %d" % N)
+    print( "a= %g \\pm t_{%d;\\alpha/2} %g" % (a, N - 2, sqrt(Var_a)))
+    print( "b= %g \\pm t_{%d;\\alpha/2} %g" % (b, N - 2, sqrt(Var_b)))
+    print( "R^2= %g" % RR)
+    print( "s^2= %g" % ss)
 
     return a, b
 

@@ -12,11 +12,9 @@ from util.point import Point
 class GameCoursesInterface(object):
     COMMAND_LINE = 12
 
-    def __init__(self, sea, player_sub):
+    def __init__(self, player_sub):
         self.player_sub = player_sub
-        self.sea = sea
-        self.time_rate = 1  # 1 time(s) faster
-        self.update_rate = 0.1  # updates every 0.1 second
+        # self.sea = sea
         self.display_screen = ''
 
         # setlocale enables UTF chars
@@ -33,6 +31,7 @@ class GameCoursesInterface(object):
 
         curses.start_color()
         curses.use_default_colors()
+
 
     def angles_to_unicode(self, angle):
         def interval(a, direction):
@@ -77,16 +76,13 @@ class GameCoursesInterface(object):
         # self.screen.clrtoeol()
 
 
-    def update_time(self):
-        self.sea.turn(self.time_rate * self.update_rate / 3600)  # sea turn runs in hours
-
     def f_to_text(self,value, mask='{:2.1f}'):
         if value is None:
             return "-"
         else:
             return mask.format(value)
 
-    def update_screen(self):
+    def render(self):
         s = self.screen
         for i in range(3,11):
             s.move(i,0)
@@ -103,7 +99,7 @@ class GameCoursesInterface(object):
                                                                         spd=self.player_sub.speed,
                                                                         sspd=self.f_to_text(self.player_sub.nav.speed),
                                                                         deep=self.player_sub.actual_deep,
-                                                                        sdeep=self.player_sub.set_deep))
+                                                                        sdeep=self.player_sub.target_deep))
         s.clrtoeol()
 
         if self.display_screen == 'n':
@@ -117,10 +113,10 @@ class GameCoursesInterface(object):
             if sub.nav.destination is not None:
                 self.screen.addstr(5, 40, '{:03.1f}{} deg'.format(angle_to_bearing(sub.nav.angle_to_destination), self.angles_to_unicode(angle_to_bearing(sub.nav.angle_to_destination))))
 
-            self.screen.addstr(6, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.speed, sub.turbine.level))
+            self.screen.addstr(6, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.speed, sub.turbine_level))
 
             if sub.nav.speed is None:
-                set_speed = '-'
+                set_speed = 'Stopped'
             else:
                 set_speed = '{:2.1f} knots'.format(sub.nav.speed)
                 # set_speed = '{:2.1f} knots (turbine {:3.1f}%)'.format(sub.nav.speed, sub.nav.turbine_level_needed)
@@ -196,6 +192,10 @@ class GameCoursesInterface(object):
             self.screen.addstr(6, 0, 'w - weapons')
             self.screen.addstr(7, 0, 'e - enviroment')
 
+        # s.move(i, 0)
+        # s.clrtoeol()
+
+
         s.refresh()
 
     def parse_coordinates(self, text):
@@ -211,7 +211,8 @@ class GameCoursesInterface(object):
 
     def get_command(self):
         s = self.screen
-        s.addstr(self.COMMAND_LINE, 0, " " * 30)
+        s.move(self.COMMAND_LINE, 0)
+        s.clrtoeol()
         s.nodelay(0)
         curses.echo()
         s.addstr(self.COMMAND_LINE, 0, "->")
@@ -219,7 +220,9 @@ class GameCoursesInterface(object):
         command = s.getstr(self.COMMAND_LINE, 3)
         curses.noecho()
         s.nodelay(1)
-        s.addstr(self.COMMAND_LINE, 0, " " * 30)
+        s.move(self.COMMAND_LINE, 0)
+        s.clrtoeol()
+        # s.addstr(self.COMMAND_LINE, 0, " " * 30)
         return command
 
     def command(self):
@@ -233,15 +236,15 @@ class GameCoursesInterface(object):
         if opt[0] == 'mov':
             destination = self.parse_coordinates(opt[1])
             if destination:
-                sub.nav.destination = destination
+                sub.destination = destination
                 self.msg("Aye, aye! Destination set to {0}, captain!".format(self.player_sub.nav.destination))
             else:
                 self.msg("Invalid input")
 
-        if opt[0] == 'spd':
+        if opt[0] == 'speed' or opt[0] == 'spd' or opt[0] == 's':
             if len(opt) == 2:
                 n = int(opt[1])
-                sub.nav.speed = n
+                sub.speed = n
                 self.msg("Changing speed to {0}".format(sub.nav.speed))
 
         if opt[0] == 'turbine' and len(opt) == 2:
@@ -261,49 +264,46 @@ class GameCoursesInterface(object):
             sub.set_deep = n
             self.msg("Changing deep to {0}".format(sub.set_deep))
 
-    def run(self):
+    def read_keyboard(self):
         s = self.screen
+        k = s.getch()
+        if k != curses.ERR:
+            # curses.flash()
+            # s.addstr(0, 0, chr(k))
+            if k == ord('q'):
+                self.finalize()
+                exit()
+            elif k == ord(' '):
+                self.command()
 
-        while 1:
-            k = s.getch()
-            if k != curses.ERR:
-                # curses.flash()
-                # s.addstr(0, 0, chr(k))
-                if k == ord('q'):
-                    break
-                elif k == ord(' '):
-                    self.command()
+            # Speeds
+            elif k == ord('+') or k == ord('='):
+                self.speed_up()
+            elif k == ord('-'):
+                self.speed_down()
 
-                # Speeds
-                elif k == ord('+') or k == ord('='):
-                    self.speed_up()
-                elif k == ord('-'):
-                    self.speed_down()
+            # screens
+            # elif k == ord('n'):
+            #     self.display_screen = 'n'
+            # elif k == ord('N'):
+            #     self.display_screen = 'N'
+            # elif k == ord('r') or k == ord('R'):
+            #     self.display_screen = 'r'
+            # elif k == ord('s') or k == ord('S'):
+            #     self.display_screen = 's'
+            # elif k == ord('w') or k == ord('W'):
+            #     self.display_screen = 'w'
+            else:
+                try:
+                    self.display_screen = chr(k)
+                except:
+                    pass
 
-                # screens
-                # elif k == ord('n'):
-                #     self.display_screen = 'n'
-                # elif k == ord('N'):
-                #     self.display_screen = 'N'
-                # elif k == ord('r') or k == ord('R'):
-                #     self.display_screen = 'r'
-                # elif k == ord('s') or k == ord('S'):
-                #     self.display_screen = 's'
-                # elif k == ord('w') or k == ord('W'):
-                #     self.display_screen = 'w'
-                else:
-                    try:
-                        self.display_screen = chr(k)
-                    except:
-                        pass
 
-            time.sleep(self.update_rate)
-            self.update_time()
-            self.update_screen()
-
+    def finalize(self):
         # ends and closes interface
         curses.nocbreak()
-        s.keypad(0)
+        self.screen.keypad(0)
         curses.echo(1)
         curses.endwin()
 

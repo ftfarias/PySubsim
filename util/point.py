@@ -5,10 +5,35 @@ import random
 import unittest
 
 
+
+#############################
+#        GAME ANGLES        #
+#############################
+
 # (-1, 1)    (0, 1)    (1, 1)
 # (-1, 0)  <- 0, 0 ->  (1, 0)
 # (-1,-1)    (0,-1)    (1,-1)
 #
+# 3/4 PI      PI/2      PI/4
+#PI/-PI        o         0
+#-3/4 PI     -PI/2     -PI/4
+#
+# NW         North     NE
+# West     <- 0, 0 ->  East
+# SW         South    SE
+
+#############################
+#        USER ANGLES        #
+#############################
+
+# (-1, 1)    (0, 1)    (1, 1)
+# (-1, 0)  <- 0, 0 ->  (1, 0)
+# (-1,-1)    (0,-1)    (1,-1)
+#
+# NW         North     NE
+# West     <- 0, 0 ->  East
+# SW         South    SE
+
 # 315   0    45
 # 270   o    90
 # 225  180   135
@@ -17,7 +42,7 @@ import unittest
 class Point(object):
     """ Point class represents and manipulates x,y coords. """
 
-    def __init__(self, x, y=0):
+    def __init__(self, x, y=0.0):
         """ Create a new point at x, y """
         if isinstance(x, complex):
             self.v = x
@@ -39,9 +64,6 @@ class Point(object):
         self.v = complex(self.v.real, value)
 
     y = property(get_y, set_y, None, "y value")
-
-    # def __init__(self, c):
-    # self.v = c
 
     def __str__(self):
         return "({0:.3f}, {1:.3f})".format(self.v.real, self.v.imag)
@@ -101,7 +123,7 @@ class Point(object):
         return Point(n_x, n_y)
 
     def movement_to(self, other):
-        angle = self.angle_to(other)
+        angle = self.get_angle_to(other)
         return Point(math.cos(angle), math.sin(angle))
 
 
@@ -119,7 +141,7 @@ class Point(object):
 
     def unit(self):
         if abs(self.v) == 0:
-            return Point(1,0)
+            return Point(0,0)
         else:
             return Point(self.v / abs(self.v))
 
@@ -128,8 +150,14 @@ class Point(object):
         return Point(self.v.real**2, self.v.imag**2)
 
 
-    def angle_to(self, other):
-        """Returns the angle in radians from -pi to +pi  and zero been (1,0) / "east" / 90 degrees bearing
+    def get_angle(self):
+        """Returns the angle in radians from -pi to +pi  and zero been (1,0) / "east" / 90 user-degrees  """
+        if abs(self.v) == 0:
+            return 0
+        return cmath.phase(self.v)
+
+    def get_angle_to(self, other):
+        """Returns the angle in radians from -pi to +pi and zero been (1,0) / "east" / 90 degrees bearing
         :param other: other object
         :returns: angle in radians
         """
@@ -138,8 +166,12 @@ class Point(object):
             return 0
         return cmath.phase(p.v)
 
+    def set_angle(self, radians):
+        new_point = Point(self.length, 0.0)
+        return new_point.rotated(radians)
 
-    def bearing_to(self, other):
+
+    def get_user_angle_to(self, other):
         """Returns the angle in degrees from 0 to 359 and zero been (0,1) / "north" / 0 degrees bearing
         :param other: other object
         :returns: angle in radians
@@ -147,27 +179,15 @@ class Point(object):
         p = other - self
         if abs(self.v) == 0:
             return 0
+        return p.get_user_angle()
 
-        return p.bearing()
-
-    def get_bearing(self):
+    def get_user_angle(self):
         """Returns the angle in degrees from 0 to 359 and zero been (0,1) / "north" / 0 degrees bearing
         :param other: other object
         :returns: angle in radians
         """
         angle_deg = math.degrees(self.get_angle())
-        # bearing1 = (angle_deg + 360) % 360
         return (90 - angle_deg) % 360
-
-    bearing = property(get_bearing, None, None, "gets or sets the bearing")
-
-    def rotate(self, radians):
-        cos = math.cos(radians)
-        sin = math.sin(radians)
-        x = self.v.real * cos - self.v.imag * sin
-        y = self.v.real * sin + self.v.imag * cos
-        self.x = x
-        self.y = y
 
     def rotated(self, radians):
         cos = math.cos(radians)
@@ -179,18 +199,6 @@ class Point(object):
         # print("x",x,self.v.real)
         # print("y",y,self.v.imag)
         return Point(x, y)
-
-    def get_angle(self):
-        if abs(self.v) == 0:
-            return 0
-        return cmath.phase(self.v)
-
-    def _setangle(self, radians):
-        self.x = self.length
-        self.y = 0
-        self.rotate(radians)
-
-    angle = property(get_angle, _setangle, None, "gets or sets the angle of a vector")
 
 
     def dot(self, other):
@@ -234,22 +242,24 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(Point(3, 4).length, 5)
         self.assertEqual(Point(9, 12).length, 15)
 
-
     # (-1, 1)    (0, 1)    (1, 1)
     # (-1, 0)  <- 0, 0 ->  (1, 0)
     # (-1,-1)    (0,-1)    (1,-1)
     #
-    # 315   0    45
-    # 270   o    90
-    # 225  180   135
+    # 3/4 PI      PI/2      PI/4
+    # PI/-PI        o         0
+    # -3/4 PI     -PI/2     -PI/4
 
     def test_angle_to(self):
         p1 = Point(0, 0)
-        self.assertEqual(p1.angle_to(Point(0, 0)), 0)
-        self.assertEqual(p1.angle_to(Point(1, 0)), 0)
-        self.assertEqual(p1.angle_to(Point(0, 1)), 1.5707963267948966)
-
-        # self.assertEqual(p1.angle_to(p2), -1.0 * math.pi / 2)
+        self.assertEqual(p1.get_angle_to(Point(0, 0)), 0)
+        self.assertEqual(p1.get_angle_to(Point(1, 0)), 0)
+        self.assertEqual(p1.get_angle_to(Point(1, 1)), math.pi / 4)
+        self.assertEqual(p1.get_angle_to(Point(0, 1)), math.pi / 2)
+        self.assertEqual(p1.get_angle_to(Point(-1, 1)), 3 * math.pi / 4)
+        self.assertEqual(p1.get_angle_to(Point(0, -1)), -math.pi / 2)
+        self.assertEqual(p1.get_angle_to(Point(1, -1)), -math.pi / 4)
+        self.assertEqual(p1.get_angle_to(Point(-1, -1)), -3 * math.pi / 4)
 
 
     def test_movement_to1(self):
@@ -278,46 +288,36 @@ class TestUtil(unittest.TestCase):
 
     def test_rotated(self):
         p1 = Point(1, 0)
-        self.assertEqual(p1.angle, 0)
+        self.assertEqual(p1.get_angle(), 0)
 
         p2 = p1.rotated(math.pi / 2)
-        self.assertEqual(p2.angle, math.pi / 2)
+        self.assertEqual(p2.get_angle(), math.pi / 2)
 
         p3 = p2.rotated(math.pi / 2)
-        self.assertEqual(p3.angle, math.pi)
-
-    def test_rotate(self):
-        p1 = Point(1, 0)
-        self.assertEqual(p1.angle, 0)
-
-        p1.rotate(math.pi / 2)
-        self.assertEqual(p1.angle, math.pi / 2)
-
-        p1.rotate(math.pi / 2)
-        self.assertEqual(p1.angle, math.pi)
+        self.assertEqual(p3.get_angle(), math.pi)
 
     def test_angle(self):
         p1 = Point(8, 0)
-        self.assertEqual(p1.angle, 0)
+        self.assertEqual(p1.get_angle(), 0)
 
-        p1.angle = math.pi / 3
-        self.assertEqual(p1.angle, math.pi / 3)
+        p2 = p1.set_angle(math.pi / 3)
+        self.assertEqual(p2.get_angle(), math.pi / 3)
 
 
     def test_change_length(self):
         p1 = Point(4, 3)
-        a = p1.angle
+        a = p1.get_angle()
         self.assertEqual(p1.length, 5)
         p1.length = 10
         self.assertEqual(p1, Point(8,6) )
-        self.assertEqual(a, p1.angle )
+        self.assertEqual(a, p1.get_angle() )
 
     def test_change_length2(self):
         p1 = Point(24, -6)
-        a = p1.angle
+        a = p1.get_angle()
         p1.length = p1.length * 2
         self.assertEqual(p1, Point(48,-12) )
-        self.assertEqual(a, p1.angle )
+        self.assertEqual(a, p1.get_angle() )
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,234 @@
+
+Builders	Newport News Shipbuilding Co.
+General Dynamics Electric Boat Division.
+Power Plant	One S6G reactor
+one shaft at 35,000 shp
+Improved Performance Machinery Program Phase I [on 688 Improved]
+Length	360 feet (109.73 meters)
+Beam	33 feet (10 meters)
+Displacement	6,927 tons (6210 metric tons) submerged
+Speed	Official: 20+ knots (23+ miles per hour, 36.8 +kph)
+Actual: 32 knots maximum submerged speed
+Operating Depth	official: "greater than 800 feet"
+Actual: 950 feet [300 meters] test depth
+Actual: 1475 feet [450 meters] collapse depth
+Hull	HY-80 Steel
+Crew	13 Officers, 116 Enlisted
+
+Departments
+Combat
+Engineering
+Executive
+NAVOPS
+Medical
+Supply
+Armament	Harpoon and Tomahawk ASM/LAM missiles from VLS tubes
+MK-48 torpedoes from four 533-mm torpedo tubes (Seawolf has 8)
+Combat Systems	AN/BPS-5 surface search radar
+AN/BPS-15 A/16 navigation and fire control radar
+
+TB-16D passive towed sonar array (subsystem of BQQ-5)
+TB-23 passive "thin line" towed array (subsystem of BQQ-5)
+AN/BQG-5D wide aperture flank array
+AN/BQQ-5D/E low frequency spherical sonar array OR
+AN/BSY-1 spherical bow array [on SSN-751 and later]
+AN/BQS-15 close range active sonar (for ice detection)
+MIDAS Mine and Ice Detection Avoidance System
+SADS-TG active detection sonar
+
+Type 2 attack periscope (port)
+Type 18 search periscope (starboard)
+
+AN/BSY-1 (primary computer);
+UYK-7; UYK-43; UYK-44
+
+WLR-9 Acoustic Intercept Receiver
+WLR-8(V)2 ES receiver
+APX-72 IFF (transponder only)
+
+Link 11 Tactical data link
+OTCIXS Tactical data link
+Unit Cost	$900 million [1990 prices]
+Unit Operating Cost
+Annual Average	~$21,000,000 [source: [FY1996 VAMOSC]
+
+----------------------------
+
+TB-23 Thin Line Towed Array
+Towed array technology has advanced rapidly with longer, multiline systems that have an increasing number of sensors. For submarine-based ASW, the thin-line TB-23 is routinely deployed. Experiments with adaptive beam forming on both arrays are demonstrating impressive results especially for cluttered environments. Operational beam formers for towed arrays assume the array geometry to be straight and horizontal aft of the tow ship, whereas in reality there is always some deformation from this geometry. This is now measured by heading and depth sensors with varying degrees of success. The passive TB-23 array can only monitor gross deformations. A major limitation in current systems is that beam forming cannot be carried out when the ship is maneuvering, which can result in downtimes as great as 50 percent.
+
+Many existing Navy tow cable systems have single coaxial conductors, one to two kilometers in length, on which power, uplink data, and downlink data are multiplexed (e.g. SQR-19, TB-23, TB-29). These systems typically run at uplink data rates of less than 12 Mbit/s due to bandwidth limitations of the long coaxial cable.
+
+----------------------------
+
+The TB-16 Fat Line Towed Array consists of a 1400 pound accoustic detector array, some 3.5 inches in diameter and 240 feet long, towed on a 2,400 foot long cable 0.37 inches in diameter weighing 450 pounds.
+
+----------------------------
+
+
+AN/BQG-5 Wide Aperture Array
+The AN/BQG-5 Wide Aperture Array is a flank array on the SSN-688 Los Angeles attack submarines. The AN/BQG-5 WAA System was designed and developed for the SSN 688 Class (Los Angeles) submarine as a stand-alone back-fit to the 688 Class. The WAA gives the 688 Class a state-of-the-art passive target location capability. This long range passive target location promotes ship Self-Protection by providing a first strike capability.
+
+With the following exceptions, there are no differences in the acoustic models used to generate Flank (WAA) array data.
+
+The first of these exceptions is that this array has a variable upper frequency limit. A special table in the sensor suite data file stores array upper frequency limits which are a function of array geometry and target location. The Flank array model first retrieves an arrival angle from the prop loss tables based on target depth and range, own ship position, propagation path, and a selected frequency specified in the sensor suite data file. The target bearing and arrival angle are then used to select an upper frequency limit. This frequency is then used as the upper frequency range for subsequent SNR calculations. From this point on the modeling is identical for all arrays.
+The second exception which is made for flank arrays is that the panels of the array are spatially distributed. From a detection standpoint, the array is treated as a single receiver, however the user can specify an array spacing parameter which is used to generate receive delays for each panel. Mid-bow and mid-stern delay times are generated based on target bearing, and range. These delay times can then be used by TMA algorithms to generate range estimates for a given target.
+Finally, the Flank array requires an initial detection from either the towed or spherical arrays to initiate Flank detection processing. Once the Flank array has been steered to a taret from an initial towed or spherical bearing, it will attempt to detect a contact.
+Division Newport's Lightweight Planar Array technology has been applied to the AN/ BQG-5 Wide Aperture Array (WAA) sonar panels. It reduced the weight of the array panels by 54 percent (compared with the original WAA Engineering Development Model), and acquisition cost savings of 37 percent are expected.
+
+A subset of the seven sensor AN/BSY-2 Combat System, the single sensor AN/BQG-5, was deployed on the USS Augusta in 1994, and initialized properly the first time it was powered up on the submarine, and generally performed outstanding in its first sea trials.
+
+On 27 December 1995 Loral Federal Systems Company, Manassas, Virginia, was awarded a$18,478,099 fixed-price-incentive-fee contract for one AN/BQG-5(V) Passive Sonar Receiving Set (PSRS) and ancillary equipment, engineering services, and aspecial corrosion warranty. Work was to be performed in Manassas, Virginia(45%), with subcontractors performing the remaining work in Annapolis, Maryland(42%), Portsmouth, Rhode Island (10%), and Woodland Hills, California (1%), and other numerous vendor provided material (2%) (all subcontractor percentagesbeing approximate). Work was to be completed by December 1998. Contract fundswill expire at the end of the current fiscal year. This contract was competitively procured through full and open competition with 25 proposalssolicited and two offers received. The Naval Sea Systems Command, Washington, D.C., is the contracting activity.
+
+
+----------------------------
+
+It seems that most SCU platforms have two TA arrays. Generally, which one should be used for sensitivity and which one for speed?
+
+Port for sensitivity, starboard for speed.
+
+I believe if the sub you are using only has one towed array, it is on the starboard side by default. I once tried switching to port array on a Victoria/Upholder class, and I just got a weird waterfall display and strange noises.
+
+edit: Note, what I said at the top there is only a guideline based on the 688i and Seawolf classes, I don't know it to be true of every platform. :)
+
+
+
+Actually it's not opposite, I think I just had it backwards, at least for the Seawolf.
+
+Seawolf Towed Arrays
+STARBOARD - AN/TB-29D - More sensitive
+PORT - AN/TB-16D - Less sensitive
+
+As far as the 688i goes, it should either have a combination of the TB-16 and TB-23, or, TB-16 and TB-29.
+ I thought I had read somewhere that the 16 was on the starboard side, but now I can't seem to confirm that.
+
+Just for the record though, on the Seawolf, the washout speed is higher for the port array than the starboard, but I
+notice NO difference between them in either narrowband or broadband as far as detection is concerned.
+So my advice, is don't worry about which one you're using. :)
+
+
+MarkShot posed a question about SCU which is used with SCX.
+
+In SCX the SW TAs positions were reversed:-
+
+PORT - AN/TB-29D - More sensitive
+STARBOARD- AN/TB-16D - Less sensitive
+
+In DW and SC ''the reverse'' is true of the SW :-
+
+STARBOARD - AN/TB-29D - More sensitive
+PORT - AN/TB-16D - Less sensitive
+
+Hope this claryfies.
+
+
+-------------------------------------
+
+I assumed that because of the noise a ship's screws emit, it should be easy for sensors on a submarine to hear a
+ship from far away. However I find that I have to get close within 5nm to detect a ship on the broadband sonar display.
+ Of course it's easy to detect a ship from far away when it's constantly ping it's active sonar, but what do you do if
+ it's not?
+
+5nm sounds like either really bad conditions (storm), or you are under the layer, and the ship is not (obviously).
+Warship moving at normal speed should be detectable at about 10nm. With good conditions and convergence zones, it
+would usually be first convergence zone, about 30nm, or even second, 60nm.
+Also remember the ships can be first detected on low frequency narrow band sonar. Towed array is best at low
+ frequencies, spherical is worst.
+
+
+S(ound) S(peed) P(rofile) station (e)X(pendable) B(athy)T(hermograph) report.
+
+Basically it is a temperature sensor that is floated up to the surface. When it reaches the surface it starts to measure the soundspeed as it dives to the bottom. This station (last button of the Sonar station) shows a table and graph of this sound speed change versus depth. A sharp bend in that graph is a location of a layer where soundrays get curved towards lower soundspeeds. But the layer may not be shown on it if the seabed at your current location isn't deep enough. The sensor simply wasn't able to measure it. Depending on the scenario settings there may not even be a layer, just a straight line as the curve.
+
+
+-------------------------------------
+
+The link is here http://www.computerharpoon.com/wiki/main/index.php?title=Sonar_model
+
+Let me quote a little, it's been stikied in the DW mod section. I thought this was worth sharing.
+
+After reading this well it seems that DW is a better game than SC. . .in terms of passive detection range.:up:
+
+And an unspeakable mod actually made some of the stuffs told in the article a reality such as the impossibility of detecting diesel boats.
+
+So I say wow thank you Sonalysts.
+
+Sonar in Real Life
+
+Passive Sonar
+Sea state and Target Noise always causes the biggest changes to sonar predictions. Target Noise and Target Speed were always calculated as one entry = Target Self Noise. Likewise, Receiver Self Noise, Receiver Speed, and Cavitation were grouped together as = Own Ship Noise. They were combined because the separate items are directly proportional to each other.
+With newer nuclear submarines at speeds below 10-12 knots you're talking about detection ranges of less than a mile. Diesel submarines can become undetectable passively because they can shut down everything that makes noise, regardless of how modern they are. A modern diesel at a 2-3 knot patrol speed is probably not detectable beyond 1000 yards passively, less in high ambient noise environments. Obviously, a lot depends on ambient noise, propagation paths, layer depth, the sensitivity and location of the passive sonar receiver, proficiency of the submarine crew and operating mode, etc. In fact, in an inshore environment (shallow water, high ambient noise, high shipping density, high wreck density), attempting to track a diesel submarine passively is virtually impossible, and extremely difficult actively, and the US Navy relies primarily on non-acoustic methods for initial detection, i.e. a periscope search using ISAR radar being the most effective. MAD in a shallow water environment is handicapped also... wrecks, bottom topography, geologic features, etc., all contribute to false MAD contacts and high magnetic noise, reducing the detection range. For that reason, passive detection range for a diesel submarine in shallow water should be Zero.
+Factors limiting active sonar performance in shallow water (the littoral environment) also play a major role... active sonar frequency and power affect bottom reverberation and absorption. Bottom compositions are rated on their ability to absorb and reflect sound energy. A muddy bottom will absorb a lot of energy, whereas a rocky, gravel bottom will reflect and scatter a lot of energy. Again, wrecks will give false contacts. A good diesel sub CO can avoid active detection by going dead in the water and pointing the bow or stern towards the sonar, reducing the target strength by as much as 80 per cent and not providing any Doppler return to the sonar. Or he can bottom, in which case his target echo is masked by the bottom reverb, and if he bottoms near a wreck you've got more problems.
+The big point is that the environment pays a major role in the ranges observed. A Victor III in the Norwegian Sea (relatively quiet sea and deep) at 12 knots may be detected at several miles. The same submarine in the Med (relatively shallow and very noisy) may be detected at a 1000 yards. At flank speed (27 knots), the Victor III may be detected at 20 miles direct path, 25-40 miles bottom bounce, and possibly to 3 or more CZ's (convergence zones) at 30-33 miles, 60-66 miles and 90-99 miles in the Norwegian Sea, by ship based sensors and sonobouys, and for literally thousands of miles by SOSUS. What you see here is an overlap of ranges depending on transmission path, and that is entirely normal and expected. SOSUS exploits the deep sound channel, low frequency noise propagated for thousands of miles in a duct created by the effects of pressure and temperature at those depths.
+This is just the tip of the iceberg, and my intent was to point out that you can't just assign hard and fast numbers. Under the right conditions a carrier may be detected acoustically well in excess of 140 miles, or may not be identified at all until it's in visual range. Assuming the carrier is detected at 140 miles, can the operator classify it as a carrier? Maybe, maybe not. If he is operating a sophisticated narrowband acoustic processor, possibly, assuming the carrier isn't using acoustic deception. If it is a broadband system (namely an active sonar being used in a passive mode), all he knows is something is making a lot of noise on a given bearing. That, combined with other intelligence may provide another piece of the puzzle, but you can't definitively classify a target with broadband sonar. A carrier launching and recovering aircraft is a different story. The noise of the catapults hitting the water brakes every 30 seconds or so is very distinctive, can be heard for long distances, and any submarine acoustic analyst has probably been trained to recognize that sound. A more comprehensive list of variables:
+
+
+
+-------------------------------------
+
+hi all,
+
+Learned today that there are frequencies lower than 50 Hz.
+Those ones are mainly (7-12Hz) for Shaft and blades. So I am surprised that we don't touch them in DW for classification.
+
+Well the frequency will change with propeller rotation speed :-).
+The propeller generated noise was thought to be main way of detecting quiet russian subs in the 80' (IIRC), by very low frequency sound waves created by rotating propellers, but later Russians become using (after Toshiba scandal?) propellers with skewed blades (from Akula up) and detection ranges were signifantly reduced... anyway with today's much longer and more sensitive towed arrays it's probably again important method of very long range detections in deep water. You can skewe the blades or use shrouded propulsor but probably can't eliminate the propeller generated frequencies completly, and in deep water they are traveling very long ranges with little loss... Don't know what in case of a pump-jet - if they are generating detectable freqs too ? Probably yes, only different - lower amplitude (quieter), higher frequency and masked from the sides...
+
+(edit: for those who don't know what we are talking about - just like a rotating fan in your computer or on your desk creates noise, every rotating propeller creates acoustic "noise" in the water, only on very low frequencies. Much lower than 50Hz. This noise is very hard to eliminate, but can be reduced in similar way like quiet air fans for computers are done - so more and highly skewed blades, shrouded propulsors ect.
+
+from the LoBlo's link - it's Miasnikov's article:
+
+'Discrete lines in the 0.1-10 Hz band are caused by rotation of the propellers. This noise is difficult to suppress. Moreover, the noise from the propeller may be heard in the ocean at a distance of up to several thousand kilometers since absorption by ocean waters at this low frequency is negligible. The method of narrow-band filtration of the spectrum's discrete line at frequencies up to several Hz is the basic working principle for sonar systems for long-distance detection." )
+
+P.S. What I have remembered was from:
+
+http://www.chinfo.navy.mil/navpalib/cno/n87/history/cold-war-asw.html
+
+The Third Battle: Innovation
+in the U.S. Navy's Silent
+Cold War Struggle
+with Soviet Submarines
+
+"Phase IV of the Third Battle: ASW and Acoustic Parity: 1980-1990
+
+The Victor III was a harbinger of the Akula, the first Soviet submarine which approached or achieved acoustic parity with its American contemporaries. Though first deployed in 1978, it was in 1981 that the full significance of the Victor III's quieting sank in.(82) From public testimony it is possible to describe broadly the quieting steps finally taken in this class. In a 1984 reference to operations against Victor IIIs, CNO Admiral Watkins testified:
+
+"…What we also learned was that where we had the towed array that covers the low frequency band it was effective every time. The lesson is…we need to get the low frequency end developed and accelerate its introduction into the fleet. Now we are working on that. We have put extra dollars into the low frequency end so that we can go after the propeller blade rates and the other things we have to get on a quiet submarine."(83)
+
+The significance of this statement is in its reference to the importance of propeller blade rate tonals for detecting Victor IIIs, which indicates that other, higher frequency, narrowband tonals like those generated by a ship's service turbo-generators had been reduced."
+Henson
+
+
+
+
+The Undiscovered Country. :)
+
+I'd really like to know how those work too!
+
+Would be REALLY helpful if someone who knows could say what those things are doing.
+
+Now, I didn't touch beam widths at all, have no idea yet what they do. Trying reporting accuracy now. I feel I'm becoming to understand how it works although get some strange results. In general, ALL passive sonars have it set to 3. This probably resutls in no bearing error at close ranges and small bearing errors at long ranges. Value of 10 caused contact to be all around the ship (or at least 180deg). Interesting results with value 1. I got 5deg "bearing scattering" at about 6nm - probably too much if not for VLF (and only one value can be set for whole range of freqs the sonar is working on).
+5deg error is consistent with what is visible on "bearing error curves" in DB editor. Got not very interesting results for 2 and 4 settings, but I'm abandoning towed array and will reply tests on sphere, we'll see.
+Probably the error with "1" setting is too much even for towed array...
+I would like smaller error but with no "error free" zone, like with default setting (I'm not sure yet but seems contacts up to 30.000m are showed with no error - or it is less than 1deg so not shows up). In general, lower value, greater the bearing error down to 1, 0 seems to be no error at all, not sure what happens for higher values like 5 or 10 (when bearing errors are show as negative values)... :hmm: :hmm: :hmm: :hmm:
+
+P.S. settings giving negative results, so 5 and higher, are not valid, results in bearing dispersion of 360deg :-) so valid settings seem to be 0 (no errors) and 1,2,3,4 with 1 largest b. error and 4 smallest b. error (0deg up to 25nm).
+
+For now I would test how works in practice values of 2 for sphere sonars and 1 for towed array... but errors for towed could be too big so maybe 2 for both would be ok... value of 3 that is set currently gives almost no errors at practic ranges.
+
+P.P.S. But maybe even value of 1 is ok. Seems that even if contact bearing is jumping 5 or more degrees on map, the bearings that are send to TMA plot aren't so dispersed, they differ for about 1-2 deg at most... just like some kind of "average" values of bearing were send to TMA, not current second readings... so even large visible bearing scattering results in relatively much smaller bearing scattering on TMA plot. 1-2 deg error on TMA plot makes long range solution harder and less exact (you have to average dots on your own while making the line) but not impossible.
+Have to be tested in practice in gameplay, how accurate solution can be obtained from data with such bearing error or other.
+
+I always wondered if solution from towed sonar only LF contact is precise enaugh for firing solution, or it's only initial detection system and later you have to catch target on sphere and hull to plot more precise position for attack ? Bearing error of typical towed array (TB-16) in 50-100Hz range is probably not public info....?
+
+
+-------------------------------------
+
+
+
+
+-------------------------------------
+
+
+
+-------------------------------------
