@@ -48,6 +48,8 @@ class Submarine(MovableNewtonObject):
 
         self.turbine_acceleration = Point(0, 0)
 
+        self.time_elapsed = 0
+
         # self.turbine = Turbine(self, self.MAX_ACCELERATION)
 
         self.nav = Navigation(self)
@@ -309,6 +311,7 @@ class Submarine(MovableNewtonObject):
         # return sum_of_decibels(base) + random.gauss(0, 1)
 
     def turn(self, time_elapsed):
+        self.time_elapsed = time_elapsed
         turbine_acceleration = self.MAX_ACCELERATION * self.turbine_level
 
         turbine_acceleration_x = math.cos(self._ship_bearing) * turbine_acceleration

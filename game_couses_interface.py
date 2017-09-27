@@ -90,39 +90,38 @@ class GameCoursesInterface(object):
         #s.clear()
         sub = self.player_sub
 
-        s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
+        # s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
         s.clrtoeol()
 
-        s.addstr(1, 0, "pos:{pos} dest:{dest} spd:{spd:2.1f} ({sspd}) deep:{deep:.0f} ({sdeep})".format(
-                                                                        pos=sub.position,
-                                                                        dest=self.f_to_text(sub.nav.destination,mask='{}'),
-                                                                        spd=self.player_sub.speed,
-                                                                        sspd=self.f_to_text(self.player_sub.nav.speed),
-                                                                        deep=self.player_sub.actual_deep,
-                                                                        sdeep=self.player_sub.target_deep))
+        # s.addstr(1, 0, "pos:{pos} dest:{dest} spd:{spd:2.1f} ({sspd}) deep:{deep:.0f} ({sdeep})".format(
+        #                                                                 pos=sub.position,
+        #                                                                 dest=self.f_to_text(sub.nav.destination,mask='{}'),
+        #                                                                 spd=self.player_sub.speed,
+        #                                                                 sspd=self.f_to_text(self.player_sub.nav.speed),
+        #                                                                 deep=self.player_sub.actual_deep,
+        #                                                                 sdeep=self.player_sub.target_deep))
         s.clrtoeol()
 
         if self.display_screen == 'n':
             self.screen.addstr(3, 00, 'Current')
-            self.screen.addstr(3, 40, 'Navigation')
+            self.screen.addstr(3, 40, 'Target')
 
             self.screen.addstr(4, 00, 'Position: {pos}'.format(pos=sub.position))
-            self.screen.addstr(4, 40, '{pos}'.format(pos=sub.nav.destination))
+            # self.screen.addstr(4, 40, '{pos}'.format(pos=sub.nav.destination))
 
-            self.screen.addstr(5, 00, 'Course  : {:03.1f}{}'.format(sub.bearing, self.angles_to_unicode(sub.bearing)))  # angles_to_unicode(sub.bearing)
-            if sub.nav.destination is not None:
-                self.screen.addstr(5, 40, '{:03.1f}{} deg'.format(angle_to_bearing(sub.nav.angle_to_destination), self.angles_to_unicode(angle_to_bearing(sub.nav.angle_to_destination))))
+            # self.screen.addstr(5, 00, 'Course  : {:03.1f}{}'.format(sub.course, self.angles_to_unicode(sub.course)))  # angles_to_unicode(sub.bearing)
+            # if sub.nav.destination is not None:
+            #     self.screen.addstr(5, 40, '{:03.1f}{} deg'.format(angle_to_bearing(sub.nav.angle_to_destination), self.angles_to_unicode(angle_to_bearing(sub.nav.angle_to_destination))))
 
-            self.screen.addstr(6, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.speed, sub.turbine_level))
+            self.screen.addstr(6, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.actual_speed, sub.turbine_level))
 
-            if sub.nav.speed is None:
-                set_speed = 'Stopped'
+            if sub.target_speed is None:
+                target_speed = '-'
             else:
-                set_speed = '{:2.1f} knots'.format(sub.nav.speed)
-                # set_speed = '{:2.1f} knots (turbine {:3.1f}%)'.format(sub.nav.speed, sub.nav.turbine_level_needed)
+                # set_speed = '{:2.1f} knots'.format(sub.target_speed)
+                target_speed = '{:2.1f} knots (turbine {:3.1f}%)'.format(sub.target_speed, sub.turbine_level_needed)
 
-            self.screen.addstr(6, 40, set_speed)
-            # self.screen.addstr(6, 40, '{:2.1f} knots (turbine {:3.1f}%)'.format(sub.nav.speed, sub.nav.turbine_level_needed))
+            self.screen.addstr(6, 40, target_speed)
 
             # self.screen.addstr(6, 30, 'Speed   : {:2.1f} knots'.format(sub.speed))
             self.screen.addstr(7, 00, 'Rudder  : {:0.0f} deg/min'.format(math.degrees(sub.rudder/60)))
@@ -137,35 +136,62 @@ class GameCoursesInterface(object):
 
 
         elif self.display_screen == 'M':
-            self.screen.addstr(3, 00, 'Turbine power: {:3.1f}%'.format(sub.turbine.level))
-            self.screen.addstr(3, 30, 'Turbine acc  : {} -> {:2.3f} Knots/s'.format(sub.turbine_acceleration/3600,sub.turbine_acceleration.length/3600))
+            row = 3
 
-            self.screen.addstr(4, 00, 'Drag factor  : {:2.2f}'.format(sub.drag_factor))
-            self.screen.addstr(4, 30, 'Drag acc     : {} -> {:2.3f} Knots/s'.format(sub.drag_force/3600,sub.drag_force.length/-3600.0))
+            self.screen.addstr(row, 00, 'Time Elapsed: {:3.10f} seconds, {:3.10f} hours'.format(sub.time_elapsed * 3600, sub.time_elapsed))
+            row += 1
 
-            self.screen.addstr(5, 00, 'Speed        : {} => {:2.1f} Knots'.format(sub._velocity, sub.speed ))
+            self.screen.addstr(row, 00, 'Actual Speed : {:2.1f} Knots'.format(sub.actual_speed ))
+            self.screen.addstr(row, 30, 'Target Speed : {:2.1f} Knots'.format(sub.target_speed ))
+            row += 1
 
-            self.screen.addstr(6, 00, 'Acceleration : {} => {:2.3f} Knots/s'.format(sub._acceleration/3600, abs(sub._acceleration/3600) ))
+            self.screen.addstr(row, 00, 'Turbine level: {:3.1f}%'.format(sub.turbine_level))
+            self.screen.addstr(row, 30, 'Turbine acc  : {} -> {:2.3f} Knots/s'.format(sub.turbine_acceleration, sub.turbine_acceleration.length))
 
-            self.screen.addstr(7, 00, 'Ship bearing : {:2.3f}'.format(math.degrees(sub.ship_bearing)))
-            self.screen.addstr(7, 30, 'Vel. bearing : {:2.3f}'.format(math.degrees(sub.course)))
-            self.screen.addstr(7, 60, 'diff : {:2.3f}'.format(math.degrees(sub.course - sub.ship_bearing)))
+            row += 1
 
-            self.screen.addstr(8, 00, 'Rudder : {} deg/min'.format(math.degrees(sub.rudder/60)))
+            self.screen.addstr(row, 00, 'Turb. Needed : {:3.1f}'.format(sub.turbine_level_needed))
+            # self.acceleration_needed = self.DRAG_FACTOR * (self.target_speed**2)
+            # self.turbine_level_needed = 100.0 * self.acceleration_needed / self.MAX_ACCELERATION
 
-            self.screen.addstr(9, 00, 'Nav Acc.     : {:3.5f} knots/s'.format(sub.nav.acceleration_needed/3600))
-            self.screen.addstr(9, 40, 'Nav Turbine  : {:3.1f}%'.format(sub.nav.turbine_level_needed))
+
+            row += 1
+            self.screen.addstr(row, 00, 'Drag factor  : {:2.2f}'.format(sub.DRAG_FACTOR))
+            self.screen.addstr(row, 30, 'Actual Drag  : {:2.3f}'.format(sub.drag_factor))
+            row += 1
+
+
+            self.screen.addstr(row, 00, 'Total Drag A : {:2.2f}'.format(sub.total_drag_acceleration))
+            self.screen.addstr(row, 30, 'Drag acc     : {} -> {:2.3f} Knots/s'.format(sub.drag_acceleration,sub.drag_acceleration.length))
+            row += 2
+
+            self.screen.addstr(row, 00, 'Sub Accel.    : {} => {:2.3f} Knots/s'.format(sub._acceleration, abs(sub._acceleration) ))
+            self.screen.addstr(row, 30, 'Accel. Needed : {:2.3f} => {:2.3f} Knots/s'.format(sub.acceleration_needed, abs(sub._acceleration) ))
+            row += 1
+
+            self.screen.addstr(row, 00, 'Sub Velocity : {} => {:2.1f} Knots'.format(sub._velocity, sub._velocity.length ))
+            row += 1
+            self.screen.addstr(row, 00, 'Sub Position : {}'.format(sub._position ))
+            row += 1
+
+            self.screen.addstr(7, 00, 'Ship bearing : {:2.3f}'.format(math.degrees(sub._ship_course)))
+            self.screen.addstr(row, 30, 'Vel. bearing : {:2.3f}'.format(math.degrees(sub._velocity.get_angle())))
+            self.screen.addstr(7, 70, 'diff : {:2.3f}'.format(math.degrees(sub._ship_course - sub._velocity.get_angle())))
+            row += 1
+
+            self.screen.addstr(row, 00, 'Rudder : {} deg/min'.format(math.degrees(sub.rudder/60)))
+
 
         elif self.display_screen == 'N':
 
-            self.screen.addstr(3, 00, 'Speed        : {} => {:2.1f} Knots'.format(sub._velocity, sub.speed ))
-            self.screen.addstr(4, 00, 'Ship bearing : {:2.3f}'.format(math.degrees(sub.ship_bearing)))
-            self.screen.addstr(4, 30, 'Vel. bearing : {:2.3f}'.format(math.degrees(sub.course)))
-            self.screen.addstr(4, 60, 'diff : {:2.3f}'.format(math.degrees(sub.course - sub.ship_bearing)))
+            self.screen.addstr(3, 00, 'Speed        : {} => {:2.1f} Knots'.format(sub.actual_speed, sub.target_speed ))
+            self.screen.addstr(4, 00, 'Ship bearing : {:2.3f}'.format(math.degrees(sub.course)))
+            self.screen.addstr(4, 30, 'Vel. bearing : {:2.3f}'.format(math.degrees(sub._velocity.get_angle())))
+            self.screen.addstr(4, 60, 'diff : {:2.3f}'.format(math.degrees(sub.course - sub._velocity.get_angle())))
             self.screen.addstr(5, 00, 'Rudder : {:2.3f} deg/min'.format(math.degrees(sub.rudder/60)))
 
-            self.screen.addstr(6, 00, 'Angle to destination : {:2.3f} deg'.format(math.degrees(sub.nav.angle_to_destination)))
-            self.screen.addstr(6, 40, 'Angle difference : {:2.3f} deg'.format(math.degrees(sub.nav.angle_difference)))
+            # self.screen.addstr(6, 00, 'Angle to destination : {:2.3f} deg'.format(math.degrees(sub.nav.angle_to_destination)))
+            # self.screen.addstr(6, 40, 'Angle difference : {:2.3f} deg'.format(math.degrees(sub.nav.angle_difference)))
 
 
         elif self.display_screen == 'e':
@@ -237,25 +263,25 @@ class GameCoursesInterface(object):
             destination = self.parse_coordinates(opt[1])
             if destination:
                 sub.destination = destination
-                self.msg("Aye, aye! Destination set to {0}, captain!".format(self.player_sub.nav.destination))
+                # self.msg("Aye, aye! Destination set to {0}, captain!".format(self.player_sub.nav.destination))
             else:
                 self.msg("Invalid input")
 
         if opt[0] == 'speed' or opt[0] == 'spd' or opt[0] == 's':
             if len(opt) == 2:
                 n = int(opt[1])
-                sub.speed = n
-                self.msg("Changing speed to {0}".format(sub.nav.speed))
+                sub.target_speed = n
+                self.msg("Changing speed to {0}".format(sub.target_speed))
 
         if opt[0] == 'turbine' and len(opt) == 2:
             n = int(opt[1])
-            sub.nav.speed = None
+            # sub.nav.speed = None
             sub.turbine.level = n
             self.msg("Changing turbine level to {0}%".format(sub.turbine.level))
 
         if opt[0] == 'rudder' and len(opt) == 2:
             n = int(opt[1]) # degrees per minute
-            sub.nav.set_manual()
+            # sub.nav.set_manual()
             sub.rudder = math.radians(n)*60 # *60 because rudder is in degrees per hour
             self.msg("Changing rudder to {0} degrees per minute".format(math.degrees(sub.rudder)/60))
 

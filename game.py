@@ -23,10 +23,14 @@ time_rate = 1  # 1 time(s) faster
 update_rate = 0.1  # updates every 0.1 second
 
 class Gameloop(object):
-    def __init__(self, interface):
-        self.interface = None
+    def __init__(self):
+        pass
+
 
     def setup(self):
+        self.player_sub = sub688.Submarine688()
+        self.interface = GameCoursesInterface(self.player_sub)
+
         # sea = sea.Sea()
         # # player_sub = scenario.player_sub
         # player_sub = sub.Submarine(sea)
@@ -38,11 +42,11 @@ class Gameloop(object):
         pass
 
 
-    def updage(self):
-        pass
+    def update(self, time_elapsed):
+        self.player_sub.turn(time_elapsed)  # sea turn runs in hours
 
     def render(self):
-        pass
+        self.interface.render()
 
     def run(self):
         self.setup()
@@ -52,32 +56,23 @@ class Gameloop(object):
             try:
                 time_elapsed = time_rate * update_rate / 3600 # time_elapsed in hours
 
-                self.getInputs()
-                self.update()
-                self.interface.render()
+                # self.getInputs()
+                self.interface.read_keyboard()
+                # self.player
+                self.update(time_elapsed)
+                self.render()
+                time.sleep(update_rate)
+
 
             except Exception as e:
+                self.interface.finalize()
+                print(e)
                 logger.exception(e)
 
 
 if __name__ == "__main__":
-    player_sub = sub688.Submarine688()
-    interface = GameCoursesInterface(player_sub)
-    gameloop = Gameloop(interface)
+    gameloop = Gameloop()
     gameloop.run()
-
-    try:
-        while True:
-            time_elapsed = time_rate * update_rate / 3600 # time_elapsed in hours
-            # sea.turn(time_elapsed)  # sea turn runs in hours
-            player_sub.turn(time_elapsed)  # sea turn runs in hours
-            interface.read_keyboard()
-            interface.render()
-
-            time.sleep(update_rate)
-    except Exception as e:
-        print(e)
-        interface.finalize()
 
 
 # def init_colors(s):
