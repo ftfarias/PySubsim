@@ -146,11 +146,14 @@ class GameCoursesInterface(object):
             row += 1
 
             self.screen.addstr(row, 00, 'Turbine level: {:3.1f}%'.format(sub.turbine_level))
-            self.screen.addstr(row, 30, 'Turbine acc  : {} -> {:2.3f} Knots/s'.format(sub.turbine_acceleration, sub.turbine_acceleration.length))
+            self.screen.addstr(row, 30, 'Turbine acc  : {} -> {:2.3f} Knots/s'.format(sub.turbine_acceleration/3600, sub.turbine_acceleration.length/3600))
 
             row += 1
-
             self.screen.addstr(row, 00, 'Turb. Needed : {:3.1f}'.format(sub.turbine_level_needed))
+            self.screen.addstr(row, 30, 'Sub Acc. Need.: {:2.3f} => {:2.3f} Knots/s'.format(sub.acceleration_needed/3600, abs(sub.acceleration_needed/3600) ))
+
+            row += 2
+
             # self.acceleration_needed = self.DRAG_FACTOR * (self.target_speed**2)
             # self.turbine_level_needed = 100.0 * self.acceleration_needed / self.MAX_ACCELERATION
 
@@ -161,12 +164,11 @@ class GameCoursesInterface(object):
             row += 1
 
 
-            self.screen.addstr(row, 00, 'Total Drag A : {:2.2f}'.format(sub.total_drag_acceleration))
-            self.screen.addstr(row, 30, 'Drag acc     : {} -> {:2.3f} Knots/s'.format(sub.drag_acceleration,sub.drag_acceleration.length))
+            self.screen.addstr(row, 00, 'Total Drag A : {:2.2f}'.format(sub.total_drag_acceleration/3600))
+            self.screen.addstr(row, 30, 'Drag Accel.  : {} -> {:2.3f} Knots/s'.format(sub.drag_acceleration/3600,abs(sub.drag_acceleration/3600)))
             row += 2
 
-            self.screen.addstr(row, 00, 'Sub Accel.    : {} => {:2.3f} Knots/s'.format(sub._acceleration, abs(sub._acceleration) ))
-            self.screen.addstr(row, 30, 'Accel. Needed : {:2.3f} => {:2.3f} Knots/s'.format(sub.acceleration_needed, abs(sub._acceleration) ))
+            self.screen.addstr(row, 00, 'Sub Accel.   : {} => {:2.3f} Knots/s'.format(sub._acceleration/3600, abs(sub._acceleration/3600) ))
             row += 1
 
             self.screen.addstr(row, 00, 'Sub Velocity : {} => {:2.1f} Knots'.format(sub._velocity, sub._velocity.length ))
@@ -174,9 +176,9 @@ class GameCoursesInterface(object):
             self.screen.addstr(row, 00, 'Sub Position : {}'.format(sub._position ))
             row += 1
 
-            self.screen.addstr(7, 00, 'Ship bearing : {:2.3f}'.format(math.degrees(sub._ship_course)))
+            self.screen.addstr(row, 00, 'Ship bearing : {:2.3f}'.format(math.degrees(sub._ship_course)))
             self.screen.addstr(row, 30, 'Vel. bearing : {:2.3f}'.format(math.degrees(sub._velocity.get_angle())))
-            self.screen.addstr(7, 70, 'diff : {:2.3f}'.format(math.degrees(sub._ship_course - sub._velocity.get_angle())))
+            self.screen.addstr(row, 70, 'diff : {:2.3f}'.format(math.degrees(sub._ship_course - sub._velocity.get_angle())))
             row += 1
 
             self.screen.addstr(row, 00, 'Rudder : {} deg/min'.format(math.degrees(sub.rudder/60)))

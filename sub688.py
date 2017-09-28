@@ -9,7 +9,7 @@ class Submarine688(object):
     MAX_TURN_RATE_HOUR = math.radians(120) * 60  # max 120 degrees per minute, 360 in 3 minutes
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
     MAX_SPEED = 36.0  # Knots or nautical mile per hour
-    MAX_ACCELERATION = 0.1 * 3600 # acceleration in knots/hour^2 -> max acceleration 0.1 Knots / second^2
+    MAX_ACCELERATION = 0.3 * 3600 # acceleration in knots/hour^2 -> max acceleration 0.1 Knots / second^2
     DRAG_FACTOR = 1.0 * MAX_ACCELERATION / (MAX_SPEED ** 2)
 
     def __init__(self):
@@ -298,7 +298,7 @@ class Submarine688(object):
             diff_speed = self.target_speed - self.actual_speed
             diff_turbine = self.turbine_level - self.turbine_level_needed
             # diff*10 gives more burst to make the change in speed faster
-            self.turbine_level  = self.turbine_level_needed  + (diff_speed * 10)
+            self.turbine_level  = self.turbine_level_needed  + (diff_speed * 5)
 
         # ship_moviment_angle is the angle the ship is moving
         ship_moviment_angle = self._velocity.get_angle()
@@ -310,7 +310,7 @@ class Submarine688(object):
         # meaning the ship the turning left or right
         drifting_angle_diff = ship_moviment_angle - ship_course_angle
 
-        self.turbine_acceleration = self.MAX_ACCELERATION * self.turbine_level / 100 * time_elapsed
+        self.turbine_acceleration = self.MAX_ACCELERATION * self.turbine_level / 100
         self.turbine_acceleration_x = math.cos(ship_course_angle) * self.turbine_acceleration
         self.turbine_acceleration_y = math.sin(ship_course_angle) * self.turbine_acceleration
         self.turbine_acceleration = Point(self.turbine_acceleration_x, self.turbine_acceleration_y)
@@ -330,7 +330,7 @@ class Submarine688(object):
         drag_y = math.sin(ship_moviment_angle) * self.total_drag_acceleration
         self.drag_acceleration = Point(drag_x, drag_y)
 
-        self._acceleration = self.turbine_acceleration + self.drag_acceleration * 3600 # convert seconds to hours
+        self._acceleration = self.turbine_acceleration + self.drag_acceleration # convert seconds to hours
         self._velocity += self._acceleration * time_elapsed
         self._position += self._velocity * time_elapsed
 
