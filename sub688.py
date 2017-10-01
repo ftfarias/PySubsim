@@ -2,15 +2,18 @@
 import math
 
 from util.point import Point
-from util.util import limits, normalize_angle_2pi
+from util.util import limits, normalize_angle_2pi, normalize_angle_pi
 from util.linear_scale import linear_scaler
 
 class Submarine688(object):
     MAX_TURN_RATE_HOUR = math.radians(120) * 60  # max 120 degrees per minute, 360 in 3 minutes
     MAX_DEEP_RATE_FEET = 1  # 1 foot per second
     MAX_SPEED = 36.0  # Knots or nautical mile per hour
-    MAX_ACCELERATION = 0.3 * 3600 # acceleration in knots/hour^2 -> max acceleration 0.1 Knots / second^2
+    MAX_ACCELERATION = 1.0 * 3600 # acceleration in knots/hour^2 -> max acceleration 0.1 Knots / second^2
     DRAG_FACTOR = 1.0 * MAX_ACCELERATION / (MAX_SPEED ** 2)
+
+    NAV_MODE_MANUAL = 'manual'
+    NAV_MODE_DESTINATION = 'destination'
 
     def __init__(self):
         # turbines 35,000 hp (26 MW), 1 auxiliary motor 325 hp (242 kW)
@@ -43,6 +46,9 @@ class Submarine688(object):
         self.turbine_acceleration_x = 0
         self.turbine_acceleration_y = 0
         self.time_elapsed = 0
+
+        self.nav_mode = self.NAV_MODE_MANUAL
+        self._destination = Point(0,0)
 
     ### TURBINE ###
 
@@ -126,10 +132,10 @@ class Submarine688(object):
         return (90 - angle_deg) % 360
 
     def rudder_right(self):
-        self.rudder = self.max_turn_per_hour
+        self.rudder = self.MAX_TURN_RATE_HOUR
 
     def rudder_left(self):
-        self.rudder = -self.max_turn_per_hour
+        self.rudder = -self.MAX_TURN_RATE_HOUR
 
     def rudder_center(self):
         self.rudder = 0
@@ -138,7 +144,7 @@ class Submarine688(object):
         return self._rudder
 
     def set_rudder(self, angle):
-        angle = limits(angle, -self.max_turn_per_hour, self.max_turn_per_hour)
+        angle = limits(angle, -self.MAX_TURN_RATE_HOUR, self.MAX_TURN_RATE_HOUR)
         self._rudder = angle
 
     rudder = property(get_rudder, set_rudder, "Rudder")  # in radians per hour
@@ -150,6 +156,16 @@ class Submarine688(object):
         self._ship_course = normalize_angle_2pi(angle)
 
     course = property(get_ship_course, _set_ship_course, "Ship Course")
+
+    def get_destination(self):
+        return self._destination
+
+    def set_destination(self, destination):
+        self._destination = destination
+        self.nav_mode = self.NAV_MODE_DESTINATION
+
+    destination = property(get_destination, set_destination, "Ship Destination")
+
 
     ### Message ###
 
@@ -308,7 +324,7 @@ class Submarine688(object):
 
         # drifting_angle_diff is the difference between the angle the sub is moving and the angle of the ship is bearing
         # meaning the ship the turning left or right
-        drifting_angle_diff = ship_moviment_angle - ship_course_angle
+        drifting_angle_diff = normalize_angle_2pi(ship_moviment_angle - ship_course_angle)
 
         self.turbine_acceleration = self.MAX_ACCELERATION * self.turbine_level / 100
         self.turbine_acceleration_x = math.cos(ship_course_angle) * self.turbine_acceleration
@@ -317,9 +333,9 @@ class Submarine688(object):
 
         if self.rudder != 0:
             # rotate the ship
-            angle_to_rotate = -1.0 * self.rudder * time_elapsed * self.actual_speed
+            angle_to_rotate = self.rudder * time_elapsed  * (self.actual_speed / 3)
             new_angle = ship_course_angle + angle_to_rotate
-            self._ship_course = normalize_angle_2pi(new_angle)
+            self._ship_course = normalize_angle_pi(new_angle)
 
         # correction if the drag factor since the sub is making a turn
         self.drag_factor = self.DRAG_FACTOR * (1 + abs(500 * math.sin(drifting_angle_diff)))
@@ -339,6 +355,19 @@ class Submarine688(object):
         if abs(deep_diff) > 0.1:
             dive_rate = min(deep_diff, self.MAX_DEEP_RATE_FEET)
             self.actual_deep += dive_rate * time_elapsed * 3600
+
+
+        if self.nav_mode == self.NAV_MODE_DESTINATION:
+            self.angle_to_destination = self.position.get_angle_to(self.destination)
+            # self.angle_difference = self.angle_to_destination - sub.ship_bearing
+            self.angle_difference = normalize_angle_pi(self.angle_to_destination - self.course)
+            #print("Angle diff: {0}".format(math.degrees(abs(angle_difference))))
+
+            # if angle > 180, invert, so 270 -> -90, 345 -> -15, etc
+            # if self.angle_difference > math.pi:
+            #     self.angle_difference -= 2*math.pi
+
+            self.rudder = self.angle_difference * -30.0
 
 
     def __str__(self):

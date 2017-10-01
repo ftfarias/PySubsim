@@ -87,7 +87,7 @@ class GameCoursesInterface(object):
         for i in range(3,11):
             s.move(i,0)
             s.clrtoeol()
-        #s.clear()
+        s.clear()
         sub = self.player_sub
 
         # s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
@@ -103,17 +103,24 @@ class GameCoursesInterface(object):
         s.clrtoeol()
 
         if self.display_screen == 'n':
-            self.screen.addstr(3, 00, 'Current')
+            self.screen.addstr(3, 00, '          Current')
             self.screen.addstr(3, 40, 'Target')
 
-            self.screen.addstr(4, 00, 'Position: {pos}'.format(pos=sub.position))
-            # self.screen.addstr(4, 40, '{pos}'.format(pos=sub.nav.destination))
+            self.screen.addstr(5, 00, 'Position: {pos}'.format(pos=sub.position))
+
+            nav_mode = sub.nav_mode
+            if nav_mode == sub.NAV_MODE_MANUAL:
+                self.screen.addstr(5, 40, 'manual')
+
+            elif nav_mode == sub.NAV_MODE_DESTINATION:
+                self.screen.addstr(5, 40, '{pos}'.format(pos=sub.destination))
+
 
             # self.screen.addstr(5, 00, 'Course  : {:03.1f}{}'.format(sub.course, self.angles_to_unicode(sub.course)))  # angles_to_unicode(sub.bearing)
             # if sub.nav.destination is not None:
             #     self.screen.addstr(5, 40, '{:03.1f}{} deg'.format(angle_to_bearing(sub.nav.angle_to_destination), self.angles_to_unicode(angle_to_bearing(sub.nav.angle_to_destination))))
 
-            self.screen.addstr(6, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.actual_speed, sub.turbine_level))
+            self.screen.addstr(7, 00, 'Speed   : {:2.1f} knots (turbine {:3.1f}%)'.format(sub.actual_speed,  sub.turbine_level))
 
             if sub.target_speed is None:
                 target_speed = '-'
@@ -121,10 +128,13 @@ class GameCoursesInterface(object):
                 # set_speed = '{:2.1f} knots'.format(sub.target_speed)
                 target_speed = '{:2.1f} knots (turbine {:3.1f}%)'.format(sub.target_speed, sub.turbine_level_needed)
 
-            self.screen.addstr(6, 40, target_speed)
+            self.screen.addstr(7, 40, target_speed)
 
-            # self.screen.addstr(6, 30, 'Speed   : {:2.1f} knots'.format(sub.speed))
-            self.screen.addstr(7, 00, 'Rudder  : {:0.0f} deg/min'.format(math.degrees(sub.rudder/60)))
+
+            self.screen.addstr(9 , 00, 'Course  : {:03.1f}{}'.format(sub.course, self.angles_to_unicode(sub.course)))
+
+
+            self.screen.addstr(11, 00, 'Rudder  : {:0.1f} deg/min'.format(math.degrees(sub.rudder/60)))
 
         elif self.display_screen == 's':
             self.screen.addstr(3, 00, 'Passive Sonar')
@@ -275,19 +285,19 @@ class GameCoursesInterface(object):
                 sub.target_speed = n
                 self.msg("Changing speed to {0}".format(sub.target_speed))
 
-        if opt[0] == 'turbine' and len(opt) == 2:
+        if (opt[0] == 'turbine' or opt[0] == 't') and len(opt) == 2:
             n = int(opt[1])
             # sub.nav.speed = None
             sub.turbine.level = n
             self.msg("Changing turbine level to {0}%".format(sub.turbine.level))
 
-        if opt[0] == 'rudder' and len(opt) == 2:
+        if (opt[0] == 'rudder' or opt[0] == 'r') and len(opt) == 2:
             n = int(opt[1]) # degrees per minute
             # sub.nav.set_manual()
             sub.rudder = math.radians(n)*60 # *60 because rudder is in degrees per hour
             self.msg("Changing rudder to {0} degrees per minute".format(math.degrees(sub.rudder)/60))
 
-        if opt[0] == 'deep' and len(opt) == 2:
+        if (opt[0] == 'deep' or opt[0] == 'd') and len(opt) == 2:
             n = int(opt[1])
             sub.set_deep = n
             self.msg("Changing deep to {0}".format(sub.set_deep))

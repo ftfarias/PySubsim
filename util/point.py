@@ -3,6 +3,7 @@ import math
 import cmath
 import random
 import unittest
+import util
 
 
 
@@ -154,7 +155,7 @@ class Point(object):
         """Returns the angle in radians from -pi to +pi  and zero been (1,0) / "east" / 90 user-degrees  """
         if abs(self.v) == 0:
             return 0
-        return cmath.phase(self.v)
+        return util.normalize_angle_pi(cmath.phase(self.v))
 
     def get_angle_to(self, other):
         """Returns the angle in radians from -pi to +pi and zero been (1,0) / "east" / 90 degrees bearing
