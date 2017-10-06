@@ -51,18 +51,21 @@ class Gameloop(object):
     def run(self):
         self.setup()
         stop = False
+        last_time_ref = time.process_time()
 
         while (not stop):
             try:
-                time_elapsed = time_rate * update_rate / 3600 # time_elapsed in hours
+                current_time_ref = time.process_time()
+                diff_time_ref = current_time_ref - last_time_ref
+                last_time_ref = current_time_ref
+
+                time_elapsed = diff_time_ref * time_rate / 3600 # time_elapsed in hours
 
                 # self.getInputs()
                 self.interface.read_keyboard()
                 # self.player
                 self.update(time_elapsed)
                 self.render()
-                time.sleep(update_rate)
-
 
             except Exception as e:
                 self.interface.finalize()

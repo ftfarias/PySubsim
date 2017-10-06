@@ -3,7 +3,7 @@ import math
 import cmath
 import random
 import unittest
-import util
+from util import util
 
 
 
@@ -33,7 +33,7 @@ import util
 #
 # NW         North     NE
 # West     <- 0, 0 ->  East
-# SW         South    SE
+# SW         South     SE
 
 # 315   0    45
 # 270   o    90
@@ -99,7 +99,7 @@ class Point(object):
 
     __rmul__ = __mul__
 
-    def __div__(a, b):
+    def __truediv__(a, b):
         if isinstance(b, Point):
             return Point(a.v / b.v)
         else:

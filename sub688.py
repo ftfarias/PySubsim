@@ -4,6 +4,7 @@ import math
 from util.point import Point
 from util.util import limits, normalize_angle_2pi, normalize_angle_pi
 from util.linear_scale import linear_scaler
+from util.timed_state import TimedValue
 
 class Submarine688(object):
     MAX_TURN_RATE_HOUR = math.radians(120) * 60  # max 120 degrees per minute, 360 in 3 minutes
@@ -11,9 +12,15 @@ class Submarine688(object):
     MAX_SPEED = 36.0  # Knots or nautical mile per hour
     MAX_ACCELERATION = 1.0 * 3600 # acceleration in knots/hour^2 -> max acceleration 0.1 Knots / second^2
     DRAG_FACTOR = 1.0 * MAX_ACCELERATION / (MAX_SPEED ** 2)
+    RUDDER_CHANGE_SPEED = 20.0 * 3600  # 20 degrees per second
+    TURBINE_CHANGE_SPEED = 20.0 * 3600  # 20% per second
 
     NAV_MODE_MANUAL = 'manual'
     NAV_MODE_DESTINATION = 'destination'
+
+    SPEED_MODE_SPEED = 'target speed'
+    SPEED_MODE_TURBINE = 'target turbine'
+
 
     def __init__(self):
         # turbines 35,000 hp (26 MW), 1 auxiliary motor 325 hp (242 kW)
@@ -33,9 +40,12 @@ class Submarine688(object):
         self._acceleration = Point(0, 0)
 
         self._target_speed = 0
-        self._rudder = 0  # property rudder in radians pe minute
+        self._target_turbine = 0
+        self.speed_mode = self.SPEED_MODE_SPEED
+
+        self._rudder = TimedValue(0,0, self.RUDDER_CHANGE_SPEED)  # property rudder in radians per minute
         self._ship_course = 0  # the angle of the ship in radians
-        self._turbine_level = 0  # 0 to 100%
+        self._turbine_level = TimedValue(0, 0, self.TURBINE_CHANGE_SPEED)  # 0 to 100%
 
         self.total_drag_acceleration = 0
         self.drag_acceleration = Point(0, 0)
@@ -53,10 +63,10 @@ class Submarine688(object):
     ### TURBINE ###
 
     def get_turbine_level(self):
-        return self._turbine_level
+        return self._turbine_level.current_value
 
     def set_turbine_level(self, new_level):
-        self._turbine_level = limits(new_level, -100, 100)
+        self._turbine_level.target_value = limits(new_level, -100, 100)
 
     turbine_level = property(get_turbine_level, set_turbine_level, None, "level of power in the turbine (-100% to +100%)")
 
@@ -141,11 +151,11 @@ class Submarine688(object):
         self.rudder = 0
 
     def get_rudder(self):
-        return self._rudder
+        return self._rudder.current_value
 
     def set_rudder(self, angle):
         angle = limits(angle, -self.MAX_TURN_RATE_HOUR, self.MAX_TURN_RATE_HOUR)
-        self._rudder = angle
+        self._rudder.target_value = angle
 
     rudder = property(get_rudder, set_rudder, "Rudder")  # in radians per hour
 
@@ -305,16 +315,29 @@ class Submarine688(object):
 
     def turn(self, time_elapsed):
         self.time_elapsed = time_elapsed
-        # change speed if necessary
-        if self.actual_speed !=  self.target_speed:
-            self.acceleration_needed = self.DRAG_FACTOR * (self.target_speed**2)
-            self.turbine_level_needed = 100.0 * self.acceleration_needed / self.MAX_ACCELERATION
 
-            # adjust turbines
-            diff_speed = self.target_speed - self.actual_speed
-            diff_turbine = self.turbine_level - self.turbine_level_needed
-            # diff*10 gives more burst to make the change in speed faster
-            self.turbine_level  = self.turbine_level_needed  + (diff_speed * 5)
+        # update timed values
+        self._rudder.update(time_elapsed)
+        self._turbine_level.update(time_elapsed)
+
+        if self.speed_mode == self.SPEED_MODE_SPEED:
+            if self.actual_speed !=  self.target_speed:
+                self.acceleration_needed = self.DRAG_FACTOR * (self.target_speed**2)
+                self.turbine_level_needed = 100.0 * self.acceleration_needed / self.MAX_ACCELERATION
+
+                # adjust turbines
+                diff_speed = self.target_speed - self.actual_speed
+                diff_turbine = self.turbine_level - self.turbine_level_needed
+                # diff*10 gives more burst to make the change in speed faster
+                self.turbine_level  = self.turbine_level_needed  + (diff_speed * 5)
+
+        elif self.speed_mode == self.SPEED_MODE_TURBINE:
+            # fixed turbine level
+            self.acceleration_needed = 0
+            self.turbine_level_needed = self._target_turbine
+            self.turbine_level  = self._target_turbine
+
+
 
         # ship_moviment_angle is the angle the ship is moving
         ship_moviment_angle = self._velocity.get_angle()
@@ -333,7 +356,7 @@ class Submarine688(object):
 
         if self.rudder != 0:
             # rotate the ship
-            angle_to_rotate = self.rudder * time_elapsed  * (self.actual_speed / 3)
+            angle_to_rotate = (self.rudder*60) * time_elapsed  * (self.actual_speed / 36)
             new_angle = ship_course_angle + angle_to_rotate
             self._ship_course = normalize_angle_pi(new_angle)
 
@@ -359,14 +382,7 @@ class Submarine688(object):
 
         if self.nav_mode == self.NAV_MODE_DESTINATION:
             self.angle_to_destination = self.position.get_angle_to(self.destination)
-            # self.angle_difference = self.angle_to_destination - sub.ship_bearing
             self.angle_difference = normalize_angle_pi(self.angle_to_destination - self.course)
-            #print("Angle diff: {0}".format(math.degrees(abs(angle_difference))))
-
-            # if angle > 180, invert, so 270 -> -90, 345 -> -15, etc
-            # if self.angle_difference > math.pi:
-            #     self.angle_difference -= 2*math.pi
-
             self.rudder = self.angle_difference * -30.0
 
 
