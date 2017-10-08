@@ -2,6 +2,7 @@
 import logging
 import time
 import sub688
+import sea
 
 # import scenario
 from game_couses_interface import GameCoursesInterface
@@ -19,19 +20,19 @@ formatter = logging.Formatter("%(asctime)s %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-time_rate = 1  # 1 time(s) faster
-update_rate = 0.1  # updates every 0.1 second
 
 class Gameloop(object):
-    def __init__(self):
-        pass
+    CHANGE_TIME_RATE = 'CHANGE_TIME_RATE'
 
+    def __init__(self):
+        self.messages = {}
+        self.time_rate = 1  # 1 time(s) faster
 
     def setup(self):
         self.player_sub = sub688.Submarine688()
         self.interface = GameCoursesInterface(self.player_sub)
+        self.sea = sea.Sea()
 
-        # sea = sea.Sea()
         # # player_sub = scenario.player_sub
         # player_sub = sub.Submarine(sea)
         # interface = GameCoursesInterface(sea, player_sub)
@@ -43,10 +44,11 @@ class Gameloop(object):
 
 
     def update(self, time_elapsed):
-        self.player_sub.turn(time_elapsed)  # sea turn runs in hours
+        self.player_sub.turn(time_elapsed, self.messages)
+        self.sea.turn(time_elapsed, self.messages)
 
     def render(self):
-        self.interface.render()
+        self.interface.render(self.messages)
 
     def run(self):
         self.setup()
@@ -59,13 +61,20 @@ class Gameloop(object):
                 diff_time_ref = current_time_ref - last_time_ref
                 last_time_ref = current_time_ref
 
-                time_elapsed = diff_time_ref * time_rate / 3600 # time_elapsed in hours
+                time_elapsed = diff_time_ref * self.time_rate / 3600 # time_elapsed in hours
+                self.messages['time_rate'] = self.time_rate
+
 
                 # self.getInputs()
-                self.interface.read_keyboard()
+                self.interface.read_keyboard(self.messages)
                 # self.player
                 self.update(time_elapsed)
                 self.render()
+
+                if self.CHANGE_TIME_RATE in self.messages:
+                    self.time_rate = self.messages[self.CHANGE_TIME_RATE]
+                    del self.messages[self.CHANGE_TIME_RATE]
+
 
             except Exception as e:
                 self.interface.finalize()

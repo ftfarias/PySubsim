@@ -165,7 +165,7 @@ class Point(object):
         p = other - self
         if abs(p.v) == 0:
             return 0
-        return cmath.phase(p.v)
+        return util.normalize_angle_pi(cmath.phase(p.v))
 
     def set_angle(self, radians):
         new_point = Point(self.length, 0.0)

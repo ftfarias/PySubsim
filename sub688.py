@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
+from libs import sonar
+
 
 from util.point import Point
 from util.util import limits, normalize_angle_2pi, normalize_angle_pi
@@ -12,8 +14,8 @@ class Submarine688(object):
     MAX_SPEED = 36.0  # Knots or nautical mile per hour
     MAX_ACCELERATION = 1.0 * 3600 # acceleration in knots/hour^2 -> max acceleration 0.1 Knots / second^2
     DRAG_FACTOR = 1.0 * MAX_ACCELERATION / (MAX_SPEED ** 2)
-    RUDDER_CHANGE_SPEED = 20.0 * 3600  # 20 degrees per second
-    TURBINE_CHANGE_SPEED = 20.0 * 3600  # 20% per second
+    RUDDER_CHANGE_SPEED = 25.0 * 3600  # 20 degrees per second
+    TURBINE_CHANGE_SPEED = 25.0 * 3600  # 20% per second
 
     NAV_MODE_MANUAL = 'manual'
     NAV_MODE_DESTINATION = 'destination'
@@ -22,9 +24,11 @@ class Submarine688(object):
     SPEED_MODE_TURBINE = 'target turbine'
 
 
+
     def __init__(self):
         # turbines 35,000 hp (26 MW), 1 auxiliary motor 325 hp (242 kW)
         # Ship.__init__(self, self.DRAG_FACTOR, self.MAX_TURN_RATE_HOUR, self.MAX_ACCELERATION)
+        self.towed_array = sonar.TD16DTowedArray()
 
         self.kind = '688'
         self.messages = []
@@ -59,6 +63,8 @@ class Submarine688(object):
 
         self.nav_mode = self.NAV_MODE_MANUAL
         self._destination = Point(0,0)
+
+        self.towed_array_cable = TimedValue(0,0, self.towed_array.TOWED_ARRAY_DEPLOY_SPEED)
 
     ### TURBINE ###
 
@@ -172,12 +178,15 @@ class Submarine688(object):
 
     def set_destination(self, destination):
         self._destination = destination
-        self.nav_mode = self.NAV_MODE_DESTINATION
+        # self.nav_mode = self.NAV_MODE_DESTINATION
 
     destination = property(get_destination, set_destination, "Ship Destination")
 
 
     ### Message ###
+
+
+
 
     # "stop" means the turn just stop because requeres pilot atention
     def add_message(self, module, msg, stop=False):
@@ -186,6 +195,22 @@ class Submarine688(object):
 
     def get_messages(self):
         return self.messages, self.message_stop
+
+
+    ### Sonar ###
+
+
+    def deploy_tower_array(self):
+        self.towed_array_cable.target_value = self.towed_array.TOTAL_LENGTH
+
+
+    def retrive_tower_array(self):
+        self.towed_array_cable.target_value = 0
+
+        
+    def stop_tower_array(self):
+        self.towed_array_cable.target_value = self.towed_array_cable.current_value
+
 
     def is_cavitating(self):
         """
@@ -313,7 +338,7 @@ class Submarine688(object):
 
         # return sum_of_decibels(base) + random.gauss(0, 1)
 
-    def turn(self, time_elapsed):
+    def turn(self, time_elapsed, messages):
         self.time_elapsed = time_elapsed
 
         # update timed values
@@ -356,12 +381,13 @@ class Submarine688(object):
 
         if self.rudder != 0:
             # rotate the ship
-            angle_to_rotate = (self.rudder*60) * time_elapsed  * (self.actual_speed / 36)
+            # the ship rotates proportional to it's speed
+            angle_to_rotate = (self.rudder * time_elapsed)  * (self.actual_speed / self.MAX_SPEED)
             new_angle = ship_course_angle + angle_to_rotate
             self._ship_course = normalize_angle_pi(new_angle)
 
         # correction if the drag factor since the sub is making a turn
-        self.drag_factor = self.DRAG_FACTOR * (1 + abs(500 * math.sin(drifting_angle_diff)))
+        self.drag_factor = self.DRAG_FACTOR * (1 + abs(300 * math.sin(drifting_angle_diff)))
 
         # drag force
         self.total_drag_acceleration = -1.0 * self.drag_factor * ((self.actual_speed) ** 2)
@@ -383,7 +409,11 @@ class Submarine688(object):
         if self.nav_mode == self.NAV_MODE_DESTINATION:
             self.angle_to_destination = self.position.get_angle_to(self.destination)
             self.angle_difference = normalize_angle_pi(self.angle_to_destination - self.course)
-            self.rudder = self.angle_difference * -30.0
+            self.rudder = self.angle_difference * 500.0
+
+
+        # TODO: when the sub reaches the destination, it should stop
+
 
 
     def __str__(self):

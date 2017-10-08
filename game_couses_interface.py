@@ -7,6 +7,7 @@ import sys
 from util.util import bearing_to_angle, angle_to_bearing
 from util.linear_scale import linear_scaler
 from util.point import Point
+from util import util as ut
 
 
 class GameCoursesInterface(object):
@@ -34,6 +35,9 @@ class GameCoursesInterface(object):
         curses.use_default_colors()
 
 
+    def angle_to_user_angles(self, angle):
+        return math.degrees(ut.normalize_angle_2pi(angle))
+
     def angles_to_unicode(self, angle):
         def interval(a, direction):
             return direction-22.5 <= a < direction+22.5
@@ -57,19 +61,19 @@ class GameCoursesInterface(object):
         else:
             return '\u2191'
 
-    def speed_up(self):
-        s = self.time_rate
+    def speed_up(self, messages):
+        s = messages['time_rate']
         if s < 20:
             s += 1
         elif s >= 20:
             s = 20
-        self.time_rate = s
+        messages['CHANGE_TIME_RATE'] = s
 
-    def speed_down(self):
-        s = self.time_rate
+    def speed_down(self, messages):
+        s = messages['time_rate']
         if s > 0:
             s -= 1
-        self.time_rate = s
+        messages['CHANGE_TIME_RATE'] = s
 
     def msg(self, text):
         # self.screen.addstr(8, 0, " "*30)
@@ -83,7 +87,7 @@ class GameCoursesInterface(object):
         else:
             return mask.format(value)
 
-    def render(self):
+    def render(self, messages):
         s = self.screen
         for i in range(3,11):
             s.move(i,0)
@@ -93,6 +97,7 @@ class GameCoursesInterface(object):
 
         # s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
         s.clrtoeol()
+        s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea='', tr=messages['time_rate']))
 
         # s.addstr(1, 0, "pos:{pos} dest:{dest} spd:{spd:2.1f} ({sspd}) deep:{deep:.0f} ({sdeep})".format(
         #                                                                 pos=sub.position,
@@ -114,7 +119,10 @@ class GameCoursesInterface(object):
                 self.screen.addstr(5, 40, 'manual')
 
             elif nav_mode == sub.NAV_MODE_DESTINATION:
-                self.screen.addstr(5, 40, '{pos}'.format(pos=sub.destination))
+                ang = self.angle_to_user_angles(sub.angle_to_destination)
+                self.screen.addstr(5, 40, '{pos} {ang:3.0f}{ang2}'.format(pos=sub.destination,
+                                                                     ang=ang,
+                                                                     ang2=self.angles_to_unicode(ang)))
 
 
             # self.screen.addstr(5, 00, 'Course  : {:03.1f}{}'.format(sub.course, self.angles_to_unicode(sub.course)))  # angles_to_unicode(sub.bearing)
@@ -131,7 +139,7 @@ class GameCoursesInterface(object):
             self.screen.addstr(7, 40, target_speed)
 
 
-            self.screen.addstr(8, 00, 'Turbine : {:3.0f}%'.format(sub.turbine_level))
+            self.screen.addstr(8, 00, 'Turbine : {:3.0f} %'.format(sub.turbine_level))
 
             if sub.speed_mode == sub.SPEED_MODE_TURBINE:
                 target_turbine = '{:2.0f}%'.format(sub._target_turbine)
@@ -140,23 +148,16 @@ class GameCoursesInterface(object):
             self.screen.addstr(8, 40, target_turbine)
 
 
-            course_degs = math.degrees(sub.course)
+            course_degs = self.angle_to_user_angles(sub.course)
 
-            self.screen.addstr(9 , 00, 'Course  : {:03.1f} {} deg'.format(course_degs, self.angles_to_unicode(course_degs)))
+            self.screen.addstr(10 , 00, 'Course  : {:03.1f} {} deg'.format(course_degs, self.angles_to_unicode(course_degs)))
 
-            rudder_degs = math.degrees(sub.rudder/60)
-            self.screen.addstr(11, 00, 'Rudder  : {:0.1f} {} deg/min'.format(rudder_degs,self.angles_to_unicode(rudder_degs)))
-
-        elif self.display_screen == 's':
-            self.screen.addstr(3, 00, 'Passive Sonar')
+            rudder_degs = math.degrees(ut.normalize_angle_2pi(sub.rudder/60))
+            rudder_degs2 = math.degrees(ut.normalize_angle_pi(sub.rudder/60))
+            self.screen.addstr(12, 00, 'Rudder  : {:0.1f} {} deg/min'.format(rudder_degs2,self.angles_to_unicode(rudder_degs)))
 
 
-        elif self.display_screen == 'k':
-            for i in range(3,12):
-                self.screen.addstr(i, 00, 'line '+str(i))
-
-
-        elif self.display_screen == 'M':
+        elif self.display_screen == 'N':
             row = 3
 
             self.screen.addstr(row, 00, 'Time Elapsed: {:3.10f} seconds, {:3.10f} hours'.format(sub.time_elapsed * 3600, sub.time_elapsed))
@@ -202,19 +203,43 @@ class GameCoursesInterface(object):
             self.screen.addstr(row, 70, 'diff : {:2.1f}'.format(math.degrees(sub._ship_course - sub._velocity.get_angle())))
             row += 1
 
-            self.screen.addstr(row, 00, 'Rudder : {:2.1f} deg/min'.format(math.degrees(sub.rudder/60)))
+            rudder_degs = math.degrees(ut.normalize_angle_2pi(sub.rudder/60))
+            rudder_degs2 = math.degrees(ut.normalize_angle_pi(sub.rudder/60))
+            self.screen.addstr(row, 00, 'Rudder       : {:2.1f} {} deg/min'.format(rudder_degs2,self.angles_to_unicode(rudder_degs)))
 
 
-        elif self.display_screen == 'N':
+        elif self.display_screen == 's':
 
-            self.screen.addstr(3, 00, 'Speed        : {} => {:2.1f} Knots'.format(sub.actual_speed, sub.target_speed ))
-            self.screen.addstr(4, 00, 'Ship bearing : {:2.1f}'.format(math.degrees(sub.course)))
-            self.screen.addstr(4, 30, 'Vel. bearing : {:2.1f}'.format(math.degrees(sub._velocity.get_angle())))
-            self.screen.addstr(4, 60, 'diff : {:2.1f}'.format(math.degrees(sub.course - sub._velocity.get_angle())))
-            self.screen.addstr(5, 00, 'Rudder : {:2.0f} deg/min'.format(math.degrees(sub.rudder/60)))
+            row = 3
+            self.screen.addstr(3, 00, 'Passive Sonar')
+            row += 2
+            self.screen.addstr(row, 00, 'Towed Array : {}'.format(''))
 
-            # self.screen.addstr(6, 00, 'Angle to destination : {:2.3f} deg'.format(math.degrees(sub.nav.angle_to_destination)))
-            # self.screen.addstr(6, 40, 'Angle difference : {:2.3f} deg'.format(math.degrees(sub.nav.angle_difference)))
+            row += 2
+
+
+            self.screen.addstr(row, 00, 'Sea noise   : {:3.1f} db'.format(messages['sea_background_noise']))
+
+
+        elif self.display_screen == 'S':
+
+            row = 3
+            self.screen.addstr(3, 00, 'Passive Sonar')
+            row += 2
+
+            self.screen.addstr(row, 00, 'Spherical : {}'.format(self.towed_array.description))
+            self.screen.addstr(row, 00, 'Hull      : {}'.format(self.towed_array.description))
+            self.screen.addstr(row, 00, 'Towed     : {}'.format(self.towed_array.description))
+
+            row += 2
+
+
+            self.screen.addstr(row, 00, 'Sea noise   : {:3.1f} db'.format(messages['sea_background_noise']))
+
+
+        elif self.display_screen == 'k':
+            for i in range(3,12):
+                self.screen.addstr(i, 00, 'line '+str(i))
 
 
         elif self.display_screen == 'e':
@@ -285,6 +310,7 @@ class GameCoursesInterface(object):
         if opt[0] == 'mov':
             destination = self.parse_coordinates(opt[1])
             if destination:
+                sub.nav_mode = sub.NAV_MODE_DESTINATION
                 sub.destination = destination
                 # self.msg("Aye, aye! Destination set to {0}, captain!".format(self.player_sub.nav.destination))
             else:
@@ -307,6 +333,8 @@ class GameCoursesInterface(object):
         if (opt[0] == 'rudder' or opt[0] == 'r') and len(opt) == 2:
             n = int(opt[1]) # degrees per minute
             # sub.nav.set_manual()
+            self.nav_mode = sub.NAV_MODE_MANUAL
+
             sub.rudder = math.radians(n)*60 # *60 because rudder is in degrees per hour
             self.msg("Changing rudder to {0} degrees per minute".format(math.degrees(sub.rudder)/60))
 
@@ -315,7 +343,7 @@ class GameCoursesInterface(object):
             sub.set_deep = n
             self.msg("Changing deep to {0}".format(sub.set_deep))
 
-    def read_keyboard(self):
+    def read_keyboard(self, messages):
         s = self.screen
         k = s.getch()
         if k != curses.ERR:
@@ -329,9 +357,9 @@ class GameCoursesInterface(object):
 
             # Speeds
             elif k == ord('+') or k == ord('='):
-                self.speed_up()
+                self.speed_up(messages)
             elif k == ord('-'):
-                self.speed_down()
+                self.speed_down(messages)
 
             # screens
             # elif k == ord('n'):

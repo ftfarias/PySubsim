@@ -1,7 +1,33 @@
 
 
 
+class TowerArray(object):
+    TOWED_ARRAY_DEPLOY_SPEED = 100 * 60  # 300 feet per minute
 
+    def __init__(self):
+        self.description = 'generic towed array'
+
+
+
+class TD16DTowedArray(TowerArray):
+    TOTAL_LENGTH = 2400 + 240
+    """ 
+    TB-16 Fat Line Towed Array
+
+    The TB-16 Fat Line Towed Array consists of a 1400 pound 
+      accoustic detector array, some 3.5 inches in diameter and 240 feet long, towed on a
+      2,400 foot long cable 0.37 inches in diameter weighing 450 pounds.
+
+    Medium range 
+    low-frequency
+    2600 foot 3.5 inches/ 89mm thick
+    hydrophones in the last 240 foot
+    
+    max distance: 18.000 yards / 9.1 NM
+    """
+
+    def __init__(self):
+        self.description = 'TB-16 Fat Line Towed Array'
 
 
 """
@@ -50,18 +76,7 @@ The AN/BQQ-5 system was replaced by the AN/BQQ-10 system.
 
 
 ##  TD-16D 
-TB-16 Fat Line Towed Array
 
-The TB-16 Fat Line Towed Array consists of a 1400 pound 
-  accoustic detector array, some 3.5 inches in diameter and 240 feet long, towed on a
-  2,400 foot long cable 0.37 inches in diameter weighing 450 pounds.
-Basic tower array
-Medium range 
-low-frequency
-2600 foot 3.5 inches/ 89mm thick
-hydrophones in the last 240 foot
-
-max distance: 18.000 yards / 9.1 NM
 
 ## TD-23
 Passive thin-line
