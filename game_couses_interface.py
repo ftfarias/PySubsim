@@ -26,10 +26,20 @@ class GameCoursesInterface(object):
         screen = curses.initscr()
 
         self.screen = screen
-        screen.nodelay(1)
+
+        # Applications will also commonly need to react to keys instantly, without requiring the Enter key
+        # to be pressed; this is called cbreak mode, as opposed to the usual buffered input mode.
+        curses.cbreak()
+
+        # Usually curses applications turn off automatic echoing of keys to the screen, in order to be able to read
+        #  keys and only display them under certain circumstances. This requires calling the noecho() function.
         curses.noecho()
+
+
+        screen.nodelay(1)
+
         curses.curs_set(0)
-        screen.keypad(1)
+        screen.keypad(True)
 
         curses.start_color()
         curses.use_default_colors()
@@ -89,10 +99,10 @@ class GameCoursesInterface(object):
 
     def render(self, messages):
         s = self.screen
-        for i in range(3,11):
-            s.move(i,0)
+        s.erase()
+        for i in range(3, 11):
+            s.move(i, 0)
             s.clrtoeol()
-        s.clear()
         sub = self.player_sub
 
         # s.addstr(0, 0, "{sea} (time rate: {tr}x)".format(sea=self.sea, tr=self.time_rate))
@@ -331,7 +341,7 @@ class GameCoursesInterface(object):
             self.msg("Changing turbine level to {0}%".format(sub.turbine_level))
 
         if (opt[0] == 'rudder' or opt[0] == 'r') and len(opt) == 2:
-            n = int(opt[1]) # degrees per minute
+            n = int(opt[1])  # degrees per minute
             # sub.nav.set_manual()
             self.nav_mode = sub.NAV_MODE_MANUAL
 
@@ -382,8 +392,8 @@ class GameCoursesInterface(object):
     def finalize(self):
         # ends and closes interface
         curses.nocbreak()
-        self.screen.keypad(0)
-        curses.echo(1)
+        self.screen.keypad(False)
+        curses.echo()
         curses.endwin()
 
 

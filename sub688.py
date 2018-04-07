@@ -345,25 +345,6 @@ class Submarine688(object):
         self._rudder.update(time_elapsed)
         self._turbine_level.update(time_elapsed)
 
-        if self.speed_mode == self.SPEED_MODE_SPEED:
-            if self.actual_speed !=  self.target_speed:
-                self.acceleration_needed = self.DRAG_FACTOR * (self.target_speed**2)
-                self.turbine_level_needed = 100.0 * self.acceleration_needed / self.MAX_ACCELERATION
-
-                # adjust turbines
-                diff_speed = self.target_speed - self.actual_speed
-                diff_turbine = self.turbine_level - self.turbine_level_needed
-                # diff*10 gives more burst to make the change in speed faster
-                self.turbine_level  = self.turbine_level_needed  + (diff_speed * 5)
-
-        elif self.speed_mode == self.SPEED_MODE_TURBINE:
-            # fixed turbine level
-            self.acceleration_needed = 0
-            self.turbine_level_needed = self._target_turbine
-            self.turbine_level  = self._target_turbine
-
-
-
         # ship_moviment_angle is the angle the ship is moving
         ship_moviment_angle = self._velocity.get_angle()
 
@@ -389,6 +370,25 @@ class Submarine688(object):
         # correction if the drag factor since the sub is making a turn
         self.drag_factor = self.DRAG_FACTOR * (1 + abs(300 * math.sin(drifting_angle_diff)))
 
+        # speed
+        if self.speed_mode == self.SPEED_MODE_SPEED:
+            if self.actual_speed !=  self.target_speed:
+                self.acceleration_needed = self.drag_factor * (self.target_speed**2)
+                self.turbine_level_needed = 100.0 * self.acceleration_needed / self.MAX_ACCELERATION
+
+                # adjust turbines
+                diff_speed = self.target_speed - self.actual_speed
+                diff_turbine = self.turbine_level - self.turbine_level_needed
+                # diff*10 gives more burst to make the change in speed faster
+                self.turbine_level = self.turbine_level_needed + limits(diff_speed, -1, 1) * 10
+
+        elif self.speed_mode == self.SPEED_MODE_TURBINE:
+            # fixed turbine level
+            self.acceleration_needed = 0
+            self.turbine_level_needed = self._target_turbine
+            self.turbine_level  = self._target_turbine
+
+
         # drag force
         self.total_drag_acceleration = -1.0 * self.drag_factor * ((self.actual_speed) ** 2)
         drag_x = math.cos(ship_moviment_angle) * self.total_drag_acceleration
@@ -405,16 +405,12 @@ class Submarine688(object):
             dive_rate = min(deep_diff, self.MAX_DEEP_RATE_FEET)
             self.actual_deep += dive_rate * time_elapsed * 3600
 
-
         if self.nav_mode == self.NAV_MODE_DESTINATION:
             self.angle_to_destination = self.position.get_angle_to(self.destination)
             self.angle_difference = normalize_angle_pi(self.angle_to_destination - self.course)
             self.rudder = self.angle_difference * 500.0
 
-
         # TODO: when the sub reaches the destination, it should stop
-
-
 
     def __str__(self):
         return "Sub: {status}  deep:{deep:.0f}({sdeep})".format(status='',
