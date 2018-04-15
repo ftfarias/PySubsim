@@ -20,6 +20,12 @@ formatter = logging.Formatter("%(asctime)s %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+class IntefaceMessage(object):
+    def __init__(self, message, time=5):
+        self.message = message
+        self.time = time
+
+
 
 class Gameloop(object):
     CHANGE_TIME_RATE = 'CHANGE_TIME_RATE'
@@ -102,4 +108,5 @@ if __name__ == "__main__":
 
 # if __name__ == '__main__':
 #     main()
+
 

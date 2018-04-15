@@ -271,61 +271,11 @@ class Alternation(object):
                 self.counter = random.gauss(8, 5)+random.gauss(12, 5)
 
 
-class Deployable(object):
-    STOP = "Stopped"
-    DEPLOY = 'Deploying'
-    RETRIEVE = 'Retrieving'
-    BROKE = 'Broke'
-
-    def __init__(self, size, deploy_rate, inicial_deployed_size=0):
-        self.state = self.STOP
-        self.deployed_size = inicial_deployed_size
-        self.total_size = size
-        self.deploy_rate = deploy_rate
-
-    def turn(self, time_elapsed):
-        if self.state == self.DEPLOY:
-            self.deployed_size += self.deploy_rate * time_elapsed
-            if self.deployed_size >= self.total_size:
-                self.deployed_size = self.total_size
-                self.state = self.STOP
-
-        elif self.state == self.RETRIEVE:
-            self.deployed_size -= self.deploy_rate * time_elapsed
-            if self.deployed_size <= 0:
-                self.deployed_size = 0
-                self.state = self.STOP
-
-    def deploy(self):
-        if self.state != self.BROKE:
-            self.state = self.DEPLOY
-
-    def stop(self):
-        if self.state != self.BROKE:
-            self.state = self.STOP
-
-    def retrieve(self):
-        if self.state != self.BROKE:
-            self.state = self.RETRIEVE
-
-    def broke(self):
-        self.state = self.BROKE
-        self.deployed_size = 0
-
-    def percent_deployed(self):
-        return self.deployed_size/self.total_size
-
-    def __str__(self):
-        return "{0} ({1})".format(self.state, self.deployed_size)
 
 
 def cosine_interpolate(y1, y2, m):
     mu2 = (1.0-math.cos(m*math.pi))/2.0
     return (y1*(1-mu2)+y2*mu2)
-
-
-
-
 
 
 class TestUtil(unittest.TestCase):

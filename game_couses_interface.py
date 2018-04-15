@@ -11,7 +11,8 @@ from util import util as ut
 
 
 class GameCoursesInterface(object):
-    COMMAND_LINE = 12
+    COMMAND_LINE = 21
+    MESSAGE_LINE = 20
 
     def __init__(self, player_sub):
         self.player_sub = player_sub
@@ -87,7 +88,7 @@ class GameCoursesInterface(object):
 
     def msg(self, text):
         # self.screen.addstr(8, 0, " "*30)
-        self.screen.addstr(11, 0, text)
+        self.screen.addstr(self.MESSAGE_LINE, 0, text)
         # self.screen.clrtoeol()
 
 
@@ -221,12 +222,13 @@ class GameCoursesInterface(object):
         elif self.display_screen == 's':
 
             row = 3
-            self.screen.addstr(3, 00, 'Passive Sonar')
+            self.screen.addstr(row, 00, 'Spherical')
             row += 2
-            self.screen.addstr(row, 00, 'Towed Array : {}'.format(''))
+            self.screen.addstr(row, 00, 'Hull Sonar')
+            row += 2
+            self.screen.addstr(row, 00, 'Towed Array [{}]'.format(self.player_sub.towed_array.status()))
 
             row += 2
-
 
             self.screen.addstr(row, 00, 'Sea noise   : {:3.1f} db'.format(messages['sea_background_noise']))
 
@@ -234,13 +236,25 @@ class GameCoursesInterface(object):
         elif self.display_screen == 'S':
 
             row = 3
-            self.screen.addstr(3, 00, 'Passive Sonar')
+            self.screen.addstr(3, 00, 'Passive Sonars')
+            self.screen.addstr(3, 45, 'Max Speed')
+            self.screen.addstr(3, 55, 'Freq. Range')
             row += 2
 
-            self.screen.addstr(row, 00, 'Spherical : {}'.format(self.towed_array.description))
-            self.screen.addstr(row, 00, 'Hull      : {}'.format(self.towed_array.description))
-            self.screen.addstr(row, 00, 'Towed     : {}'.format(self.towed_array.description))
-
+            self.screen.addstr(row,  0, 'Spherical : {}'.format(self.player_sub.spherical_array.description))
+            self.screen.addstr(row, 45, '{}'.format(self.player_sub.spherical_array.MAX_SPEED))
+            f = self.player_sub.spherical_array.FREQUENCY_RANGE
+            self.screen.addstr(row, 55, '{} - {}'.format(ut.int_to_hertz(f[0]), ut.int_to_hertz(f[1])))
+            row += 1
+            self.screen.addstr(row, 0, 'Hull      : {}'.format(self.player_sub.hull_array.description))
+            self.screen.addstr(row, 45, '{}'.format(self.player_sub.hull_array.MAX_SPEED))
+            f = self.player_sub.hull_array.FREQUENCY_RANGE
+            self.screen.addstr(row, 55, '{} - {}'.format(ut.int_to_hertz(f[0]), ut.int_to_hertz(f[1])))
+            row += 1
+            self.screen.addstr(row, 0, 'Towed     : {}'.format(self.player_sub.towed_array.description))
+            self.screen.addstr(row, 45, '{}'.format(self.player_sub.towed_array.MAX_SPEED))
+            f = self.player_sub.towed_array.FREQUENCY_RANGE
+            self.screen.addstr(row, 55, '{} - {}'.format(ut.int_to_hertz(f[0]), ut.int_to_hertz(f[1])))
             row += 2
 
 

@@ -1,0 +1,349 @@
+
+    TB-16 Fat Line Towed Array
+
+    The TB-16 Fat Line Towed Array consists of a 1400 pound
+      accoustic detector array, some 3.5 inches in diameter and 240 feet long, towed on a
+      2,400 foot long cable 0.37 inches in diameter weighing 450 pounds.
+
+    Medium range
+    low-frequency
+    2600 foot 3.5 inches/ 89mm thick
+    hydrophones in the last 240 foot
+
+    max distance: 18.000 yards / 9.1 NM
+
+
+####  Spherical Sonar:
+
+max distance: 14.000 yards / 6.9 NM
+
+
+AN/BQQ-5[edit]
+AN/BQQ-5 sensor suite consists of the AN/BQS-13 spherical sonar array
+and AN/UYK-44 computer. The AN/BQQ-5 was developed from the AN/BQQ-2 sonar system.
+ The BQS 11, 12, and 13 spherical arrays have 1,241 transducers.
+  Also equipped are a 104 hydrophone hull array and two towed arrays:
+   the TB-12 (later replaced by the TB-16) and TB-23 or TB-29, of
+    which there are multiple variants. There are 5 versions of the AN/BQQ-5 system,
+     sequentially identified by letters A-E.
+
+The 688i (Improved) subclass was initially equipped with the AN/BSY-1 SUBACS
+submarine advanced combat system that used an AN/BQQ-5E sensor system with
+updated computers and interface equipment. Development of the AN/BSY-1 and its
+sister the AN/BSY-2 for the Seawolf class was widely reported as one of the
+most problematic programs for the Navy, its cost and schedule suffering many setbacks.
+
+A series of conformal passive hydrophones are hard-mounted
+to each side of the hull, using the AN/BQR-24 internal processor. The
+ system uses FLIT (frequency line integration tracking) which homes
+ in on precise narrowband frequencies of sound and, using the Doppler principle,
+  can accurately provide firing solutions against very quiet submarines.
+  The AN/BQQ-5’s hull array doubled the performance of its predecessors.
+
+AN/BQQ-10[edit]
+The AN/BQQ-5 system was replaced by the AN/BQQ-10 system.
+ Acoustic Rapid Commercial Off-The-Shelf Insertion (A-RCI),
+ designated AN/BQQ-10, is a four-phase program for transforming existing
+ submarine sonar systems (AN/BSY-1, AN/BQQ-5, and AN/BQQ-6) from legacy systems
+  to a more capable and flexible COTS/Open System Architecture (OSA) and also
+  provide the submarine force with a common sonar system. A single A-RCI
+   Multi-Purpose Processor (MPP) has as much computing power as the entire
+   Los Angeles (SSN-688/688I) submarine fleet combined and will allow
+   the development and use of complex algorithms previously beyond the
+   reach of legacy processors. The use of COTS/OSA technologies and systems
+    will enable rapid periodic updates to both software and hardware.
+    COTS-based processors will allow computer power growth at a rate
+    commensurate with the commercial industry.[21]
+
+
+##  TD-16D
+
+
+## TD-23
+Passive thin-line
+1.1 inches/28mm
+960 foot of hydrophones
+very low frequency at very long range
+Heading sensor:
+- Resolution : 0.3o
+- Accuracy: 0.5o
+- Pitch: +/- 15o
+Depth Sensor:
+- Resolution : 0.5 meters
+- Accuracy: 1.0 meters
+- Range: 800 m
+Temperature:
+- Resolution : 0.3 oC
+- Accuracy: 0.5 oC
+
+
+Specifications
+
+Maximum operating depth
+800 m
+Survival depth
+1500 m
+Temperature
+Operating: -2.5°C to 40°C Storage: -40°C to 70°C Reeling: -10°C to 40°C
+Frequency range
+Configurable to customer requirements
+Heading sensor
+Resolution: 0.3° Accuracy: 0.5°
+Roll Output: Continuous Pitch: ±15°
+Depth sensor
+Resolution: 0.5 m (1.64 ft) Accuracy: 1.0 m (3.28 ft) Range: 800 m (2,625 ft)
+Temperature sensor
+Resolution: 0.3°C Accuracy: 0.5°C
+
+L-3 Ocean Systems
+Submarine Towed Arrays
+• TB-16F – The latest fatline array with heading sensors
+• TB-23 – The standard thinline array with improvements
+• TB-29A – The new thinline array being developed by the Omnibus program
+
+
+WLR-9
+Active sonar detector
+
+
+# HS-100
+The HS-100 is a compact, long-range, multifunction hull-mounted sonar. Decades of dipping sonar
+ experience and expertise have resulted in this slimmed down, dome profile which conforms to the
+  hydrodynamic, low-drag bulbous bow shape of a surface warship.
+The transducer elements of the HS-100 are constructed from PMN (lead magnesium niobate).
+ The mid-frequency (MF) multiplexed hydrophone channels are easily interfaced to an open
+  architecture COTS acoustic processor.
+The HS-100 uses 32 modern projectors to provide the high source levels necessary
+ for long-range detection. The vertical “line” transmit array design produces large
+  time-bandwidth wave trains that are not possible with traditional sector scan sonars.
+   The lightweight, receive volumetric array comprises a vertical set of receive hydrophone
+   staves with embedded ATM digital telemetry processing that eliminates the need for individual sensor cabling, transmit/receive switches and signal conditioning cabinets found in traditional active sonars.
+The HS-100 is being developed by L-3 Communications Ocean Systems as a “green” sonar
+in that its transmissions do not harm aquatic life such as whales and dolphins
+
+
+HS-100 Specifications
+
+
+Application:
+Requirement
+Bow Dome
+
+Keel Dome
+Transmit horizontal beam width
+360° / 107°
+360° / 107°
+Transmit vertical beam width
+11° / 11°
+21° / 21°
+
+Transmit bandwidth
+2.5 kHz to 4.5 kHz
+Transmit source level
+228 dB re 1 μPa @ 1 m
+
+223 dB re 1 μPa @ 1 m
+Transmit array height
+92 in
+56 in
+Transmit array width/depth
+22 in / 22 in
+22 in / 22 in
+
+Receive bandwidth (active)
+1 kHz to 5 kHz
+Receive bandwidth (passive)
+800 Hz to 5.0 kHz
+Receiver dynamic range
+80 dB
+Own ship Doppler nullification
+30 kts
+Doppler range
+±36 kts
+Operational speed
+Up to 30 kts
+Operational sea state
+SS6
+Operating modes
+Active, Passive, Maintenance,Training
+Tracking
+Yes
+Contact management
+Yes
+Outboard system weight
+<2,000 lbs
+Number of projector elements
+64
+Receive array diameter
+72 in
+
+60 in
+Number of hydrophones (total)
+576
+
+360
+
+
+
+
+####   HS-200
+
+   The HS-200 combines HS-100, LFATS VDS-100 and latest transducer technologies
+    to satisfy recent requirements for a low frequency (< 2 kHz), hull-mounted
+     sonar retrofit into a 1.2-meter dome.
+ HS-200 Specifications
+
+Arrays
+Height: 116 cm Diameter: 116 cm Weight: <500 kg
+Operating modes
+Active: (CW, FM, Combined CW/FM) with Torpedo Alert
+Passive: (Narrowband, Broadband and DEMON) Playback
+Maintenance Test Idle
+Operating frequencies
+Active: 1,800 – 2,300 Hz Passive: 1,000 – 4,500 Hz
+Source Level
+Omnidirectional = 215 dB re 1 μPa @ 1m Sector Directed = 217 dB re 1μPa @ 1m
+Range scales
+2,4,8,16,32 km
+Transmit array
+Number of channels – 16
+(arrange in sour staves of four projectors)
+Own Doppler nullification
+0 – 30 kts
+Processing
+
+COTS Quad Power PCs (DY4)
+
+
+SOUNDS:
+
+Biological sounds such as “snapping shrimp”, and whale songs
+Geologic noise, such as underwater volcanoes, earthquakes, landslides
+Meteorological noise, such as wind, waves and rain
+Man-made noise, such as oil rigs, ships, sonar
+Brownian motion of molecules, due to heat
+
+FROM 688 HUNTER/KILLER GAME:
+
+SPHERICAL ARRAY
+The spherical array in the bow is used at up to 25 knots and can track broadband
+as well as narrowband contacts. Passive detection ranges from 750 Hz
+to 2.0 kHz. In active mode, the array transmits and detects at a higher frequency
+range of 2.0 kHz to 10 kHz.
+The spherical array processes broadband signals better than other arrays.
+Bearing accuracy is particularly good. At higher speeds, there is some degradation
+of performance because of flow noise caused by the water moving
+across the surface of the array. It is not as sensitive to low frequencies, so it’s
+not the array of choice for narrowband contacts emitting only low frequencies.
+
+
+
+HULL ARRAY
+The hull array, also at the bow of the ship, is a linear array that provides low
+speed capability to detect low frequency narrowband contacts (50 Hz -to1.0
+kHz). As such, its primary use is for classifying targets.
+
+
+TOWED ARRAY
+The towed array—pulled behind the submarine on a long tow cable so it
+won’t pick up the submarine’s own machinery noise—is used for both broadband
+and narrowband tracking (10 Hz–1.0 kHz). It is used at low to medium
+speeds, and is optimized for lower frequencies, making it approximately 20%
+more effective in processing signals
+
+
+
+
+The AN/BQQ-5 sonar, the US Navy’s first active/passive digital sonar system, is the
+principal sensor system of the US Navy’s ‘Los Angeles’ class nuclear attack submarines.
+The AN/BQQ-5 is a digital, multi-beam system employing hull-mounted,
+sphere-mounted and towed acoustic hydrophone arrays. The polyethylene-covered
+tow cable, which has a maximum length of about 800 m, is 9.5 mm in diameter,
+and the array at the end of the cable, where the hydrophones and electronics are
+located, is 82.5 mm in diameter. The array is tapered fore and aft to minimise flow
+noise. Drag is stated to account for a maximum reduction in speed of 0.5 kts, with
+no serious inhibition on submerged manoeuvres and little adverse effect on surface
+manoeuvres with the one exception of those entailing going about.
+During the late 1970s the US Navy became concerned that the AN/BQQ-5 would
+not be able to handle the developing threats and embarked on a programme to
+update the capabilities of the system. An improved control display console has
+been developed and sonars that have been upgraded with the new consoles are
+known as the AN/BQQ-5B. A further modification to the system developed under
+this programme is the AN/BQQ-5C(V) Expanded Directional Frequency Analysis and
+Recording System (DIFAR), which replaces the original signal processor with the
+AN/UYH-1 standard signal processor. The AN/BQQ-5D uses a thin-line array and
+utilises some of the technology common to the AN/BSY-1 system. It became operational
+in 1988. A contract for the development of the AN/BQQ-5E was awarded in
+December 1988. A new thin-line array for passive ranging is to be integrated with
+the AN/BQQ-5E, the first of which will go to sea in late 1993.
+The US Navy has been developing a thin-line tow array and handling system and
+other modifications for the AN/BQQ-5 system (see operational status). The thin-line
+towed array, known as the TB-23, forms part of the AN/BSY-1(V) combat suite. It is
+a lightweight system that can be reeled into the vessel’s main ballast tank, instead
+of being housed on the side of the submarine, and will replace the TB-16 ‘thickline’
+array currently employed in the AN/BQQ-5.
+The AN/BQQ-5 provides improved detection, tracking and classification of low frequency
+data. The latest development also provides processing capability for the
+new TB-29 towed array and interfacing to the new fire-control system CCS Mk 2.
+The combining of the AN/BQQ-5E, TB-29, and CCS Mk 2 will result in a system
+referred to as QE2 that was scheduled for Technical Evaluation in 1993.
+The AN/WLR-9A acoustic intercept receiver, produced by Norden, has been successfully
+evaluated and forms an integral subsystem of the AN/BQQ-5 and
+AN/BQQ-6 on new attack and Trident missile submarines. The subsystem features
+a CRT display, a digital readout and a remote unit for the submarine commander. A
+‘sensitivity improvement’ kit for the AN/WLR-9A has been developed by Norden
+and deliveries to the US Navy are in progress.
+
+http://www.stormpowered.com/stormcloud/games/6040/manual.pdf
+PAGINA 132
+
+
+Sensor Device Type Detects Raw Maximum Maximum
+Target Speed Depth
+Data Allowed Allowed
+Provided
+Periscope Optical/ Passive Surface Bearing, 10 60 ft.
+Electro- ships classification,
+optical range, (est.)
+course
+ESM Electro- Passive Surface Bearing, 10 60 ft.
+magnetic ships classification
+Radar Electro- Active Surface Bearing, 5 knots 58 ft.
+magnetic ships, range
+aircraft
+Spherical Acoustic Passive Surface Bearing 25 Test
+Array ships, Depth
+(passive) submarines
+Spherical Acoustic Active Surface Bearing, 25 Test
+Array ships, range Depth
+(active) submarines
+Towed Acoustic Passive Surface Bearing 32 Test
+Array ships, Depth
+submarines
+Hull Acoustic Passive Surface Bearing 32 Test
+Array ships, Depth
+
+
+NOISE
+Three factors contribute to the noise between you and the contact: thermal
+layers, sea state, and own ship noise. If the contact is on the opposite side of a
+thermal layer, it may appear as a very faint contact (for more information on
+thermals, see Sonar & The Ocean Environment, p. 111). The sea state, i.e., the
+amount of turbulence caused by weather, has an additional effect. The more
+violent the sea state, the more interference over the entire acoustic spectrum.
+Finally, your own movement has an adverse effect on your sensors. As speed
+increase, array sensitivity decreases. If you go too fast, the arrays will no
+longer be able to pick out any sounds from the environment at all. The maximum
+speed varies by array: 20 kts for the spherical array, 5 kts for the hull
+array, and 25 kts for the towed array.
+All that being said, the relative sensitivity of the various arrays can be communicated
+through example. The diagram below depicts a submarine listening
+to a merchant ship traveling at low speed in a low sea state environment.
+If the merchant ship were going faster, the sensor ranges displayed below
+would increase; however, if the submarine were below a thermal layer in a
+surface duct environment, detection would be cut in half.
+
+
+
+
+

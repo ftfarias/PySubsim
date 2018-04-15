@@ -62,9 +62,13 @@ class Submarine688(object):
         self.time_elapsed = 0
 
         self.nav_mode = self.NAV_MODE_MANUAL
-        self._destination = Point(0,0)
+        self._destination = Point(0, 0)
 
-        self.towed_array_cable = TimedValue(0,0, self.towed_array.TOWED_ARRAY_DEPLOY_SPEED)
+        self.spherical_array = sonar.ANBQQ5SphericalArray()
+        self.hull_array = sonar.ANBQQ5HullArray()
+        self.towed_array = sonar.TD16DTowedArray()
+        # self.towed_array_cable = TimedValue(0,0, self.towed_array.TOWED_ARRAY_DEPLOY_SPEED)
+
 
     ### TURBINE ###
 
@@ -344,6 +348,7 @@ class Submarine688(object):
         # update timed values
         self._rudder.update(time_elapsed)
         self._turbine_level.update(time_elapsed)
+        self.towed_array.update(time_elapsed)
 
         # ship_moviment_angle is the angle the ship is moving
         ship_moviment_angle = self._velocity.get_angle()
