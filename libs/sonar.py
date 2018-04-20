@@ -1,6 +1,7 @@
 
 from util.deployable import Deployable
 import math
+from util.util import normalize_angle_pi
 
 
 class TowerArray(Deployable):
@@ -17,6 +18,7 @@ class SphericalArray(object):
 
     # sensible to 300 degrees, centered in the bow
     def is_listening(self, angle):
+        angle = normalize_angle_pi(angle)
         if self.LISTENING_ANGLE_MIN <= angle <= self.LISTENING_ANGLE_MAX:
             return True
 
