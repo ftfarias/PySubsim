@@ -1,0 +1,22 @@
+2019-05-01 12:56:39,950 wmove() returned ERR
+Traceback (most recent call last):
+  File "game.py", line 75, in run
+    self.interface.read_keyboard(self.messages)
+  File "/Users/ftfarias/proj/PySubsim/game_couses_interface.py", line 380, in read_keyboard
+    self.command()
+  File "/Users/ftfarias/proj/PySubsim/game_couses_interface.py", line 327, in command
+    c = self.get_command()
+  File "/Users/ftfarias/proj/PySubsim/game_couses_interface.py", line 312, in get_command
+    s.move(self.COMMAND_LINE, 0)
+_curses.error: wmove() returned ERR
+2019-05-01 12:56:42,647 wmove() returned ERR
+Traceback (most recent call last):
+  File "game.py", line 75, in run
+    self.interface.read_keyboard(self.messages)
+  File "/Users/ftfarias/proj/PySubsim/game_couses_interface.py", line 380, in read_keyboard
+    self.command()
+  File "/Users/ftfarias/proj/PySubsim/game_couses_interface.py", line 327, in command
+    c = self.get_command()
+  File "/Users/ftfarias/proj/PySubsim/game_couses_interface.py", line 312, in get_command
+    s.move(self.COMMAND_LINE, 0)
+_curses.error: wmove() returned ERR
