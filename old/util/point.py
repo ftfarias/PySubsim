@@ -104,7 +104,6 @@ class Point(object):
         angle = self.angle_to(other)
         return Point(math.cos(angle), math.sin(angle))
 
-
     def get_length(self):
         return abs(self.v)
 

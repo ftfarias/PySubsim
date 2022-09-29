@@ -42,7 +42,7 @@ class Submarine(MovableNewtonObject):
         self._position = Point(0, 0)
         self._velocity = Point(0, 0)
         self._target_velocity = 0
-        self._rudder = 0  # property rudder in radians pe minute
+        self._rudder = 0  # property rudder in radians per minute
         self._ship_bearing = 0  # the angle of the ship in relation to north, in radians
         self._turbine_level = 0  # 0 to 100%
 

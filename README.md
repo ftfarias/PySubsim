@@ -1,12 +1,14 @@
 PySubsim
 ========
 
-Text Based Submarine Simulator in Python
+Submarine Simulator in Python
 
 
 ### How to run
 
 Just download and call:
 
-python game.py
+> pip install -r requirements.txt
+
+> python game.py
 
