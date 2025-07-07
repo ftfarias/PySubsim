@@ -14,14 +14,16 @@ from util import util
 # (-1, 1)    (0, 1)    (1, 1)
 # (-1, 0)  <- 0, 0 ->  (1, 0)
 # (-1,-1)    (0,-1)    (1,-1)
-#
+
+
 # 3/4 PI      PI/2      PI/4
 #PI/-PI        o         0
 #-3/4 PI     -PI/2     -PI/4
-#
+
+
 # NW         North     NE
 # West     <- 0, 0 ->  East
-# SW         South    SE
+# SW         South     SE
 
 #############################
 #        USER ANGLES        #
@@ -30,7 +32,7 @@ from util import util
 # (-1, 1)    (0, 1)    (1, 1)
 # (-1, 0)  <- 0, 0 ->  (1, 0)
 # (-1,-1)    (0,-1)    (1,-1)
-#
+
 # NW         North     NE
 # West     <- 0, 0 ->  East
 # SW         South     SE

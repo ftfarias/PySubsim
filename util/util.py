@@ -2,10 +2,41 @@ import collections
 import math
 import random
 import unittest
-# from sound.sound import sum_of_decibels
 import copy
 
+#############################
+#        GAME ANGLES        #
+#############################
 
+# (-1, 1)    (0, 1)    (1, 1)
+# (-1, 0)  <- 0, 0 ->  (1, 0)
+# (-1,-1)    (0,-1)    (1,-1)
+
+
+# 3/4 PI      PI/2      PI/4
+#PI/-PI        o         0
+#-3/4 PI     -PI/2     -PI/4
+
+
+# NW         North     NE
+# West     <- 0, 0 ->  East
+# SW         South     SE
+
+#############################
+#        USER ANGLES        #
+#############################
+
+# (-1, 1)    (0, 1)    (1, 1)
+# (-1, 0)  <- 0, 0 ->  (1, 0)
+# (-1,-1)    (0,-1)    (1,-1)
+
+# NW         North     NE
+# West     <- 0, 0 ->  East
+# SW         South     SE
+
+# 315   0    45
+# 270   o    90
+# 225  180   135
 
 def angles(num_angles):
     step = 360 / num_angles
@@ -160,7 +191,6 @@ class OnLineMean():
 def knots_to_yards(knots):
     return knots * 2025.371828521
 
-
 def yards_to_knots(yards):
     return yards / 2025.371828521
 
@@ -270,8 +300,6 @@ class Alternation(object):
             else:
                 self.state = True
                 self.counter = random.gauss(8, 5)+random.gauss(12, 5)
-
-
 
 
 def cosine_interpolate(y1, y2, m):

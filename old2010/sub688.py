@@ -475,6 +475,7 @@ Akula-class - 110 decibels
 Type 093 - 110 decibels
 Type 094 - 120 decibels
 
+
 The Shang has an acoustic signature similar to the original
 Russian Akula class boats or roughly equivalent to the original
 Los-Angles class submarine, not the 688I (improved Los-Angles class).
