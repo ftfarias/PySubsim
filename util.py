@@ -1,5 +1,6 @@
 import math
 from typing import Tuple
+import locale
 
 Vector = Tuple[float, float]  # convenience alias
 PI = math.pi
@@ -83,6 +84,34 @@ def bearing_to_angle(bearing: float) -> float:
     """Convert a bearing in degrees to an angle in radians."""
     return math.radians((90.0 - bearing) % 360)
 
+def bearing_to_unicode(angle):
+        angle = angle % 360  # Normalize to [0, 360)
+        def interval(a, direction):
+            return direction-22.5 <= a < direction+22.5
+
+        if angle is None:
+            return '\u2219'
+        elif interval(angle, 45):
+            return '\u2197'
+        elif interval(angle, 90):
+            return '\u2192'
+        elif interval(angle, 135):
+            return '\u2198'
+        elif interval(angle, 180):
+            return '\u2193'
+        elif interval(angle, 225):
+            return '\u2199'
+        elif interval(angle, 270):
+            return '\u2190'
+        elif interval(angle, 315):
+            return '\u2196'
+        else:
+            return '\u2191'
+
+def print_unicode(s: str):
+    """Print a unicode string with backslash escape sequences."""
+    e = locale.getpreferredencoding()
+    print(s.encode(e, 'backslashreplace').decode())
 
 if __name__ == "__main__":
     # Test the functions
@@ -94,7 +123,7 @@ if __name__ == "__main__":
     for a in angules:
         angle_rad = bearing_to_angle(a)
         print(
-            f"Bearing {a}: {angle_rad} radians, angle_to_bearing: {angle_to_bearing(angle_rad)} deg"
+            f"Bearing {a} {bearing_to_unicode(a)}: {angle_rad} radians, angle_to_bearing: {angle_to_bearing(angle_rad)} deg"
         )
         print(f"Vector from angle {a} degrees: {vec_from_angle(angle_rad, 1.0)}")
         print(
@@ -106,14 +135,3 @@ if __name__ == "__main__":
 
 
 
-    # assert math.isclose(angle_to_bearing(math.pi / 3), 30.0)
-    # assert math.isclose(bearing_to_angle(30), math.pi / 3)
-
-    # print("Normalize angle to [-pi, pi]:", normalize_angle_pi(3 * math.pi))
-    # print("Normalize angle to [0, 2*pi]:", normalize_angle_2pi(-math.pi / 2))
-    # print("Norm of (3, 4):", norm((3, 4)))
-    # print("Angle of (1, 0):", angle((1, 0)))
-    # print("Vector from angle pi/4 with length 5:", vec_from_angle(math.pi / 4, 5))
-
-    # print("Bearing from angle pi/3:", angle_to_bearing(math.pi / 3))
-    # print("Angle from bearing 30 degrees:", bearing_to_angle(30))

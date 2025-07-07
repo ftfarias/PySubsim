@@ -232,3 +232,10 @@ I always wondered if solution from towed sonar only LF contact is precise enaugh
 
 
 -------------------------------------
+
+SS -> Conventional attack submarine 
+SSN -> Nuclear - powered attack submarine
+SSB -> Conventional ballistic missile submarine
+SSBN -> Nuclear - powered ballistic missile submarine
+SSG -> Conventional guided missile submarine
+SSGN -> Nuclear - powered guided missile submarine

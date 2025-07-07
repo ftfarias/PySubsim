@@ -42,7 +42,7 @@ class Button:
         self.bold = False
         self.italics = False
         self.underlined = False
-        self.font_name = "terraria_styled_game\Fonts\PixelifySans-Regular.ttf"
+        self.font_name = "fonts/PixelifySans-Regular.ttf"
         self.color = color
 
     def draw(self, screen):

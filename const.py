@@ -10,7 +10,8 @@ colors = {
     "blue"          :   pygame.Color(50, 75, 245),
 }
 
-font = pygame.font.Font("terraria_styled_game\Fonts\PixelifySans-Regular.ttf", 36)
+# font = pygame.font.Font("terraria_styled_game\Fonts\PixelifySans-Regular.ttf", 36)
+
 # Define colors
 WHITE = (255, 255, 255)
 BUTTON_COLOR = (50, 50, 50)

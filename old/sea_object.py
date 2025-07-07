@@ -7,36 +7,7 @@ from util.physic import Point, MovableNewtonObject
 from navigation import Navigation
 from sound.sound import Sound
 
-"""
-SS
-Conventional
-attack
-submarine
-SSN
-Nuclear - powered
-attack
-submarine
-SSB
-Conventional
-ballistic
-missile
-submarine
-SSBN
-Nuclear - powered
-ballistic
-missile
-submarine
-SSG
-Conventional
-guided
-missile
-submarine
-SSGN
-Nuclear - powered
-guided
-missile
-submarine
-"""
+
 class SeaObject(object):
     def __init__(self, sea):
         self.id = None

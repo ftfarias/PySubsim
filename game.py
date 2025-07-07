@@ -90,8 +90,8 @@ def draw_controls(renderer: pygame.Surface | Renderer, size: tuple[int, int]):
     # Throttle label and bar
     lbl = font.render("Throttle:", True, (200, 200, 200))
     surf.blit(lbl, (10, 10))
-    pygame.draw.rect(surf, (80, 80, 80), pygame.Rect(110, 14, 180, 12), border_radius=6)
-    pygame.draw.rect(surf, (0, 180, 0), pygame.Rect(110, 14, 90, 12), border_radius=6)
+    pygame.draw.rect(surf, (80, 80, 80), pygame.Rect(110, 14, 200, 12), border_radius=6)
+    pygame.draw.rect(surf, (0, 180, 0), pygame.Rect(110, 14, submarine.throttle_pct * 2, 12), border_radius=6)
 
     # Speed label
     btn = Button(
@@ -100,12 +100,11 @@ def draw_controls(renderer: pygame.Surface | Renderer, size: tuple[int, int]):
         y=50,
         width=100,
         height=30,
-        command=lambda: print("Speed button clicked!"),
+        command=lambda x: print("Speed button clicked!"),
         additional_data=["Speed"],
         color=(255, 255, 255)
     )
 
-    btn.draw(surf)  # Draw the button on the surface
     # Button
     # button_rect = pygame.Rect(10, 50, 100, 30)  # x, y, width, height
     # create_button(surf, button_rect, "Click Me")
@@ -114,8 +113,9 @@ def draw_controls(renderer: pygame.Surface | Renderer, size: tuple[int, int]):
     # pygame.draw.rect(surf, (255, 255, 255), button_rect, 2, border_radius=6)  # Button border
     # btn_lbl = font.render("Click Me", True, (255, 255, 255))
     # surf.blit(btn_lbl, (button_rect.x + 10, button_rect.y + 5))  # Center text in the button
+    btn.draw(surf)  # Draw the button on the surface
 
-    # _blit(renderer, surf, (0, 0))
+    _blit(renderer, surf, (0, 0))
     # return {'t':button_rect} # return a dict with the button rect for interaction
     return [btn] # return a dict with the button rect for interaction
     
@@ -194,7 +194,10 @@ class MultiWindowApp:
                         print('Left')
                     elif event.key == pygame.K_RIGHT:
                         print('Right')
-
+                    elif event.key == pygame.K_EQUALS:
+                        submarine.throttle_pct += 5
+                    elif event.key == pygame.K_MINUS:
+                        submarine.throttle_pct -= 5
             CLOCK.tick(FPS)
 
         pygame.quit()

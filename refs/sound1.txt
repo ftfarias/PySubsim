@@ -69,3 +69,29 @@ on the reported operating depth of the Thresher, it may be assumed that the norm
 The Soviet Alfa submarines, constructed of titanium, reportedly had an operating depth
 of nearly 4,000 feet.
 """
+
+"""
+Source:
+Can Russian Strategic
+Submarines Survive at Sea?
+The Fundamental Limits of
+Passive Acoustics
+http://scienceandglobalsecurity.org/archive/sgs04miasnikov.pdf
+
+
+
+http://fas.org/man/dod-101/sys/ship/deep.htm
+The most obvious contribution to the ambient noise is the action occurring on the surface of
+the ocean. The greater the size of the waves, the greater the ambient noise contribution. The
+waves are driven by the winds, so there is a direct correspondence between the steady wind speed
+and the sea state. The greater the wind speed or sea state, obviously the greater the ambient
+noise contribution. The frequency of the noise from sea state tends to be greater than 300 Hz.
+
+The second main contribution to ambient noise comes from shipping in general. In regions where
+there are many transiting ships, the ambient noise will be increased substantially. This noise,
+in contrast to the noise from sea state, will be at low frequency (< 300 Hz).
+
+The third possible ambient noise source is biologics, meaning sea-life. These are as widely
+varied as they are unpredictable. One common source is snapping shrimp. Others include whales
+and dolphins.
+"""
